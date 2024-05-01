@@ -20,3 +20,12 @@
 para la elaboración de grupos.
 
 10. Como estudiante o docente, deseo poder iniciar sesión en la aplicación para poder acceder a nuevas funcionalidades de la aplicación.
+
+
+# Dudas / Preguntas.
+
+- ¿Cuál es el objetivo de separar usuarios entre Estudiantes y Docentes?
+	- ¿Cómo el se ve flujo entre Estudiantes y Docentes?
+	- ¿A qué se refiere con que se pueden registrar actividades por medios multimedia?
+- ¿Se debería poder guardar y cargar el cálculo actual? (Inspirado por Calibrate my Sprayer)
+- ¿Cómo se registraría los usuarios en la aplicación, y si es requisito crear otro perfil como Administrador?
