@@ -27,5 +27,9 @@ para la elaboración de grupos.
 - ¿Cuál es el objetivo de separar usuarios entre Estudiantes y Docentes?
 	- ¿Cómo el se ve flujo entre Estudiantes y Docentes?
 	- ¿A qué se refiere con que se pueden registrar actividades por medios multimedia?
+   	- ¿Que usos tendría la funcionalidad de crear grupos, o para que se usarían los grupos?
+- ¿Qué datos son necesarios guardar por usuario. Nombre, correo, carnet, etc? 
 - ¿Se debería poder guardar y cargar el cálculo actual? (Inspirado por Calibrate my Sprayer)
+- ¿Para las calculadoras, debería ser posible modificar las unidades de medida?
 - ¿Cómo se registraría los usuarios en la aplicación, y si es requisito crear otro perfil como Administrador?
+- ¿Si no existe Administrador, como se asignarían los roles?
