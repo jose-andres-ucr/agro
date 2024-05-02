@@ -1,9 +1,9 @@
 import { View, Text } from "react-native";
 
-export default function Home() {
+export default function settings() {
   return (
     <View>
-      <Text>Inicio</Text>
+      <Text>Configuración del perfil</Text>
     </View>
   );
 }
