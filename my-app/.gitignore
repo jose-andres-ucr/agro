@@ -2,11 +2,13 @@
 
 # dependencies
 node_modules/
+google-services.json
 
 # Expo
 .expo/
 dist/
 web-build/
+android/
 
 # Native
 *.orig.*
