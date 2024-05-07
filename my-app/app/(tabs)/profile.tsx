@@ -1,23 +1,41 @@
 import { View, Text } from "react-native";
-import useAuthState from "../hooks/Authentication";
 import SignOut from "../components/login/SignOut";
 import useFetchUserData from "../hooks/FetchData";
-import { useEffect, useState } from "react";
-import { FirebaseFirestoreTypes } from "@react-native-firebase/firestore";
+import { useState } from "react";
+import auth from "@react-native-firebase/auth";
+import Spinner from "../components/Spinner";
+import { router } from "expo-router";
 
 export default function Profile() {
-  const { userData } = useFetchUserData();
-
+  const { userId, userData } = useFetchUserData();
+  const [loading, setLoading] = useState(false);
+  const handleSignOut = () => {
+    setLoading(true);
+    auth()
+      .signOut()
+      .then(() => {
+        console.log("User signed out!");
+        setTimeout(() => {
+          setLoading(false);
+          router.replace("/(tabs)/");
+        }, 2000);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   return (
-    <View>
-      {userData ? (
+    <>
+      {userData && !loading ? (
         <View>
           <Text>Nombre de usuario: {userData.Name}</Text>
-          <SignOut />
+          <Text>Correo electrónico: {userId}</Text>
+          <Text>Rol de usuario: {userData.Roll}</Text>
+          <SignOut handler={handleSignOut} />
         </View>
       ) : (
-        <></>
+        <Spinner />
       )}
-    </View>
+    </>
   );
 }

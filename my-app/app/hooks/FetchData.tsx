@@ -13,6 +13,7 @@ const useFetchUserData = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (userAuthState?.email) {
+        //TODO: handle errors
         setUserData(
           (
             await firestore().collection("Users").doc(userAuthState.email).get()
@@ -27,8 +28,9 @@ const useFetchUserData = () => {
       setUserData(undefined);
     }
   }, [initializing, userAuthState]);
+  let userId = userAuthState?.email;
 
-  return { userData };
+  return { initializing, userId, userData };
 };
 
 export default useFetchUserData;

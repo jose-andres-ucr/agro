@@ -3,17 +3,17 @@ import { useEffect, useState } from "react";
 
 const useAuthState = () => {
   const [initializing, setInitializing] = useState(true);
-  const [userAuthState, setUserAuth] =
-    useState<FirebaseAuthTypes.User | null>();
+  const [userAuthState, setUserAuthState] =
+    useState<FirebaseAuthTypes.User | null>(null);
 
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged((user) => {
-      setUserAuth(user);
+    const unsubscribe = auth().onAuthStateChanged((user) => {
+      setUserAuthState(user);
       if (initializing) setInitializing(false);
     });
 
-    return () => subscriber(); // unsubscribe on unmount
-  }, []);
+    return unsubscribe; // unsubscribe on unmount
+  }, [initializing]);
 
   return { initializing, userAuthState };
 };
