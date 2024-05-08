@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import useFetchUserData from "./FetchData";
 
 const useUserRoll = () => {
-  const { userData } = useFetchUserData();
+  const { initializing, userData } = useFetchUserData();
   //Get User Roll
   const [userRoll, setUserRoll] = useState<string | null>(null);
   useEffect(() => {
-    setUserRoll(userData?.Roll);
+    if (userData) {
+      setUserRoll(userData.Roll);
+    } else {
+      setUserRoll(null);
+    }
   }, [userData]);
 
   // Show specific roll functionalities (calculators are available by default)
@@ -37,7 +41,7 @@ const useUserRoll = () => {
       setManageUsers(null);
     }
   }, [userRoll]);
-  return { userRoll, profile, manageUsers, education };
+  return { userRoll, initializing, profile, manageUsers, education };
 };
 
 export default useUserRoll;

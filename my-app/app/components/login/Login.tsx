@@ -23,7 +23,7 @@ export default function Login() {
     auth()
       .signInWithEmailAndPassword(userName, password)
       .then(() => {
-        console.log("Sesión iniciada");
+        console.log("User login!");
         setTimeout(() => {
           setLoading(false);
           router.back();
@@ -35,12 +35,12 @@ export default function Login() {
 
   return (
     <>
-      {!loading ? (
+      {loading === false ? (
         <View>
           <View>
             <TextInput
               textContentType="emailAddress"
-              defaultValue="Usuario"
+              placeholder="Usuario"
               onChangeText={handleUser}
             />
           </View>
@@ -48,7 +48,7 @@ export default function Login() {
           <View>
             <TextInput
               textContentType="password"
-              defaultValue="Contraseña"
+              placeholder="Contraseña"
               onChangeText={handlePassword}
             />
           </View>
