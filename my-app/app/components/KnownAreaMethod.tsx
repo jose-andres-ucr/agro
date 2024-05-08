@@ -6,7 +6,7 @@ import { View, Text, TextInput as TextInputRn, Button, StyleSheet } from 'react-
 const schema = z.object({
   volumenInicial: z.string(),
   volumenFinal: z.string(),
-  areaConocida: z.string(),
+  areaConocida: z.string().refine(value => value !== '0', { message: 'El área no puede ser cero' }),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -22,7 +22,7 @@ export default function KnownAreaMethod() {
   } = useForm<FormData>({
     resolver: async (data) => {
       try {
-        const validData = await schema.parse(data);
+        const validData = await schema.parseAsync(data);
         return { values: validData, errors: {} };
       } catch (error: any) {
         return { values: {}, errors: { [error.path[0]]: { message: error.message } } };
@@ -35,7 +35,6 @@ export default function KnownAreaMethod() {
     const allFieldsFilled = Object.keys(errors).length === 0 && errors.constructor === Object;
     setCamposVacios(!allFieldsFilled);
   }, [errors]); // Dependencia de errores para ejecutar el efecto cuando cambien
-
 
   const onSubmit = (data: FormData) => {
     const { volumenInicial, volumenFinal, areaConocida } = data;
@@ -62,62 +61,74 @@ export default function KnownAreaMethod() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Método del volumen aplicado en un área conocida</Text>
-      <Text style={styles.title}>Determina el volumen de aplicación por hectárea. Marque un área conocida y 
+      <Text style={styles.mainTitle}>Método del volumen aplicado en un área conocida</Text>
+      <Text style={styles.subtitle}>Determina el volumen de aplicación por hectárea. Marque un área conocida y 
       aplique ahí agua a la velocidad usual</Text>
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInputRn
-            placeholder="Volumen inicial (en litros)"
-            style={styles.input}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="numeric"
-          />
-        )}
-        name="volumenInicial"
-      />
-      {errors.volumenInicial && <Text style={styles.error}>{errors.volumenInicial.message}</Text>}
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInputRn
-            placeholder="Volumen final (en litros)"
-            style={styles.input}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="numeric"
-          />
-        )}
-        name="volumenFinal"
-      />
-      {errors.volumenFinal && <Text style={styles.error}>{errors.volumenFinal.message}</Text>}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Volumen inicial:</Text>
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInputRn
+              placeholder="Volumen inicial (en litros)"
+              style={styles.input}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              keyboardType="numeric"
+            />
+          )}
+          name="volumenInicial"
+        />
+        {errors.volumenInicial && <Text style={styles.error}>{errors.volumenInicial.message}</Text>}
+      </View>
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInputRn
-            placeholder="Área aplicada (en metros cuadrados)"
-            style={styles.input}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="numeric"
-          />
-        )}
-        name="areaConocida"
-      />
-      {errors.areaConocida && <Text style={styles.error}>{errors.areaConocida.message}</Text>}
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Volumen final:</Text>
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInputRn
+              placeholder="Volumen final (en litros)"
+              style={styles.input}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              keyboardType="numeric"
+            />
+          )}
+          name="volumenFinal"
+        />
+        {errors.volumenFinal && <Text style={styles.error}>{errors.volumenFinal.message}</Text>}
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Área aplicada:</Text>
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInputRn
+              placeholder="Área aplicada (en metros cuadrados)"
+              style={styles.input}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              keyboardType="numeric"
+            />
+          )}
+          name="areaConocida"
+        />
+        {errors.areaConocida && <Text style={styles.error}>{errors.areaConocida.message}</Text>}
+      </View>
 
       {camposVacios && <Text style={styles.error}>Aún hay campos vacíos</Text>}
 
-      <Button onPress={handleSubmit(onSubmit)} title="Calcular" disabled={camposVacios} />
+      <View style={styles.buttonContainer}>
+       <Button onPress={handleSubmit(onSubmit)} title="Calcular" disabled={camposVacios} />
+      </View>
 
-      {resultado !== null && <Text style={styles.result}>Resultado: {resultado} litros/ha</Text>}
+      {resultado !== null && <Text style={[styles.result, { textAlign: 'center' }]}>Resultado: {resultado} litros/ha</Text>}
     </View>
   );
 }
@@ -125,15 +136,31 @@ export default function KnownAreaMethod() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
     paddingHorizontal: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#E1F5FE', // Celeste claro
   },
-  title: {
+  mainTitle: {
+    fontSize: 24,
+    marginBottom: 20,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  subtitle: {
     fontSize: 18,
     marginBottom: 20,
     textAlign: 'center',
+    color: '#333',
+  },
+  inputContainer: {
+    marginBottom: 20,
+    width: '100%',
+  },
+  label: {
+    marginBottom: 5,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -155,5 +182,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  button: {
+    alignSelf: 'center', // Centrar el botón
+  },
+
+  buttonContainer: {
+    alignSelf: 'center',
   },
 });
