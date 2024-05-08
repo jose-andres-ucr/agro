@@ -47,7 +47,7 @@ export default function PesticidePerArea() {
   const onSubmit = (data: FormData) => {
     Keyboard.dismiss();
     let calc = ((data.initialVolume - data.finalVolume)*data.cultivationArea/data.appliedArea).toFixed(2)
-    setResult(calc)
+    setResult(parseInt(calc))
   };
 
   return (
