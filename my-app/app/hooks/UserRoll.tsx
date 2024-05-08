@@ -22,15 +22,15 @@ const useUserRoll = () => {
       setProfile("/profile");
       setEducation(null);
       setManageUsers("/manageUsers");
-    } else if (userRoll == "Professor") {
+    } else if (userRoll == "Docente") {
       setProfile("/profile");
       setEducation("/education");
       setManageUsers("/manageUsers");
-    } else if (userRoll == "Student") {
+    } else if (userRoll == "Estudiante") {
       setProfile("/profile");
       setEducation("/education");
       setManageUsers(null);
-    } else if (userRoll == "External User") {
+    } else if (userRoll == "Usuario Externo") {
       setProfile("/profile");
       setEducation(null);
       setManageUsers(null);
