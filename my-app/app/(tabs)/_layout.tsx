@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Tabs } from "expo-router";
 import LoginButton from "../components/login/LoginButton";
-import useUserRoll from "../hooks/UserRoll";
-import Spinner from "../components/Spinner";
+import useuserRole from "../hooks/UserRole";
 import TabBarIcon from "../components/TabBarIcon";
 
 export default function TabLayout() {
-  const { profile, manageUsers, education } = useUserRoll();
+  const { profile, manageUsers, education } = useuserRole();
 
   return (
     <Tabs

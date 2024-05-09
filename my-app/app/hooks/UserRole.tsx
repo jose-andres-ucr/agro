@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import useFetchUserData from "./FetchData";
 
-const useUserRoll = () => {
+const useUserRole = () => {
   const { initializing, userData } = useFetchUserData();
   //Get User Roll
-  const [userRoll, setUserRoll] = useState<string | null>(null);
+  const [userRole, setuserRole] = useState<string | null>(null);
   useEffect(() => {
     if (userData) {
-      setUserRoll(userData.Roll);
+      setuserRole(userData.Role);
     } else {
-      setUserRoll(null);
+      setuserRole(null);
     }
   }, [userData]);
 
@@ -18,19 +18,19 @@ const useUserRoll = () => {
   const [manageUsers, setManageUsers] = useState<string | null>(null);
   const [education, setEducation] = useState<string | null>(null);
   useEffect(() => {
-    if (userRoll == "Admin") {
+    if (userRole == "Admin") {
       setProfile("/profile");
       setEducation(null);
       setManageUsers("/manageUsers");
-    } else if (userRoll == "Docente") {
+    } else if (userRole == "Docente") {
       setProfile("/profile");
       setEducation("/education");
       setManageUsers("/manageUsers");
-    } else if (userRoll == "Estudiante") {
+    } else if (userRole == "Estudiante") {
       setProfile("/profile");
       setEducation("/education");
       setManageUsers(null);
-    } else if (userRoll == "Usuario Externo") {
+    } else if (userRole == "Usuario Externo") {
       setProfile("/profile");
       setEducation(null);
       setManageUsers(null);
@@ -40,8 +40,8 @@ const useUserRoll = () => {
       setEducation(null);
       setManageUsers(null);
     }
-  }, [userRoll]);
-  return { userRoll, initializing, profile, manageUsers, education };
+  }, [userRole]);
+  return { userRole, initializing, profile, manageUsers, education };
 };
 
-export default useUserRoll;
+export default useUserRole;

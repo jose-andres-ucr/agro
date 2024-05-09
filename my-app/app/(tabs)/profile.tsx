@@ -22,8 +22,8 @@ export default function Profile() {
   return (
     <View>
       <Text>Nombre de usuario: {userData?.Name}</Text>
-      <Text>Correo electrónico: {userId}</Text>
-      <Text>Rol de usuario: {userData?.Roll}</Text>
+      <Text>Correo electrónico: {userData?.Email}</Text>
+      <Text>Rol de usuario: {userData?.Role}</Text>
       <Logout handler={handleSignOut} />
     </View>
   );
