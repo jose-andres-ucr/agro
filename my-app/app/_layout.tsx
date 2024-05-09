@@ -24,6 +24,10 @@ export default function TabLayout() {
         name="components/PesticidePerPlant"
         options={{ headerTitle: "Fungicidas e Insecticidas" }}
       />
+      <Stack.Screen
+        name="components/login/Login"
+        options={{ headerTitle: "Iniciar Sesión" }}
+      />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );
