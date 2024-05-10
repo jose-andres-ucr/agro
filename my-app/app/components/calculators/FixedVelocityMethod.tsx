@@ -5,30 +5,36 @@ import React, { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-
-const PositiveNumberSchema = z.string().min(1, {message: "Valor requerido"}).
-refine((value) => {
-  return !isNaN(Number(value));
-}, {message: "El valor debe ser un numérico"})
-.refine((value) => {
-  return Number(value) > 0;
-}, {message: "El valor debe ser mayor a 0"});
-
+const PositiveNumberSchema = z
+  .string()
+  .min(1, { message: "Valor requerido" })
+  .refine(
+    (value) => {
+      return !isNaN(Number(value));
+    },
+    { message: "El valor debe ser un numérico" }
+  )
+  .refine(
+    (value) => {
+      return Number(value) > 0;
+    },
+    { message: "El valor debe ser mayor a 0" }
+  );
 
 const FixedVelocityMethodFormSchema = z.object({
   dischargePerMinute: PositiveNumberSchema,
   distanceBetweenNozzles: PositiveNumberSchema,
   velocity: PositiveNumberSchema,
-})
+});
 
 type FormData = z.infer<typeof FixedVelocityMethodFormSchema>;
 
 export default function FixedVelocityMethod() {
   const [result, setResult] = useState<string | null>(null);
   const {
-    	control,
-    	handleSubmit,
-    	formState: { errors },
+    control,
+    handleSubmit,
+    formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
       dischargePerMinute: "",
@@ -45,13 +51,18 @@ export default function FixedVelocityMethod() {
   } as const;
 
   const onSubmit = (data: FormData) => {
-    let raw_calculus = ((Number(data.dischargePerMinute) * 10000) / (Number(data.velocity) * 60)) / Number(data.distanceBetweenNozzles)
+    let raw_calculus =
+      (Number(data.dischargePerMinute) * 10000) /
+      (Number(data.velocity) * 60) /
+      Number(data.distanceBetweenNozzles);
     setResult(raw_calculus.toPrecision(5));
   };
-  
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Determina el volumen de caldo que se aplicará en una hectárea.</Text>
+      <Text style={styles.title}>
+        Determina el volumen de caldo que se aplicará en una hectárea.
+      </Text>
       <Controller
         control={control}
         render={({ field: { onChange, onBlur, value } }) => (
@@ -65,7 +76,9 @@ export default function FixedVelocityMethod() {
               value={value ? value.toString() : ""}
               keyboardType="numeric"
               returnKeyType="next"
-              onSubmitEditing={() => refs.distanceBetweenNozzles.current?.focus()}
+              onSubmitEditing={() =>
+                refs.distanceBetweenNozzles.current?.focus()
+              }
             />
             <Text style={styles.text}>litros</Text>
           </View>
@@ -98,7 +111,9 @@ export default function FixedVelocityMethod() {
         name="distanceBetweenNozzles"
       />
       {errors.distanceBetweenNozzles && (
-        <Text style={styles.error}>{errors.distanceBetweenNozzles.message}</Text>
+        <Text style={styles.error}>
+          {errors.distanceBetweenNozzles.message}
+        </Text>
       )}
 
       <Controller
@@ -120,33 +135,33 @@ export default function FixedVelocityMethod() {
         )}
         name="velocity"
       />
-      {errors.velocity && <Text style={styles.error}>{errors.velocity.message}</Text>}
-    
-    <Button
-      style={styles.button}
-      mode="contained"
-      onPress={handleSubmit(onSubmit)}
-    >
-      Calcular
-    </Button>
+      {errors.velocity && (
+        <Text style={styles.error}>{errors.velocity.message}</Text>
+      )}
 
-    <View style={styles.separator} />
-    {
-      result && (
+      <Button
+        style={styles.button}
+        mode="contained"
+        onPress={handleSubmit(onSubmit)}
+      >
+        Calcular
+      </Button>
+
+      <View style={styles.separator} />
+      {result && (
         <View style={styles.horizontalContainer}>
           <Text style={styles.text}>El volumen de caldo es: </Text>
           <Text style={styles.text}>{result} litros / hectárea</Text>
         </View>
-      )
-    }
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   horizontalContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',    
+    flexDirection: "row",
+    alignItems: "center",
   },
   container: {
     flex: 1,
@@ -179,5 +194,5 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 24,
     alignSelf: "center",
-  }
+  },
 });

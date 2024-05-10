@@ -1,4 +1,9 @@
-import { StyleSheet, View, TextInput as TextInputRn, Keyboard } from "react-native";
+import {
+  StyleSheet,
+  View,
+  TextInput as TextInputRn,
+  Keyboard,
+} from "react-native";
 import { useForm, Controller } from "react-hook-form";
 
 import { TextInput, Button, Text } from "react-native-paper";
@@ -7,28 +12,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 
 const form = z.object({
-  appliedArea: z
-    .string()
-    .transform((value) => Number(value)),
-  initialVolume: z
-    .string()
-    .transform((value) => Number(value)),
-  finalVolume: z
-    .string()
-    .transform((value) => Number(value)),
-  cultivationArea: z
-    .string()
-    .transform((value) => Number(value)),
+  appliedArea: z.string().transform((value) => Number(value)),
+  initialVolume: z.string().transform((value) => Number(value)),
+  finalVolume: z.string().transform((value) => Number(value)),
+  cultivationArea: z.string().transform((value) => Number(value)),
 });
 type FormData = z.infer<typeof form>;
 
 export default function PesticidePerArea() {
-  const [result, setResult] = useState(0.0)
-  
-  const {
-    control,
-    handleSubmit,
-  } = useForm({
+  const [result, setResult] = useState(0.0);
+
+  const { control, handleSubmit } = useForm({
     defaultValues: {
       appliedArea: 0,
       initialVolume: 0,
@@ -46,13 +40,18 @@ export default function PesticidePerArea() {
 
   const onSubmit = (data: FormData) => {
     Keyboard.dismiss();
-    let calc = ((data.initialVolume - data.finalVolume)*data.cultivationArea/data.appliedArea).toFixed(2)
-    setResult(parseInt(calc))
+    let calc = (
+      ((data.initialVolume - data.finalVolume) * data.cultivationArea) /
+      data.appliedArea
+    ).toFixed(2);
+    setResult(parseInt(calc));
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Marque un área conocida y aplique allí agua a la velocidad usual.</Text>
+      <Text style={styles.text}>
+        Marque un área conocida y aplique allí agua a la velocidad usual.
+      </Text>
       <View style={styles.inputGroup}>
         <Text>Área aplicada (m2): </Text>
         <Controller
@@ -156,7 +155,9 @@ export default function PesticidePerArea() {
         onPress={handleSubmit((form) => {
           onSubmit(form);
         })}
-      >Calcular</Button>
+      >
+        Calcular
+      </Button>
 
       <View style={styles.resultGroup}>
         <Text style={styles.text}>Resultado: </Text>

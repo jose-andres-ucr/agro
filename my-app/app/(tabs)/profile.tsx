@@ -1,13 +1,12 @@
 import { View, Text } from "react-native";
 import Logout from "../components/login/Logout";
 import useFetchUserData from "../hooks/FetchData";
-import { useState } from "react";
 import auth from "@react-native-firebase/auth";
-import Spinner from "../components/Spinner";
 import { router } from "expo-router";
+import { theme } from "@/constants/theme";
 
 export default function Profile() {
-  const { userId, userData } = useFetchUserData();
+  const { userData } = useFetchUserData();
   const handleSignOut = () => {
     auth()
       .signOut()
@@ -20,7 +19,7 @@ export default function Profile() {
       });
   };
   return (
-    <View>
+    <View style={theme.screenContainer}>
       <Text>Nombre de usuario: {userData?.Name}</Text>
       <Text>Correo electrónico: {userData?.Email}</Text>
       <Text>Rol de usuario: {userData?.Role}</Text>
