@@ -1,28 +1,37 @@
+import { theme } from "@/constants/theme";
 import { router } from "expo-router";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 
 export default function Herbicides() {
   return (
-    <View style={styles.container}>
+    <View style={theme.screenContainer}>
       <Text style={styles.title}>Seleccione un método de calibración:</Text>
 
       <View style={styles.separator} />
 
-      <Pressable onPress={() => router.push("../components/FixedVolumeMethod")}>
+      <Pressable
+        onPress={() =>
+          router.push("../components/calculators/FixedVolumeMethod")
+        }
+      >
         <Text style={styles.title}>Método del Volumen Fijo</Text>
       </Pressable>
 
       <View style={styles.separator} />
 
       <Pressable
-        onPress={() => router.push("../components/FixedVelocityMethod")}
+        onPress={() =>
+          router.push("../components/calculators/FixedVelocityMethod")
+        }
       >
         <Text style={styles.title}>Método de Velocidad Fijo</Text>
       </Pressable>
 
       <View style={styles.separator} />
 
-      <Pressable onPress={() => router.push("../components/KnownAreaMethod")}>
+      <Pressable
+        onPress={() => router.push("../components/calculators/KnownAreaMethod")}
+      >
         <Text style={styles.title}>
           Método del Volumen Aplicado a un Área Conocida
         </Text>

@@ -13,9 +13,8 @@ const useFetchUserData = () => {
     const fetchData = async () => {
       if (userAuthState?.email) {
         //TODO: handle errors
-        console.log(userAuthState.uid);
         let response = (
-          await firestore().collection("users").doc(userAuthState.uid).get()
+          await firestore().collection("Users").doc(userAuthState.uid).get()
         ).data();
         if (response !== undefined) {
           setUserData(response);
