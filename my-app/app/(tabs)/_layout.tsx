@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Tabs } from "expo-router";
 import LoginButton from "../components/login/LoginButton";
 import useuserRole from "../hooks/UserRole";
 import TabBarIcon from "../components/TabBarIcon";
+import { theme } from "@/constants/theme";
 
 export default function TabLayout() {
   const { profile, manageUsers, education } = useuserRole();
@@ -10,7 +11,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "green",
+        tabBarActiveTintColor: theme.colors.secondary,
       }}
     >
       <Tabs.Screen

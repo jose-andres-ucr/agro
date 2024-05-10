@@ -1,20 +1,29 @@
+import { theme } from "@/constants/theme";
 import { router } from "expo-router";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 
 export default function Fungicides() {
   return (
-    <View style={styles.container}>
+    <View style={theme.screenContainer}>
       <Text style={styles.title}>Seleccione un método de calibración:</Text>
 
       <View style={styles.separator} />
 
-      <Pressable onPress={() => router.push("../components/PesticidePerArea")}>
+      <Pressable
+        onPress={() =>
+          router.push("../components/calculators/PesticidePerArea")
+        }
+      >
         <Text style={styles.title}>Por Área</Text>
       </Pressable>
 
       <View style={styles.separator} />
 
-      <Pressable onPress={() => router.push("../components/PesticidePerPlant")}>
+      <Pressable
+        onPress={() =>
+          router.push("../components/calculators/PesticidePerPlant")
+        }
+      >
         <Text style={styles.title}>Por Planta</Text>
       </Pressable>
 
