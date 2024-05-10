@@ -211,6 +211,7 @@ export default function KnownAreaMethod() {
 }
 
 const styles = StyleSheet.create({
+  
   mainTitle: {
     fontSize: 24,
     marginBottom: 20,
@@ -220,8 +221,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: "flex-start",
-    alignContent: "center",
+    backgroundColor: "#fff", // Fondo blanco
     padding: 28,
   },
   text: {
@@ -237,12 +237,12 @@ const styles = StyleSheet.create({
   inputField: {
     marginVertical: 4,
     width: "30%",
-    height: 50, // Añade altura
+    height: 50,
     textAlign: "center",
-    borderWidth: 1, // Añade borde
-    borderColor: "#ccc", // Color del borde
-    borderRadius: 5, // Borde redondeado
-    backgroundColor: "#fff", // Fondo blanco
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    backgroundColor: "#fff",
   },
   inputGroup: {
     justifyContent: "space-between",
@@ -253,6 +253,7 @@ const styles = StyleSheet.create({
   button: {
     marginVertical: 8,
     alignSelf: "flex-end",
+    backgroundColor: '#6dc067', // Color verde ucr para los botones
   },
   resultGroup: {
     justifyContent: "flex-end",
@@ -263,14 +264,13 @@ const styles = StyleSheet.create({
   resultField: {
     width: "50%",
     textAlign: "center",
-    backgroundColor: "#e1d8ea", // Color lila
-    borderRadius: 5, // Borde redondeado
-    padding: 8, // Añade relleno
-    marginTop: 10, // Ajusta el margen superior según sea necesario
+    backgroundColor: "#e1d8ea",
+    borderRadius: 5,
+    padding: 8,
+    marginTop: 10,
   },
   error: {
     color: 'red',
     marginBottom: 10,
   },
-  
 });

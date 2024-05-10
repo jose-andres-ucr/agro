@@ -14,7 +14,10 @@ export default function TabLayout() {
       />
       <Stack.Screen
         name="components/KnownAreaMethod"
-        options={{ headerTitle: "Herbicidas" }}
+        options={{ 
+          headerTitle: "Herbicidas",
+          headerStyle: { backgroundColor: '#00c0f3' } // Color celeste ucr
+        }}
       />
       <Stack.Screen
         name="components/PesticidePerArea"
