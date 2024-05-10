@@ -1,18 +1,20 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Button, Text, View, StyleSheet } from "react-native";
 import React, { useEffect, useState } from 'react';
-import firestore from '@react-native-firebase/firestore';
+import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 
 
 type Comment = {
   Name: string;
+  DateTime: FirebaseFirestoreTypes.Timestamp;
   Comment: string;
 }
 
-export const CommentLog = () => {
+export const CommentLog = (props: { text: string }) => {
   const [comments, setComments] = useState([] as Comment[]);
+  const [showComments, setShowComments] = useState(false);
   
   useEffect(() => {
-    const subscriber = firestore().collection('VelocityComments').onSnapshot((res) => {
+    const subscriber = firestore().collection(props.text).onSnapshot((res) => {
       const comments = [] as Comment[];
       res.forEach((documentSnapshot) => comments.push(documentSnapshot.data() as Comment));
       setComments(comments);
@@ -23,24 +25,29 @@ export const CommentLog = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Lista de Estudiantes</Text>
+      <Text style={styles.title}>Comentarios</Text>
       <View style={styles.separator} />
-      <View>
-        {comments.map((comment, index) => (
-          <View style={styles.container} key ={index}>
-            <Text>Nombre: {comment.Name}</Text>
-            <Text>Comentario: {comment.Comment}</Text>
-          </View>
-        ))}
-      </View>
+      {showComments && (
+        <View>
+          {comments.map((comment, index) => (
+            <View style={styles.container} key ={index}>
+              <Text>Nombre: {comment.Name}</Text>
+              <Text>Fecha y hora: {new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
+              <Text>Comentario: {comment.Comment}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+      <Button
+        title={showComments ? "Ocultar comentarios" : "Mostrar comentarios"}
+        onPress={() => setShowComments(!showComments)}
+      />
     </View>
   );
-  
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

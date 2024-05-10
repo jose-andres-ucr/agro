@@ -6,7 +6,7 @@ export default function FixedVelocityMethod() {
     
     <View>
       <Text>Método de Velocidad Fija</Text>
-      <CommentLog />
+      <CommentLog text='VelocityComments'/>
     </View>
     
   );
