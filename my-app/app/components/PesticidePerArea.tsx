@@ -1,6 +1,5 @@
 import { StyleSheet, View, TextInput as TextInputRn, Keyboard, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-
 import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

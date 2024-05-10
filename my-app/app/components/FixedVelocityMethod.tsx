@@ -147,6 +147,7 @@ export default function FixedVelocityMethod() {
       <CommentLog text="VelocityComments" />
       </View>
     </ScrollView>
+
   );
 }
 
