@@ -7,7 +7,7 @@ import { TextInput, Button, Text } from "react-native-paper";
 const schema = z.object({
   volumenInicial: z.string(),
   volumenFinal: z.string(),
-  areaConocida: z.string().refine(value => value !== '0', { message: 'El área no puede ser cero' }),
+  areaConocida: z.string(),
 });
 
   const refs = {
@@ -51,8 +51,6 @@ export default function KnownAreaMethod() {
     setIsFocused({ ...isFocused, [inputName]: false });
   };
 
-
-
   useEffect(() => {
     // Verificar si algún campo está vacío al cargar el componente
     const allFieldsFilled = Object.keys(errors).length === 0 && errors.constructor === Object;
@@ -66,6 +64,23 @@ export default function KnownAreaMethod() {
     if (!volumenInicial || !volumenFinal || !areaConocida) {
       setCamposVacios(true);
       console.error('Aún hay campos vacíos.');
+      return;
+    }
+
+     // Verificar si el área es negativa o cero
+    if (parseFloat(areaConocida) <= 0) {
+      console.error('El área no puede ser cero o negativa.');
+      return;
+    }
+
+      // Verificar si algún valor es negativo
+    if (parseFloat(volumenInicial) < 0) {
+      console.error('No puede ingresar números negativos.');
+      return;
+    }
+
+    if (parseFloat(volumenFinal) < 0) {
+      console.error('No puede ingresar números negativos.');
       return;
     }
 
