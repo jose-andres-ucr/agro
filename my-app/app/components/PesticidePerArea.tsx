@@ -53,6 +53,7 @@ export default function PesticidePerArea() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Marque un área conocida y aplique allí agua a la velocidad usual.</Text>
+      
       <View style={styles.inputGroup}>
         <Text>Área aplicada (m2): </Text>
         <Controller
@@ -138,12 +139,7 @@ export default function PesticidePerArea() {
               onChangeText={onChange}
               value={value === 0 ? "" : value.toString()}
               keyboardType="numeric"
-              autoCapitalize="none"
-              returnKeyType="send"
-              onSubmitEditing={handleSubmit((form) => {
-                onSubmit(form);
-              })}
-              blurOnSubmit={false}
+              returnKeyType="done"
             />
           )}
           name="cultivationArea"

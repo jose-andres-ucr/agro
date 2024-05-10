@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
-import { View, Text, TextInput as TextInputRn, Button, StyleSheet } from 'react-native';
+import { StyleSheet, View, TextInput as TextInputRn, Keyboard} from "react-native";
+import { TextInput, Button, Text } from "react-native-paper";
 
 const schema = z.object({
   volumenInicial: z.string(),
@@ -9,11 +10,22 @@ const schema = z.object({
   areaConocida: z.string().refine(value => value !== '0', { message: 'El área no puede ser cero' }),
 });
 
+  const refs = {
+    volumenInicialRef: React.useRef<TextInputRn>(null),
+    volumenFinalRef: React.useRef<TextInputRn>(null),
+    areaConocidaRef: React.useRef<TextInputRn>(null),
+  } as const;
+
 type FormData = z.infer<typeof schema>;
 
 export default function KnownAreaMethod() {
   const [resultado, setResultado] = useState<string | null>(null);
   const [camposVacios, setCamposVacios] = useState(true);
+  const [isFocused, setIsFocused] = useState({ // Estado para rastrear si cada cuadro de texto está enfocado
+    volumenInicial: false,
+    volumenFinal: false,
+    areaConocida: false,
+  });
 
   const {
     control,
@@ -29,6 +41,17 @@ export default function KnownAreaMethod() {
       }
     },
   });
+
+// Funciones para manejar el cambio de enfoque de cada cuadro de texto
+  const handleFocus = (inputName: string) => { // Definir explícitamente el tipo de inputName como string
+    setIsFocused({ ...isFocused, [inputName]: true });
+  };
+
+  const handleBlur = (inputName: string) => { // Definir explícitamente el tipo de inputName como string
+    setIsFocused({ ...isFocused, [inputName]: false });
+  };
+
+
 
   useEffect(() => {
     // Verificar si algún campo está vacío al cargar el componente
@@ -60,23 +83,34 @@ export default function KnownAreaMethod() {
   };
 
   return (
+    
     <View style={styles.container}>
       <Text style={styles.mainTitle}>Método del volumen aplicado en un área conocida</Text>
       <Text style={styles.subtitle}>Determina el volumen de aplicación por hectárea. Marque un área conocida y 
       aplique ahí agua a la velocidad usual</Text>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Volumen inicial:</Text>
+      <View style={styles.inputGroup}>
+        <Text>Volumen inicial (litros):</Text>
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInputRn
-              placeholder="Volumen inicial (en litros)"
-              style={styles.input}
-              onBlur={onBlur}
+              //placeholder="Volumen inicial (en litros)"
+              style={[styles.inputField, { borderColor: isFocused.volumenInicial ? '#9c27b0' : '#ccc' }]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
+              onBlur={() => handleBlur('volumenInicial')} // Maneja la pérdida de enfoque
+              onFocus={() => handleFocus('volumenInicial')} // Maneja el enfoque
+              //style={styles.inputField}
+              //onBlur={onBlur}
               onChangeText={onChange}
               value={value}
               keyboardType="numeric"
+              autoFocus
+              returnKeyType="next"
+              onSubmitEditing={() => {
+                refs.volumenFinalRef.current?.focus();
+              }}
+              blurOnSubmit={false}
+              
             />
           )}
           name="volumenInicial"
@@ -84,18 +118,28 @@ export default function KnownAreaMethod() {
         {errors.volumenInicial && <Text style={styles.error}>{errors.volumenInicial.message}</Text>}
       </View>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Volumen final:</Text>
+      <View style={styles.inputGroup}>
+        <Text>Volumen final (litros):</Text>
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInputRn
-              placeholder="Volumen final (en litros)"
-              style={styles.input}
-              onBlur={onBlur}
+              ref={refs.volumenFinalRef}
+              //placeholder="Volumen final (en litros)"
+              style={[styles.inputField, { borderColor: isFocused.volumenFinal ? '#9c27b0' : '#ccc' }]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
+              onBlur={() => handleBlur('volumenFinal')} // Maneja la pérdida de enfoque
+              onFocus={() => handleFocus('volumenFinal')} // Maneja el enfoque
+              //style={styles.inputField}
+              //onBlur={onBlur}
               onChangeText={onChange}
               value={value}
               keyboardType="numeric"
+              autoFocus
+              returnKeyType="next"
+              onSubmitEditing={() => {
+                refs.areaConocidaRef.current?.focus();
+              }}
+              blurOnSubmit={false}
             />
           )}
           name="volumenFinal"
@@ -103,15 +147,19 @@ export default function KnownAreaMethod() {
         {errors.volumenFinal && <Text style={styles.error}>{errors.volumenFinal.message}</Text>}
       </View>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Área aplicada:</Text>
+      <View style={styles.inputGroup}>
+        <Text>Área aplicada (m2):</Text>
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInputRn
-              placeholder="Área aplicada (en metros cuadrados)"
-              style={styles.input}
-              onBlur={onBlur}
+              ref={refs.areaConocidaRef}
+              //placeholder="Área aplicada (en metros cuadrados)"
+              style={[styles.inputField, { borderColor: isFocused.areaConocida ? '#9c27b0' : '#ccc' }]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
+              onBlur={() => handleBlur('areaConocida')} // Maneja la pérdida de enfoque
+              onFocus={() => handleFocus('areaConocida')} // Maneja el enfoque
+              //style={styles.inputField}
+              //onBlur={onBlur}
               onChangeText={onChange}
               value={value}
               keyboardType="numeric"
@@ -124,23 +172,30 @@ export default function KnownAreaMethod() {
 
       {camposVacios && <Text style={styles.error}>Aún hay campos vacíos</Text>}
 
-      <View style={styles.buttonContainer}>
-       <Button onPress={handleSubmit(onSubmit)} title="Calcular" disabled={camposVacios} />
-      </View>
+      <Button
+        style={styles.button}
+        mode="contained"
+        onPress={handleSubmit((form) => {
+          onSubmit(form);
+        })}
+      >Calcular</Button>
 
-      {resultado !== null && <Text style={[styles.result, { textAlign: 'center' }]}>Resultado: {resultado} litros/ha</Text>}
+      {resultado !== null && (
+        <View style={styles.resultGroup}>
+          <Text style={styles.text}>Resultado: </Text>
+          <TextInputRn
+            style={[styles.resultField, { color: '#000' }]}
+            value={resultado.toString()}
+            editable={false}
+          />
+          <Text style={styles.text}> litros/ha</Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    backgroundColor: '#E1F5FE', // Celeste claro
-  },
   mainTitle: {
     fontSize: 24,
     marginBottom: 20,
@@ -148,46 +203,59 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  container: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignContent: "center",
+    padding: 28,
+  },
+  text: {
+    textAlign: "center",
+    fontWeight: "bold",
+  },
   subtitle: {
     fontSize: 18,
     marginBottom: 20,
     textAlign: 'center',
     color: '#333',
   },
-  inputContainer: {
-    marginBottom: 20,
-    width: '100%',
+  inputField: {
+    marginVertical: 4,
+    width: "30%",
+    height: 50, // Añade altura
+    textAlign: "center",
+    borderWidth: 1, // Añade borde
+    borderColor: "#ccc", // Color del borde
+    borderRadius: 5, // Borde redondeado
+    backgroundColor: "#fff", // Fondo blanco
   },
-  label: {
-    marginBottom: 5,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+  inputGroup: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 8,
+    flexDirection: "row",
   },
-  input: {
-    width: '100%',
-    height: 40,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+  button: {
+    marginVertical: 8,
+    alignSelf: "flex-end",
+  },
+  resultGroup: {
+    justifyContent: "flex-end",
+    alignItems: "center",
+    padding: 8,
+    flexDirection: "row",
+  },
+  resultField: {
+    width: "50%",
+    textAlign: "center",
+    backgroundColor: "#e1d8ea", // Color lila
+    borderRadius: 5, // Borde redondeado
+    padding: 8, // Añade relleno
+    marginTop: 10, // Ajusta el margen superior según sea necesario
   },
   error: {
     color: 'red',
     marginBottom: 10,
   },
-  result: {
-    marginTop: 20,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  button: {
-    alignSelf: 'center', // Centrar el botón
-  },
-
-  buttonContainer: {
-    alignSelf: 'center',
-  },
+  
 });
