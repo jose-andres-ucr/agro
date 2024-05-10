@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CommentLog } from "./CommentLog";
 
 const form = z.object({
   cantidadPlantas: z.number(),
@@ -34,99 +35,105 @@ export default function PesticidePerPlant() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Cuente un número de plantas y aplique allí agua a la velocidad usual. </Text>
-      <View style={styles.inputItem}>
-        <Text style={[styles.label]}>Cantidad de plantas aplicadas:</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={[styles.input]}
-              onBlur={onBlur}
-              onChangeText={(text) => onChange(parseInt(text))}
-              value={value?.toString()}
-              returnKeyType="next"
-              keyboardType="numeric"
+    <ScrollView
+    contentContainerStyle={{ flexGrow: 1 }}
+    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>Cuente un número de plantas y aplique allí agua a la velocidad usual. </Text>
+        <View style={styles.inputItem}>
+          <Text style={[styles.label]}>Cantidad de plantas aplicadas:</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={[styles.input]}
+                onBlur={onBlur}
+                onChangeText={(text) => onChange(parseInt(text))}
+                value={value?.toString()}
+                returnKeyType="next"
+                keyboardType="numeric"
+              />
+            )}
+            name="cantidadPlantas"
+          />
+          {errors.cantidadPlantas ? (
+            <Text style={styles.error}>{errors.cantidadPlantas.message}</Text>
+          ) : null}
+        </View>
+          <View style={styles.inputItem}>
+            <Text style={[styles.label]}>Volumen inicial (litros):</Text>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input]}
+                  onBlur={onBlur}
+                  onChangeText={(text) => onChange(parseInt(text))}
+                  value={value?.toString()}
+                  returnKeyType="next"
+                  keyboardType="numeric"
+                />
+              )}
+              name="volumenInicial"
             />
-          )}
-          name="cantidadPlantas"
-        />
-        {errors.cantidadPlantas ? (
-          <Text style={styles.error}>{errors.cantidadPlantas.message}</Text>
-        ) : null}
+          {errors.volumenInicial ? (
+            <Text style={styles.error}>{errors.volumenInicial.message}</Text>
+          ) : null}
+          </View>
+          <View style={styles.inputItem}>
+            <Text style={[styles.label]}>Volumen final (litros):</Text>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input]}
+                  onBlur={onBlur}
+                  onChangeText={(text) => onChange(parseInt(text))}
+                  value={value?.toString()}
+                  returnKeyType="next"
+                  keyboardType="numeric"
+                />
+              )}
+              name="volumenFinal"
+            />
+          {errors.volumenFinal ? (
+            <Text style={styles.error}>{errors.volumenFinal.message}</Text>
+          ) : null}
+          </View>
+          <View style={styles.inputItem}>
+            <Text style={[styles.label]}>Cantidad de plantas totales en la parcela por aplicar:</Text>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input]}
+                  onBlur={onBlur}
+                  onChangeText={(text) => onChange(parseInt(text))}
+                  value={value?.toString()}
+                  returnKeyType="next"
+                  keyboardType="numeric"
+                />
+              )}
+              name="cantidadPlantasTotal"
+            />
+          {errors.cantidadPlantasTotal ? (
+            <Text style={styles.error}>{errors.cantidadPlantasTotal.message}</Text>
+          ) : null}
+          </View>
+        <Button
+          style={styles.buttonContainer}
+          mode="contained"
+          onPress={handleSubmit(onSubmit)}
+        >
+          Calcular
+        </Button>
+        {resultado !== null && (
+          <Text style={styles.resultText}> {resultado} litros</Text>
+        )}
+        <CommentLog text="PesticidePerPlantComments" />
       </View>
-        <View style={styles.inputItem}>
-          <Text style={[styles.label]}>Volumen inicial (litros):</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[styles.input]}
-                onBlur={onBlur}
-                onChangeText={(text) => onChange(parseInt(text))}
-                value={value?.toString()}
-                returnKeyType="next"
-                keyboardType="numeric"
-              />
-            )}
-            name="volumenInicial"
-          />
-        {errors.volumenInicial ? (
-          <Text style={styles.error}>{errors.volumenInicial.message}</Text>
-        ) : null}
-        </View>
-        <View style={styles.inputItem}>
-          <Text style={[styles.label]}>Volumen final (litros):</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[styles.input]}
-                onBlur={onBlur}
-                onChangeText={(text) => onChange(parseInt(text))}
-                value={value?.toString()}
-                returnKeyType="next"
-                keyboardType="numeric"
-              />
-            )}
-            name="volumenFinal"
-          />
-        {errors.volumenFinal ? (
-          <Text style={styles.error}>{errors.volumenFinal.message}</Text>
-        ) : null}
-        </View>
-        <View style={styles.inputItem}>
-          <Text style={[styles.label]}>Cantidad de plantas totales en la parcela por aplicar:</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[styles.input]}
-                onBlur={onBlur}
-                onChangeText={(text) => onChange(parseInt(text))}
-                value={value?.toString()}
-                returnKeyType="next"
-                keyboardType="numeric"
-              />
-            )}
-            name="cantidadPlantasTotal"
-          />
-        {errors.cantidadPlantasTotal ? (
-          <Text style={styles.error}>{errors.cantidadPlantasTotal.message}</Text>
-        ) : null}
-        </View>
-      <Button
-        style={styles.buttonContainer}
-        mode="contained"
-        onPress={handleSubmit(onSubmit)}
-      >
-        Calcular
-      </Button>
-      {resultado !== null && (
-        <Text style={styles.resultText}> {resultado} litros</Text>
-      )}
-    </View>
+    </ScrollView>
   );
 }
 

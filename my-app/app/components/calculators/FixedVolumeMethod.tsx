@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { View, Text, TextInput as TextInputRn, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput as TextInputRn, Button, StyleSheet, ScrollView } from 'react-native';
 import { z } from 'zod';
+import { CommentLog } from "./CommentLog";
 
 const schema = z.object({
   descargaPorMinuto: z.string(),
@@ -46,60 +47,66 @@ export default function VolumeCalculator() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Determina a qué velocidad se debe avanzar para aplicar el volumen del caldo deseado</Text>
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInputRn
-            placeholder="Descarga por boquilla (en 1 minuto)"
-            style={styles.input}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="numeric"
-          />
-        )}
-        name="descargaPorMinuto"
-      />
-      {errors.descargaPorMinuto && <Text style={styles.error}>{errors.descargaPorMinuto.message}</Text>}
+    <ScrollView
+    contentContainerStyle={{ flexGrow: 1 }}
+    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>Determina a qué velocidad se debe avanzar para aplicar el volumen del caldo deseado</Text>
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInputRn
+              placeholder="Descarga por boquilla (en 1 minuto)"
+              style={styles.input}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              keyboardType="numeric"
+            />
+          )}
+          name="descargaPorMinuto"
+        />
+        {errors.descargaPorMinuto && <Text style={styles.error}>{errors.descargaPorMinuto.message}</Text>}
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInputRn
-            placeholder="Ancho de franja (en metros)"
-            style={styles.input}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="numeric"
-          />
-        )}
-        name="anchoDeFranja"
-      />
-      {errors.anchoDeFranja && <Text style={styles.error}>{errors.anchoDeFranja.message}</Text>}
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInputRn
+              placeholder="Ancho de franja (en metros)"
+              style={styles.input}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              keyboardType="numeric"
+            />
+          )}
+          name="anchoDeFranja"
+        />
+        {errors.anchoDeFranja && <Text style={styles.error}>{errors.anchoDeFranja.message}</Text>}
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInputRn
-            placeholder="Volumen de aplicación por hectárea"
-            style={styles.input}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="numeric"
-          />
-        )}
-        name="volumenPorHectarea"
-      />
-      {errors.volumenPorHectarea && <Text style={styles.error}>{errors.volumenPorHectarea.message}</Text>}
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInputRn
+              placeholder="Volumen de aplicación por hectárea"
+              style={styles.input}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              keyboardType="numeric"
+            />
+          )}
+          name="volumenPorHectarea"
+        />
+        {errors.volumenPorHectarea && <Text style={styles.error}>{errors.volumenPorHectarea.message}</Text>}
 
-      <Button onPress={handleSubmit(onSubmit)} title="Calcular" />
+        <Button onPress={handleSubmit(onSubmit)} title="Calcular" />
 
-      {resultado !== null && <Text style={styles.result}>Velocidad necesaria: {resultado} m/min</Text>}
-    </View>
+        {resultado !== null && <Text style={styles.result}>Velocidad necesaria: {resultado} m/min</Text>}
+        <CommentLog text="VolumeComments" />
+      </View>
+    </ScrollView>
   );
 }
 
