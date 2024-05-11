@@ -133,12 +133,14 @@ export default function KnownAreaMethod() {
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
-              <TextInputRn
+              <TextInput
                 //placeholder="Volumen inicial (en litros)"
                 style={[
                   styles.inputField,
                   {
-                    borderColor: isFocused.volumenInicial ? "#9c27b0" : "#ccc",
+                    borderColor: isFocused.volumenInicial
+                      ? theme.colors.primary
+                      : "#ccc",
                   },
                 ]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
                 onBlur={() => handleBlur("volumenInicial")} // Maneja la pérdida de enfoque
@@ -168,12 +170,16 @@ export default function KnownAreaMethod() {
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
-              <TextInputRn
+              <TextInput
                 ref={refs.volumenFinalRef}
                 //placeholder="Volumen final (en litros)"
                 style={[
                   styles.inputField,
-                  { borderColor: isFocused.volumenFinal ? "#9c27b0" : "#ccc" },
+                  {
+                    borderColor: isFocused.volumenFinal
+                      ? theme.colors.primary
+                      : "#ccc",
+                  },
                 ]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
                 onBlur={() => handleBlur("volumenFinal")} // Maneja la pérdida de enfoque
                 onFocus={() => handleFocus("volumenFinal")} // Maneja el enfoque
@@ -202,10 +208,17 @@ export default function KnownAreaMethod() {
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
-              <TextInputRn
+              <TextInput
                 ref={refs.areaConocidaRef}
                 //placeholder="Área aplicada (en metros cuadrados)"
-                style={[styles.inputField]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
+                style={[
+                  styles.inputField,
+                  {
+                    borderColor: isFocused.areaConocida
+                      ? theme.colors.primary
+                      : "#ccc",
+                  },
+                ]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
                 onBlur={() => handleBlur("areaConocida")} // Maneja la pérdida de enfoque
                 onFocus={() => handleFocus("areaConocida")} // Maneja el enfoque
                 //style={styles.inputField}
