@@ -57,7 +57,7 @@ export default function FixedVelocityMethod() {
       (Number(data.dischargePerMinute) * 10000) /
       (Number(data.velocity) * 60) /
       Number(data.distanceBetweenNozzles);
-    setResult(raw_calculus.toPrecision(5));
+    setResult(raw_calculus.toFixed(3));
   };
 
   return (
@@ -66,17 +66,17 @@ export default function FixedVelocityMethod() {
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>
+        <Text style={styles.text}>
           Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <View style={styles.horizontalContainer}>
+        <View style={styles.inputGroup}>
+          <Text>Descarga en 1 minuto:</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={styles.inputField}
                 mode="outlined"
-                label="Descarga en 1 minuto"
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value ? value.toString() : ""}
@@ -86,23 +86,24 @@ export default function FixedVelocityMethod() {
                   refs.distanceBetweenNozzles.current?.focus()
                 }
               />
-              <Text style={styles.text}>litros</Text>
-            </View>
+            )}
+            name="dischargePerMinute"
+          />
+        </View>
+        <View style={styles.containerError}>
+          {errors.dischargePerMinute && (
+            <Text style={styles.error}>{errors.dischargePerMinute.message}</Text>
           )}
-          name="dischargePerMinute"
-        />
-        {errors.dischargePerMinute && (
-          <Text style={styles.error}>{errors.dischargePerMinute.message}</Text>
-        )}
+        </View>
 
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <View style={styles.horizontalContainer}>
+        <View style={styles.inputGroup}>
+          <Text>Ancho de franja (metros):</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={styles.inputField}
-                mode="outlined"
-                label="Ancho de franja"
+                mode="outlined"                
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value ? value.toString() : ""}
@@ -111,39 +112,42 @@ export default function FixedVelocityMethod() {
                 ref={refs.distanceBetweenNozzles}
                 onSubmitEditing={() => refs.velocity.current?.focus()}
               />
-              <Text style={styles.text}>metros</Text>
-            </View>
+            )}
+            name="distanceBetweenNozzles"
+          />         
+        </View>
+        <View style={styles.containerError}>
+          {errors.distanceBetweenNozzles && (
+            <Text style={styles.error}>
+              {errors.distanceBetweenNozzles.message}
+            </Text>
           )}
-          name="distanceBetweenNozzles"
-        />
-        {errors.distanceBetweenNozzles && (
-          <Text style={styles.error}>
-            {errors.distanceBetweenNozzles.message}
-          </Text>
-        )}
-
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <View style={styles.horizontalContainer}>
+        </View>        
+        
+        <View style={styles.inputGroup}>
+          <Text>Velocidad (metros/segundo):</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={styles.inputField}
-                mode="outlined"
-                label="Velocidad"
+                mode="outlined"                  
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value ? value.toString() : ""}
                 keyboardType="numeric"
                 ref={refs.velocity}
-              />
-              <Text style={styles.text}>metros/segundo</Text>
-            </View>
+                returnKeyType="done"
+              />  
+            )}
+            name="velocity"
+          />
+        </View>
+        <View style={styles.containerError}>
+          {errors.velocity && (
+            <Text style={styles.error}>{errors.velocity.message}</Text>
           )}
-          name="velocity"
-        />
-        {errors.velocity && (
-          <Text style={styles.error}>{errors.velocity.message}</Text>
-        )}
+        </View>
 
         <Button
           style={styles.button}
@@ -153,13 +157,15 @@ export default function FixedVelocityMethod() {
           Calcular
         </Button>
 
-        <View style={styles.separator} />
-        {result && (
-          <View style={styles.horizontalContainer}>
-            <Text style={styles.text}>El volumen de caldo es: </Text>
-            <Text style={styles.text}>{result} litros / hectárea</Text>
-          </View>
-        )}
+        <View style={styles.resultGroup}>
+          <Text style={styles.text}>Resultado: </Text>
+          <TextInput
+            style={styles.resultField}
+            value={result ? result : ""}
+            editable={false}
+          />
+          <Text style={styles.text}> litros / hectárea</Text>
+        </View>       
       </View>
       <CommentLog text="VelocityComments" />
     </ScrollView>
@@ -167,40 +173,47 @@ export default function FixedVelocityMethod() {
 }
 
 const styles = StyleSheet.create({
-  horizontalContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   container: {
-    flex: 1,
-    justifyContent: "center",
+    width: "100%",
     alignContent: "center",
-    padding: 28,
-  },
-  separator: {
-    flex: 1,
-    justifyContent: "center",
-    alignContent: "center",
-    padding: 10,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 24,
+    padding: 8,
   },
   text: {
     textAlign: "center",
     fontWeight: "bold",
   },
   inputField: {
-    marginVertical: 6,
-    width: "70%",
-    marginRight: 6,
+    marginVertical: 4,
+    width: "30%",
+    textAlign: "center",
+  },
+  inputGroup: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 8,
+    flexDirection: "row",
+  },
+  button: {
+    marginVertical: 8,
+    alignSelf: "flex-end",
+  },
+  resultGroup: {
+    justifyContent: "flex-end",
+    alignItems: "center",
+    padding: 8,
+    flexDirection: "row",
+  },
+  resultField: {
+    width: "50%",
+    textAlign: "center",
+  },
+  containerError: {
+    flex: 1,
+    justifyContent: "flex-end",
+    flexDirection: "row",
+    padding: 8,   
   },
   error: {
     color: "red",
-  },
-  button: {
-    marginTop: 24,
-    alignSelf: "center",
   },
 });
