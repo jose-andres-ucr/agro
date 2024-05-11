@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { CommentLog } from "./CommentLog";
+import { theme } from "@/constants/theme";
 
 const schema = z.object({
   volumenInicial: z.string(),
@@ -17,15 +18,15 @@ const schema = z.object({
   areaConocida: z.string(),
 });
 
-const refs = {
-  volumenInicialRef: React.useRef<TextInputRn>(null),
-  volumenFinalRef: React.useRef<TextInputRn>(null),
-  areaConocidaRef: React.useRef<TextInputRn>(null),
-} as const;
-
 type FormData = z.infer<typeof schema>;
 
 export default function KnownAreaMethod() {
+  const refs = {
+    volumenInicialRef: React.useRef<TextInputRn>(null),
+    volumenFinalRef: React.useRef<TextInputRn>(null),
+    areaConocidaRef: React.useRef<TextInputRn>(null),
+  } as const;
+
   const [resultado, setResultado] = useState<string | null>(null);
   const [camposVacios, setCamposVacios] = useState(true);
   const [isFocused, setIsFocused] = useState({
@@ -204,10 +205,7 @@ export default function KnownAreaMethod() {
               <TextInputRn
                 ref={refs.areaConocidaRef}
                 //placeholder="Área aplicada (en metros cuadrados)"
-                style={[
-                  styles.inputField,
-                  { borderColor: isFocused.areaConocida ? "#9c27b0" : "#ccc" },
-                ]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
+                style={[styles.inputField]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
                 onBlur={() => handleBlur("areaConocida")} // Maneja la pérdida de enfoque
                 onFocus={() => handleFocus("areaConocida")} // Maneja el enfoque
                 //style={styles.inputField}
@@ -284,7 +282,7 @@ const styles = StyleSheet.create({
     height: 50,
     textAlign: "center",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: theme.colors.primary,
     borderRadius: 5,
     backgroundColor: "#fff",
   },
@@ -297,7 +295,7 @@ const styles = StyleSheet.create({
   button: {
     marginVertical: 8,
     alignSelf: "flex-end",
-    backgroundColor: "#6dc067", // Color verde ucr para los botones
+    backgroundColor: theme.colors.primary,
   },
   resultGroup: {
     justifyContent: "flex-end",
