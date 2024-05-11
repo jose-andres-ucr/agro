@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { View, Text, TextInput as TextInputRn, Button, StyleSheet, ScrollView } from 'react-native';
-import { z } from 'zod';
+import { StyleSheet, View, TextInput as TextInputRn, Keyboard, ScrollView } from "react-native";
+import { useForm, Controller } from "react-hook-form";
+import { TextInput, Button, Text } from "react-native-paper";
+import { z } from "zod";
+import React, { useState } from "react";
 import { CommentLog } from "./CommentLog";
 
 
@@ -50,75 +51,150 @@ export default function VolumeCalculator() {
   return (
     <ScrollView
     contentContainerStyle={{ flexGrow: 1 }}
-    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
-    >
-      <View style={styles.container}>
-        <Text style={styles.title}>Determina a qué velocidad se debe avanzar para aplicar el volumen del caldo deseado</Text>
+    ref={(scrollView) => {
+      scrollView?.scrollToEnd({ animated: true });
+    }}
+  >
+
+    <View style={styles.container}>
+      <Text style={styles.text}>Determina a qué velocidad se debe avanzar para aplicar el volumen del caldo deseado</Text>
+      <View style={styles.inputGroup}>
+        <Text>Descarga por boquilla{'\n'}(en 1 minuto): </Text>
         <Controller
           control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInputRn
-              placeholder="Descarga por boquilla (en 1 minuto)"
-              style={styles.input}
+          render={({ field: { onChange, onBlur } }) => (
+            <TextInput
+              mode="outlined"
+              style={styles.inputField}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
               keyboardType="numeric"
+              autoCapitalize="none"
+              autoFocus
+              returnKeyType="next"
+              blurOnSubmit={false}
             />
           )}
           name="descargaPorMinuto"
         />
-        {errors.descargaPorMinuto && <Text style={styles.error}>{errors.descargaPorMinuto.message}</Text>}
-
+        <Text>Litros</Text>
+      </View>
+      {errors.descargaPorMinuto ? (
+          <Text style={styles.error}>{errors.descargaPorMinuto.message}</Text>
+        ) : null}
+      {errors.descargaPorMinuto && <Text style={styles.error}>{errors.descargaPorMinuto.message}</Text>}
+      <View style={styles.inputGroup}>
+        <Text>Ancho de franja o {'\n'}distancia entre boquillas </Text>
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
-            <TextInputRn
-              placeholder="Ancho de franja (en metros)"
-              style={styles.input}
+            <TextInput
+              mode="outlined"
+              style={styles.inputField}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
               keyboardType="numeric"
+              autoCapitalize="none"
+              returnKeyType="next"
+              blurOnSubmit={false}
             />
           )}
           name="anchoDeFranja"
         />
-        {errors.anchoDeFranja && <Text style={styles.error}>{errors.anchoDeFranja.message}</Text>}
+            <Text>Metros</Text>
+        
+      </View>
 
+      {errors.anchoDeFranja && <Text style={styles.error}>{errors.anchoDeFranja.message}</Text>}
+
+      <View style={styles.inputGroup}>
+        <Text>Volumen de aplicación{'\n'}por entrada</Text>
         <Controller
           control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInputRn
-              placeholder="Volumen de aplicación por hectárea"
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              keyboardType="numeric"
-            />
-          )}
-          name="volumenPorHectarea"
+          render={({ field: { onChange, onBlur } }) => (
+            <TextInput
+                mode="outlined"
+                style={styles.inputField}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                keyboardType="numeric"
+                autoCapitalize="none"
+                returnKeyType="send"
+                onSubmitEditing={handleSubmit((form) => {
+                  onSubmit(form);
+                })}
+                blurOnSubmit={false}
+              />
+            )}
+            name="volumenPorHectarea"
         />
-        {errors.volumenPorHectarea && <Text style={styles.error}>{errors.volumenPorHectarea.message}</Text>}
+        <Text>Litros</Text>
 
-        <Button onPress={handleSubmit(onSubmit)} title="Calcular" />
-
-        {resultado !== null && <Text style={styles.result}>Velocidad necesaria: {resultado} m/min</Text>}
-        <CommentLog text="VolumeComments" />
       </View>
+     
+      {errors.volumenPorHectarea && <Text style={styles.error}>{errors.volumenPorHectarea.message}</Text>}
+
+      <Button
+        style={styles.button}
+        mode="contained"
+        onPress={handleSubmit((form) => {
+          onSubmit(form);
+        })}
+      >Calcular</Button>
+
+    <View style={styles.resultGroup}>
+        <Text style={styles.text}>Resultado: </Text>
+        <TextInput
+          style={styles.resultField}
+          value={resultado?.toString()}
+          editable={false}
+        />
+        <Text style={styles.text}> m/min.</Text>
+      </View>
+    </View>
+    <CommentLog text="PesticidePerPlantComments" />
     </ScrollView>
+    
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    backgroundColor: '#f0f0f0',
+    justifyContent: "flex-start",
+    alignContent: "center",
+    padding: 28,
   },
+  text: {
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  inputField: {
+    marginVertical: 4,
+    width: "30%",
+    textAlign: "center",
+  },
+  inputGroup: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 8,
+    flexDirection: "row",
+  },
+  button: {
+    marginVertical: 8,
+    alignSelf: "flex-end",
+  },
+  resultGroup: {
+    justifyContent: "flex-end",
+    alignItems: "center",
+    padding: 8,
+    flexDirection: "row",
+  },
+  resultField: {
+    width: "50%",
+    textAlign: "center",
+  },
+
   title: {
     fontSize: 18,
     marginBottom: 20,
