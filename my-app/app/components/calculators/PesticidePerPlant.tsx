@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, TextInput as TextInputRn } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
+
 
 const form = z.object({
   cantidadPlantas: z.number(),
@@ -26,8 +27,18 @@ export default function PesticidePerPlant() {
 
   const [resultado, setResultado] = useState<number | null>(null);
 
+  const refs = {
+    cantidadPlantasRef: React.useRef<TextInputRn>(null),
+    volumenInicialRef: React.useRef<TextInputRn>(null),
+    volumenFinalRef: React.useRef<TextInputRn>(null),
+    cantidadTotal: React.useRef<TextInputRn>(null),
+  } as const;
+
+  useEffect(() => {
+    refs.cantidadPlantasRef.current?.focus();
+  }, []);
+
   const onSubmit = (data: FormData) => {
-    console.log(data);
     const {
       cantidadPlantas,
       volumenInicial,
@@ -35,9 +46,11 @@ export default function PesticidePerPlant() {
       cantidadPlantasTotal,
     } = data;
     const result =
-      ((volumenInicial - volumenFinal) * cantidadPlantasTotal) /
-      cantidadPlantas;
-    setResultado(result);
+    ((volumenInicial - volumenFinal) * cantidadPlantasTotal) /
+    cantidadPlantas;
+    const resultadoRedondeado = result.toFixed(3);
+    setResultado(parseFloat(resultadoRedondeado));
+  
   };
 
   return (
@@ -57,6 +70,7 @@ export default function PesticidePerPlant() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
+                ref={refs.cantidadPlantasRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -70,25 +84,35 @@ export default function PesticidePerPlant() {
                 value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
+                autoFocus
                 returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.volumenInicialRef.current?.focus();
+                }}
                 blurOnSubmit={false}
               />
             )}
             name="cantidadPlantas"
           />
-          <Text></Text>
         </View>
 
-        {errors.cantidadPlantas ? (
-          <Text style={styles.error}>{errors.cantidadPlantas.message}</Text>
-        ) : null}
+        <View style={styles.containerError}>
+          <Text style={styles.error}>
+            {errors.cantidadPlantas && errors.cantidadPlantas.message === "Required"
+              ? "Este campo es obligatorio"
+              : errors.cantidadPlantas && errors.cantidadPlantas.message === "Expected number, received null"
+              ? "El valor debe ser un número"
+              : errors.cantidadPlantas && errors.cantidadPlantas.message}
+          </Text>
+        </View>
 
         <View style={styles.inputGroup}>
-          <Text>Volumen inicial:</Text>
+          <Text>Volumen inicial (litros):</Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
+                ref={refs.volumenInicialRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -103,23 +127,33 @@ export default function PesticidePerPlant() {
                 keyboardType="numeric"
                 autoCapitalize="none"
                 returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.volumenFinalRef.current?.focus();
+                }}
                 blurOnSubmit={false}
               />
             )}
             name="volumenInicial"
           />
-          <Text style={styles.unitText1}>Litros</Text>
         </View>
 
-        {errors.volumenInicial ? (
-          <Text style={styles.error}>{errors.volumenInicial.message}</Text>
-        ) : null}
+        <View style={styles.containerError}>
+          <Text style={styles.error}>
+            {errors.volumenInicial && errors.volumenInicial.message === "Required"
+              ? "Este campo es obligatorio"
+              : errors.volumenInicial && errors.volumenInicial.message === "Expected number, received null"
+              ? "El valor debe ser un número"
+              : errors.volumenInicial && errors.volumenInicial.message}
+          </Text>
+        </View>
+
         <View style={styles.inputGroup}>
           <Text>Volumen final (litros):</Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
+                ref={refs.volumenFinalRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -134,17 +168,25 @@ export default function PesticidePerPlant() {
                 keyboardType="numeric"
                 autoCapitalize="none"
                 returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.cantidadTotal.current?.focus();
+                }}
                 blurOnSubmit={false}
               />
             )}
             name="volumenFinal"
           />
-          <Text style={styles.unitText}>Litros</Text>
         </View>
 
-        {errors.volumenFinal ? (
-          <Text style={styles.error}>{errors.volumenFinal.message}</Text>
-        ) : null}
+        <View style={styles.containerError}>
+          <Text style={styles.error}>
+            {errors.volumenFinal && errors.volumenFinal.message === "Required"
+              ? "Este campo es obligatorio"
+              : errors.volumenFinal && errors.volumenFinal.message === "Expected number, received null"
+              ? "El valor debe ser un número"
+              : errors.volumenFinal && errors.volumenFinal.message}
+          </Text>
+        </View>
 
         <View style={styles.inputGroup}>
           <Text>
@@ -154,6 +196,7 @@ export default function PesticidePerPlant() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
+                ref={refs.cantidadTotal}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -167,18 +210,25 @@ export default function PesticidePerPlant() {
                 value={value?.toString()}
                 returnKeyType="next"
                 keyboardType="numeric"
+                onSubmitEditing={handleSubmit((form) => {
+                  onSubmit(form);
+                })}
+                blurOnSubmit={false}
               />
             )}
             name="cantidadPlantasTotal"
           />
-          <Text> </Text>
         </View>
 
-        {errors.cantidadPlantasTotal ? (
+        <View style={styles.containerError}>
           <Text style={styles.error}>
-            {errors.cantidadPlantasTotal.message}
+            {errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message === "Required"
+              ? "Este campo es obligatorio"
+              : errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message === "Expected number, received null"
+              ? "El valor debe ser un número"
+              : errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message}
           </Text>
-        ) : null}
+        </View>
 
         <Button
           style={styles.button}
@@ -199,9 +249,6 @@ export default function PesticidePerPlant() {
           />
           <Text style={styles.text}> litros.</Text>
         </View>
-        {resultado !== null && (
-          <Text style={styles.resultText}> {resultado} litros</Text>
-        )}
       </View>
       <CommentLog text="PesticidePerPlantComments" />
     </ScrollView>
@@ -244,22 +291,14 @@ const styles = StyleSheet.create({
     width: "50%",
     textAlign: "center",
   },
+  containerError: {
+    flex: 1,
+    justifyContent: "flex-end",
+    flexDirection: "row",
+    padding: 8,   
+  },
   error: {
     color: "red",
-    textAlign: "center",
   },
 
-  resultText: {
-    marginTop: 20,
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-
-  unitText: {
-    marginLeft: -30,
-  },
-  unitText1: {
-    marginLeft: -65,
-  },
 });
