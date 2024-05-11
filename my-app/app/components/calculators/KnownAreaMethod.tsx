@@ -1,20 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
-import { View, Text, TextInput as TextInputRn, Button, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import {
+  StyleSheet,
+  View,
+  TextInput as TextInputRn,
+  Keyboard,
+  ScrollView,
+} from "react-native";
+import { TextInput, Button, Text } from "react-native-paper";
 import { CommentLog } from "./CommentLog";
+import { theme } from "@/constants/theme";
 
 const schema = z.object({
   volumenInicial: z.string(),
   volumenFinal: z.string(),
-  areaConocida: z.string().refine(value => value !== '0', { message: 'El área no puede ser cero' }),
+  areaConocida: z.string(),
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function KnownAreaMethod() {
+  const refs = {
+    volumenInicialRef: React.useRef<TextInputRn>(null),
+    volumenFinalRef: React.useRef<TextInputRn>(null),
+    areaConocidaRef: React.useRef<TextInputRn>(null),
+  } as const;
+
   const [resultado, setResultado] = useState<string | null>(null);
   const [camposVacios, setCamposVacios] = useState(true);
+  const [isFocused, setIsFocused] = useState({
+    // Estado para rastrear si cada cuadro de texto está enfocado
+    volumenInicial: false,
+    volumenFinal: false,
+    areaConocida: false,
+  });
 
   const {
     control,
@@ -26,14 +46,29 @@ export default function KnownAreaMethod() {
         const validData = await schema.parseAsync(data);
         return { values: validData, errors: {} };
       } catch (error: any) {
-        return { values: {}, errors: { [error.path[0]]: { message: error.message } } };
+        return {
+          values: {},
+          errors: { [error.path[0]]: { message: error.message } },
+        };
       }
     },
   });
 
+  // Funciones para manejar el cambio de enfoque de cada cuadro de texto
+  const handleFocus = (inputName: string) => {
+    // Definir explícitamente el tipo de inputName como string
+    setIsFocused({ ...isFocused, [inputName]: true });
+  };
+
+  const handleBlur = (inputName: string) => {
+    // Definir explícitamente el tipo de inputName como string
+    setIsFocused({ ...isFocused, [inputName]: false });
+  };
+
   useEffect(() => {
     // Verificar si algún campo está vacío al cargar el componente
-    const allFieldsFilled = Object.keys(errors).length === 0 && errors.constructor === Object;
+    const allFieldsFilled =
+      Object.keys(errors).length === 0 && errors.constructor === Object;
     setCamposVacios(!allFieldsFilled);
   }, [errors]); // Dependencia de errores para ejecutar el efecto cuando cambien
 
@@ -43,7 +78,24 @@ export default function KnownAreaMethod() {
     // Verificar si algún campo está vacío
     if (!volumenInicial || !volumenFinal || !areaConocida) {
       setCamposVacios(true);
-      console.error('Aún hay campos vacíos.');
+      console.error("Aún hay campos vacíos.");
+      return;
+    }
+
+    // Verificar si el área es negativa o cero
+    if (parseFloat(areaConocida) <= 0) {
+      console.error("El área no puede ser cero o negativa.");
+      return;
+    }
+
+    // Verificar si algún valor es negativo
+    if (parseFloat(volumenInicial) < 0) {
+      console.error("No puede ingresar números negativos.");
+      return;
+    }
+
+    if (parseFloat(volumenFinal) < 0) {
+      console.error("No puede ingresar números negativos.");
       return;
     }
 
@@ -52,7 +104,7 @@ export default function KnownAreaMethod() {
     const area = parseFloat(areaConocida);
 
     if (isNaN(inicial) || isNaN(final) || isNaN(area)) {
-      console.error('Los valores ingresados no son válidos.');
+      console.error("Los valores ingresados no son válidos.");
       return;
     }
 
@@ -62,61 +114,115 @@ export default function KnownAreaMethod() {
 
   return (
     <ScrollView
-    contentContainerStyle={{ flexGrow: 1 }}
-    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+      contentContainerStyle={{ flexGrow: 1 }}
+      ref={(scrollView) => {
+        scrollView?.scrollToEnd({ animated: true });
+      }}
     >
       <View style={styles.container}>
-        <Text style={styles.mainTitle}>Método del volumen aplicado en un área conocida</Text>
-        <Text style={styles.subtitle}>Determina el volumen de aplicación por hectárea. Marque un área conocida y 
-        aplique ahí agua a la velocidad usual</Text>
+        <Text style={styles.mainTitle}>
+          Método del volumen aplicado en un área conocida
+        </Text>
+        <Text style={styles.subtitle}>
+          Determina el volumen de aplicación por hectárea. Marque un área
+          conocida y aplique ahí agua a la velocidad usual
+        </Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Volumen inicial:</Text>
+        <View style={styles.inputGroup}>
+          <Text>Volumen inicial (litros):</Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
-              <TextInputRn
-                placeholder="Volumen inicial (en litros)"
-                style={styles.input}
-                onBlur={onBlur}
+              <TextInput
+                //placeholder="Volumen inicial (en litros)"
+                style={[
+                  styles.inputField,
+                  {
+                    borderColor: isFocused.volumenInicial
+                      ? theme.colors.primary
+                      : "#ccc",
+                  },
+                ]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
+                onBlur={() => handleBlur("volumenInicial")} // Maneja la pérdida de enfoque
+                onFocus={() => handleFocus("volumenInicial")} // Maneja el enfoque
+                //style={styles.inputField}
+                //onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
                 keyboardType="numeric"
+                autoFocus
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.volumenFinalRef.current?.focus();
+                }}
+                blurOnSubmit={false}
               />
             )}
             name="volumenInicial"
           />
-          {errors.volumenInicial && <Text style={styles.error}>{errors.volumenInicial.message}</Text>}
+          {errors.volumenInicial && (
+            <Text style={styles.error}>{errors.volumenInicial.message}</Text>
+          )}
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Volumen final:</Text>
+        <View style={styles.inputGroup}>
+          <Text>Volumen final (litros):</Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
-              <TextInputRn
-                placeholder="Volumen final (en litros)"
-                style={styles.input}
-                onBlur={onBlur}
+              <TextInput
+                ref={refs.volumenFinalRef}
+                //placeholder="Volumen final (en litros)"
+                style={[
+                  styles.inputField,
+                  {
+                    borderColor: isFocused.volumenFinal
+                      ? theme.colors.primary
+                      : "#ccc",
+                  },
+                ]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
+                onBlur={() => handleBlur("volumenFinal")} // Maneja la pérdida de enfoque
+                onFocus={() => handleFocus("volumenFinal")} // Maneja el enfoque
+                //style={styles.inputField}
+                //onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
                 keyboardType="numeric"
+                autoFocus
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.areaConocidaRef.current?.focus();
+                }}
+                blurOnSubmit={false}
               />
             )}
             name="volumenFinal"
           />
-          {errors.volumenFinal && <Text style={styles.error}>{errors.volumenFinal.message}</Text>}
+          {errors.volumenFinal && (
+            <Text style={styles.error}>{errors.volumenFinal.message}</Text>
+          )}
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Área aplicada:</Text>
+        <View style={styles.inputGroup}>
+          <Text>Área aplicada (m2):</Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
-              <TextInputRn
-                placeholder="Área aplicada (en metros cuadrados)"
-                style={styles.input}
-                onBlur={onBlur}
+              <TextInput
+                ref={refs.areaConocidaRef}
+                //placeholder="Área aplicada (en metros cuadrados)"
+                style={[
+                  styles.inputField,
+                  {
+                    borderColor: isFocused.areaConocida
+                      ? theme.colors.primary
+                      : "#ccc",
+                  },
+                ]} // Cambia el color del borde según si el cuadro de texto está enfocado o no
+                onBlur={() => handleBlur("areaConocida")} // Maneja la pérdida de enfoque
+                onFocus={() => handleFocus("areaConocida")} // Maneja el enfoque
+                //style={styles.inputField}
+                //onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
                 keyboardType="numeric"
@@ -124,77 +230,102 @@ export default function KnownAreaMethod() {
             )}
             name="areaConocida"
           />
-          {errors.areaConocida && <Text style={styles.error}>{errors.areaConocida.message}</Text>}
+          {errors.areaConocida && (
+            <Text style={styles.error}>{errors.areaConocida.message}</Text>
+          )}
         </View>
 
-        {camposVacios && <Text style={styles.error}>Aún hay campos vacíos</Text>}
+        {camposVacios && (
+          <Text style={styles.error}>Aún hay campos vacíos</Text>
+        )}
 
-        <View style={styles.buttonContainer}>
-        <Button onPress={handleSubmit(onSubmit)} title="Calcular" disabled={camposVacios} />
-        </View>
+        <Button
+          style={styles.button}
+          mode="contained"
+          onPress={handleSubmit((form) => {
+            onSubmit(form);
+          })}
+        >
+          Calcular
+        </Button>
 
-        {resultado !== null && <Text style={[styles.result, { textAlign: 'center' }]}>Resultado: {resultado} litros/ha</Text>}
-        <CommentLog text="KnownAreaComments" />
+        {resultado !== null && (
+          <View style={styles.resultGroup}>
+            <Text style={styles.text}>Resultado: </Text>
+            <TextInputRn
+              style={[styles.resultField, { color: "#000" }]}
+              value={resultado.toString()}
+              editable={false}
+            />
+            <Text style={styles.text}> litros/ha</Text>
+          </View>
+        )}
       </View>
+      <CommentLog text="KnownAreaComments" />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    backgroundColor: '#E1F5FE', // Celeste claro
-  },
   mainTitle: {
     fontSize: 24,
     marginBottom: 20,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    color: '#333',
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "#333",
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff", // Fondo blanco
+    padding: 28,
+  },
+  text: {
+    textAlign: "center",
+    fontWeight: "bold",
   },
   subtitle: {
     fontSize: 18,
     marginBottom: 20,
-    textAlign: 'center',
-    color: '#333',
+    textAlign: "center",
+    color: "#333",
   },
-  inputContainer: {
-    marginBottom: 20,
-    width: '100%',
-  },
-  label: {
-    marginBottom: 5,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  input: {
-    width: '100%',
-    height: 40,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
+  inputField: {
+    marginVertical: 4,
+    width: "30%",
+    height: 50,
+    textAlign: "center",
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: theme.colors.primary,
     borderRadius: 5,
+    backgroundColor: "#fff",
   },
-  error: {
-    color: 'red',
-    marginBottom: 10,
-  },
-  result: {
-    marginTop: 20,
-    fontSize: 16,
-    fontWeight: 'bold',
+  inputGroup: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 8,
+    flexDirection: "row",
   },
   button: {
-    alignSelf: 'center', // Centrar el botón
+    marginVertical: 8,
+    alignSelf: "flex-end",
+    backgroundColor: theme.colors.primary,
   },
-
-  buttonContainer: {
-    alignSelf: 'center',
+  resultGroup: {
+    justifyContent: "flex-end",
+    alignItems: "center",
+    padding: 8,
+    flexDirection: "row",
+  },
+  resultField: {
+    width: "50%",
+    textAlign: "center",
+    backgroundColor: "#e1d8ea",
+    borderRadius: 5,
+    padding: 8,
+    marginTop: 10,
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
   },
 });

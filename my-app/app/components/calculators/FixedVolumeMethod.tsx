@@ -2,14 +2,15 @@ import { StyleSheet, View, TextInput as TextInputRn, Keyboard, ScrollView } from
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 
 const schema = z.object({
-  descargaPorMinuto: z.string(),
-  anchoDeFranja: z.string(),
-  volumenPorHectarea: z.string(),
+  descargaPorMinuto: z.number(),
+  anchoDeFranja: z.number(),
+  volumenPorHectarea: z.number(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -22,30 +23,25 @@ export default function VolumeCalculator() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: async (data) => {
-      try {
-        const validData = await schema.parse(data);
-        return { values: validData, errors: {} };
-      } catch (error: any) {
-        return { values: {}, errors: { [error.path[0]]: { message: error.message } } };
-      }
-    },
+    resolver: zodResolver(schema),
   });
+
+  const refs = {
+    descargaPorMinutoRef: React.useRef<TextInputRn>(null),
+    anchoDeFranjaRef: React.useRef<TextInputRn>(null),
+    volumenPorHectareaRef: React.useRef<TextInputRn>(null),
+  } as const;
+
+  useEffect(() => {
+    refs.descargaPorMinutoRef.current?.focus();
+  }, []);
+
 
   const onSubmit = (data: FormData) => {
     const { descargaPorMinuto, anchoDeFranja, volumenPorHectarea } = data;
 
-    const descarga = parseFloat(descargaPorMinuto);
-    const ancho = parseFloat(anchoDeFranja);
-    const volumen = parseFloat(volumenPorHectarea);
-
-    if (isNaN(descarga) || isNaN(ancho) || isNaN(volumen)) {
-      console.error('Los valores ingresados no son válidos.');
-      return;
-    }
-
-    const result = (1000 / ancho) / (volumen / descarga) / 60;
-    setResultado(result.toFixed(2));
+    const result = (1000 / anchoDeFranja) / (volumenPorHectarea / descargaPorMinuto) / 60;
+    setResultado(result.toFixed(2));;
   };
 
   return (
@@ -62,16 +58,27 @@ export default function VolumeCalculator() {
         <Text>Descarga por boquilla{'\n'}(en 1 minuto): </Text>
         <Controller
           control={control}
-          render={({ field: { onChange, onBlur } }) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
+              ref={refs.descargaPorMinutoRef}
               mode="outlined"
               style={styles.inputField}
               onBlur={onBlur}
-              onChangeText={onChange}
+              onChangeText={(text) => {
+                if (text !== "" && !isNaN(parseInt(text))) {
+                  onChange(parseInt(text));
+                } else {
+                  onChange("");
+                }
+              }}
+              value={value?.toString()}
               keyboardType="numeric"
               autoCapitalize="none"
               autoFocus
               returnKeyType="next"
+              onSubmitEditing={() => {
+                refs.anchoDeFranjaRef.current?.focus();
+              }}
               blurOnSubmit={false}
             />
           )}
@@ -79,23 +86,40 @@ export default function VolumeCalculator() {
         />
         <Text>Litros</Text>
       </View>
-      {errors.descargaPorMinuto ? (
-          <Text style={styles.error}>{errors.descargaPorMinuto.message}</Text>
-        ) : null}
-      {errors.descargaPorMinuto && <Text style={styles.error}>{errors.descargaPorMinuto.message}</Text>}
+      <View style={styles.containerError}>
+          <Text style={styles.error}>
+            {errors.descargaPorMinuto && errors.descargaPorMinuto.message === "Required"
+              ? "Este campo es obligatorio"
+              : errors.descargaPorMinuto && errors.descargaPorMinuto.message === "Expected number, received null"
+              ? "El valor debe ser un número"
+              : errors.descargaPorMinuto && errors.descargaPorMinuto.message}
+          </Text>
+        </View>
+
       <View style={styles.inputGroup}>
         <Text>Ancho de franja o {'\n'}distancia entre boquillas </Text>
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
+              ref={refs.anchoDeFranjaRef}
               mode="outlined"
               style={styles.inputField}
               onBlur={onBlur}
-              onChangeText={onChange}
+              onChangeText={(text) => {
+                if (text !== "" && !isNaN(parseInt(text))) {
+                  onChange(parseInt(text));
+                } else {
+                  onChange("");
+                }
+              }}
+              value={value?.toString()}
               keyboardType="numeric"
               autoCapitalize="none"
               returnKeyType="next"
+              onSubmitEditing={() => {
+                refs.volumenPorHectareaRef.current?.focus();
+              }}
               blurOnSubmit={false}
             />
           )}
@@ -105,18 +129,34 @@ export default function VolumeCalculator() {
         
       </View>
 
-      {errors.anchoDeFranja && <Text style={styles.error}>{errors.anchoDeFranja.message}</Text>}
+      <View style={styles.containerError}>
+          <Text style={styles.error}>
+            {errors.anchoDeFranja && errors.anchoDeFranja.message === "Required"
+              ? "Este campo es obligatorio"
+              : errors.anchoDeFranja && errors.anchoDeFranja.message === "Expected number, received null"
+              ? "El valor debe ser un número"
+              : errors.anchoDeFranja && errors.anchoDeFranja.message}
+          </Text>
+        </View>
 
       <View style={styles.inputGroup}>
         <Text>Volumen de aplicación{'\n'}por entrada</Text>
         <Controller
           control={control}
-          render={({ field: { onChange, onBlur } }) => (
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
+                ref={refs.volumenPorHectareaRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={onChange}
+                onChangeText={(text) => {
+                  if (text !== "" && !isNaN(parseInt(text))) {
+                    onChange(parseInt(text));
+                  } else {
+                    onChange("");
+                  }
+                }}
+                value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
                 returnKeyType="send"
@@ -131,9 +171,18 @@ export default function VolumeCalculator() {
         <Text>Litros</Text>
 
       </View>
-     
-      {errors.volumenPorHectarea && <Text style={styles.error}>{errors.volumenPorHectarea.message}</Text>}
 
+      <View style={styles.containerError}>
+          <Text style={styles.error}>
+            {errors.volumenPorHectarea && errors.volumenPorHectarea.message === "Required"
+              ? "Este campo es obligatorio"
+              : errors.volumenPorHectarea && errors.volumenPorHectarea.message === "Expected number, received null"
+              ? "El valor debe ser un número"
+              : errors.volumenPorHectarea && errors.volumenPorHectarea.message}
+          </Text>
+        </View>
+     
+    
       <Button
         style={styles.button}
         mode="contained"
@@ -152,7 +201,7 @@ export default function VolumeCalculator() {
         <Text style={styles.text}> m/min.</Text>
       </View>
     </View>
-    <CommentLog text="PesticidePerPlantComments" />
+    <CommentLog text="VolumeComments" />
     </ScrollView>
     
   );
@@ -220,5 +269,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  containerError: {
+    flex: 1,
+    justifyContent: "flex-end",
+    flexDirection: "row",
+    padding: 8,   
   },
 });
