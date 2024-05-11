@@ -3,6 +3,8 @@ import {
   View,
   TextInput as TextInputRn,
   Keyboard,
+  ScrollView
+
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 
@@ -10,6 +12,8 @@ import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
+import { CommentLog } from "./CommentLog";
+
 
 const form = z.object({
   appliedArea: z.string().transform((value) => Number(value)),
@@ -48,127 +52,133 @@ export default function PesticidePerArea() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>
-        Marque un área conocida y aplique allí agua a la velocidad usual.
-      </Text>
-      <View style={styles.inputGroup}>
-        <Text>Área aplicada (m2): </Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              mode="outlined"
-              style={styles.inputField}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value === 0 ? "" : value.toString()}
-              keyboardType="numeric"
-              autoCapitalize="none"
-              autoFocus
-              returnKeyType="next"
-              onSubmitEditing={() => {
-                refs.initialVolumeRef.current?.focus();
-              }}
-              blurOnSubmit={false}
-            />
-          )}
-          name="appliedArea"
-        />
-      </View>
-      <View style={styles.inputGroup}>
-        <Text>Volumen Inicial (litros):</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              ref={refs.initialVolumeRef}
-              mode="outlined"
-              style={styles.inputField}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value === 0 ? "" : value.toString()}
-              keyboardType="numeric"
-              autoCapitalize="none"
-              returnKeyType="next"
-              onSubmitEditing={() => {
-                refs.finalVolumeRef.current?.focus();
-              }}
-              blurOnSubmit={false}
-            />
-          )}
-          name="initialVolume"
-        />
-      </View>
-      <View style={styles.inputGroup}>
-        <Text>Volumen final (litros):</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              ref={refs.finalVolumeRef}
-              mode="outlined"
-              style={styles.inputField}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value === 0 ? "" : value.toString()}
-              keyboardType="numeric"
-              autoCapitalize="none"
-              returnKeyType="next"
-              onSubmitEditing={() => {
-                refs.areaRef.current?.focus();
-              }}
-              blurOnSubmit={false}
-            />
-          )}
-          name="finalVolume"
-        />
-      </View>
-      <View style={styles.inputGroup}>
-        <Text>Área del cultivo por aplicar (m2):</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              ref={refs.areaRef}
-              mode="outlined"
-              style={styles.inputField}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value === 0 ? "" : value.toString()}
-              keyboardType="numeric"
-              autoCapitalize="none"
-              returnKeyType="send"
-              onSubmitEditing={handleSubmit((form) => {
-                onSubmit(form);
-              })}
-              blurOnSubmit={false}
-            />
-          )}
-          name="cultivationArea"
-        />
-      </View>
+    <ScrollView
+    contentContainerStyle={{ flexGrow: 1 }}
+    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+    >
+      <View style={styles.container}>
+        <Text style={styles.text}>
+          Marque un área conocida y aplique allí agua a la velocidad usual.
+        </Text>
+        <View style={styles.inputGroup}>
+          <Text>Área aplicada (m2): </Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                mode="outlined"
+                style={styles.inputField}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value === 0 ? "" : value.toString()}
+                keyboardType="numeric"
+                autoCapitalize="none"
+                autoFocus
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.initialVolumeRef.current?.focus();
+                }}
+                blurOnSubmit={false}
+              />
+            )}
+            name="appliedArea"
+          />
+        </View>
+        <View style={styles.inputGroup}>
+          <Text>Volumen Inicial (litros):</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.initialVolumeRef}
+                mode="outlined"
+                style={styles.inputField}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value === 0 ? "" : value.toString()}
+                keyboardType="numeric"
+                autoCapitalize="none"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.finalVolumeRef.current?.focus();
+                }}
+                blurOnSubmit={false}
+              />
+            )}
+            name="initialVolume"
+          />
+        </View>
+        <View style={styles.inputGroup}>
+          <Text>Volumen final (litros):</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.finalVolumeRef}
+                mode="outlined"
+                style={styles.inputField}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value === 0 ? "" : value.toString()}
+                keyboardType="numeric"
+                autoCapitalize="none"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.areaRef.current?.focus();
+                }}
+                blurOnSubmit={false}
+              />
+            )}
+            name="finalVolume"
+          />
+        </View>
+        <View style={styles.inputGroup}>
+          <Text>Área del cultivo por aplicar (m2):</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.areaRef}
+                mode="outlined"
+                style={styles.inputField}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value === 0 ? "" : value.toString()}
+                keyboardType="numeric"
+                autoCapitalize="none"
+                returnKeyType="send"
+                onSubmitEditing={handleSubmit((form) => {
+                  onSubmit(form);
+                })}
+                blurOnSubmit={false}
+              />
+            )}
+            name="cultivationArea"
+          />
+        </View>
 
-      <Button
-        style={styles.button}
-        mode="contained"
-        onPress={handleSubmit((form) => {
-          onSubmit(form);
-        })}
-      >
-        Calcular
-      </Button>
+        <Button
+          style={styles.button}
+          mode="contained"
+          onPress={handleSubmit((form) => {
+            onSubmit(form);
+          })}
+        >
+          Calcular
+        </Button>
 
-      <View style={styles.resultGroup}>
-        <Text style={styles.text}>Resultado: </Text>
-        <TextInput
-          style={styles.resultField}
-          value={result.toString()}
-          editable={false}
-        />
-        <Text style={styles.text}> litros.</Text>
+        <View style={styles.resultGroup}>
+          <Text style={styles.text}>Resultado: </Text>
+          <TextInput
+            style={styles.resultField}
+            value={result.toString()}
+            editable={false}
+          />
+          <Text style={styles.text}> litros.</Text>
+        </View>
+        <CommentLog text="PesticidePerAreaComments" />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

@@ -1,9 +1,11 @@
-import { View, StyleSheet, TextInput as TextInputRn } from "react-native";
+import { View, StyleSheet, TextInput as TextInputRn, ScrollView } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
 import React, { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CommentLog } from "./CommentLog";
+
 
 const PositiveNumberSchema = z
   .string()
@@ -59,102 +61,108 @@ export default function FixedVelocityMethod() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        Determina el volumen de caldo que se aplicará en una hectárea.
-      </Text>
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <View style={styles.horizontalContainer}>
-            <TextInput
-              style={styles.inputField}
-              mode="outlined"
-              label="Descarga en 1 minuto"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value ? value.toString() : ""}
-              keyboardType="numeric"
-              returnKeyType="next"
-              onSubmitEditing={() =>
-                refs.distanceBetweenNozzles.current?.focus()
-              }
-            />
-            <Text style={styles.text}>litros</Text>
-          </View>
-        )}
-        name="dischargePerMinute"
-      />
-      {errors.dischargePerMinute && (
-        <Text style={styles.error}>{errors.dischargePerMinute.message}</Text>
-      )}
-
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <View style={styles.horizontalContainer}>
-            <TextInput
-              style={styles.inputField}
-              mode="outlined"
-              label="Ancho de franja"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value ? value.toString() : ""}
-              keyboardType="numeric"
-              returnKeyType="next"
-              ref={refs.distanceBetweenNozzles}
-              onSubmitEditing={() => refs.velocity.current?.focus()}
-            />
-            <Text style={styles.text}>metros</Text>
-          </View>
-        )}
-        name="distanceBetweenNozzles"
-      />
-      {errors.distanceBetweenNozzles && (
-        <Text style={styles.error}>
-          {errors.distanceBetweenNozzles.message}
+    <ScrollView
+    contentContainerStyle={{ flexGrow: 1 }}
+    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>
+          Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
-      )}
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View style={styles.horizontalContainer}>
+              <TextInput
+                style={styles.inputField}
+                mode="outlined"
+                label="Descarga en 1 minuto"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value ? value.toString() : ""}
+                keyboardType="numeric"
+                returnKeyType="next"
+                onSubmitEditing={() =>
+                  refs.distanceBetweenNozzles.current?.focus()
+                }
+              />
+              <Text style={styles.text}>litros</Text>
+            </View>
+          )}
+          name="dischargePerMinute"
+        />
+        {errors.dischargePerMinute && (
+          <Text style={styles.error}>{errors.dischargePerMinute.message}</Text>
+        )}
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View style={styles.horizontalContainer}>
+              <TextInput
+                style={styles.inputField}
+                mode="outlined"
+                label="Ancho de franja"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value ? value.toString() : ""}
+                keyboardType="numeric"
+                returnKeyType="next"
+                ref={refs.distanceBetweenNozzles}
+                onSubmitEditing={() => refs.velocity.current?.focus()}
+              />
+              <Text style={styles.text}>metros</Text>
+            </View>
+          )}
+          name="distanceBetweenNozzles"
+        />
+        {errors.distanceBetweenNozzles && (
+          <Text style={styles.error}>
+            {errors.distanceBetweenNozzles.message}
+          </Text>
+        )}
+
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View style={styles.horizontalContainer}>
+              <TextInput
+                style={styles.inputField}
+                mode="outlined"
+                label="Velocidad"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value ? value.toString() : ""}
+                keyboardType="numeric"
+                ref={refs.velocity}
+              />
+              <Text style={styles.text}>metros/segundo</Text>
+            </View>
+          )}
+          name="velocity"
+        />
+        {errors.velocity && (
+          <Text style={styles.error}>{errors.velocity.message}</Text>
+        )}
+
+        <Button
+          style={styles.button}
+          mode="contained"
+          onPress={handleSubmit(onSubmit)}
+        >
+          Calcular
+        </Button>
+
+        <View style={styles.separator} />
+        {result && (
           <View style={styles.horizontalContainer}>
-            <TextInput
-              style={styles.inputField}
-              mode="outlined"
-              label="Velocidad"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value ? value.toString() : ""}
-              keyboardType="numeric"
-              ref={refs.velocity}
-            />
-            <Text style={styles.text}>metros/segundo</Text>
+            <Text style={styles.text}>El volumen de caldo es: </Text>
+            <Text style={styles.text}>{result} litros / hectárea</Text>
           </View>
         )}
-        name="velocity"
-      />
-      {errors.velocity && (
-        <Text style={styles.error}>{errors.velocity.message}</Text>
-      )}
-
-      <Button
-        style={styles.button}
-        mode="contained"
-        onPress={handleSubmit(onSubmit)}
-      >
-        Calcular
-      </Button>
-
-      <View style={styles.separator} />
-      {result && (
-        <View style={styles.horizontalContainer}>
-          <Text style={styles.text}>El volumen de caldo es: </Text>
-          <Text style={styles.text}>{result} litros / hectárea</Text>
-        </View>
-      )}
-    </View>
+      </View>
+      <CommentLog text="VelocityComments" />
+    </ScrollView>
   );
 }
 

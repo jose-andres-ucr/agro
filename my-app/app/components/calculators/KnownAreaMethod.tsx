@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
-import { View, Text, TextInput as TextInputRn, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput as TextInputRn, Button, StyleSheet, ScrollView } from 'react-native';
+import { CommentLog } from "./CommentLog";
 
 const schema = z.object({
   volumenInicial: z.string(),
@@ -60,76 +61,82 @@ export default function KnownAreaMethod() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.mainTitle}>Método del volumen aplicado en un área conocida</Text>
-      <Text style={styles.subtitle}>Determina el volumen de aplicación por hectárea. Marque un área conocida y 
-      aplique ahí agua a la velocidad usual</Text>
+    <ScrollView
+    contentContainerStyle={{ flexGrow: 1 }}
+    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+    >
+      <View style={styles.container}>
+        <Text style={styles.mainTitle}>Método del volumen aplicado en un área conocida</Text>
+        <Text style={styles.subtitle}>Determina el volumen de aplicación por hectárea. Marque un área conocida y 
+        aplique ahí agua a la velocidad usual</Text>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Volumen inicial:</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInputRn
-              placeholder="Volumen inicial (en litros)"
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              keyboardType="numeric"
-            />
-          )}
-          name="volumenInicial"
-        />
-        {errors.volumenInicial && <Text style={styles.error}>{errors.volumenInicial.message}</Text>}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Volumen inicial:</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInputRn
+                placeholder="Volumen inicial (en litros)"
+                style={styles.input}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="numeric"
+              />
+            )}
+            name="volumenInicial"
+          />
+          {errors.volumenInicial && <Text style={styles.error}>{errors.volumenInicial.message}</Text>}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Volumen final:</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInputRn
+                placeholder="Volumen final (en litros)"
+                style={styles.input}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="numeric"
+              />
+            )}
+            name="volumenFinal"
+          />
+          {errors.volumenFinal && <Text style={styles.error}>{errors.volumenFinal.message}</Text>}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Área aplicada:</Text>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInputRn
+                placeholder="Área aplicada (en metros cuadrados)"
+                style={styles.input}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="numeric"
+              />
+            )}
+            name="areaConocida"
+          />
+          {errors.areaConocida && <Text style={styles.error}>{errors.areaConocida.message}</Text>}
+        </View>
+
+        {camposVacios && <Text style={styles.error}>Aún hay campos vacíos</Text>}
+
+        <View style={styles.buttonContainer}>
+        <Button onPress={handleSubmit(onSubmit)} title="Calcular" disabled={camposVacios} />
+        </View>
+
+        {resultado !== null && <Text style={[styles.result, { textAlign: 'center' }]}>Resultado: {resultado} litros/ha</Text>}
+        <CommentLog text="KnownAreaComments" />
       </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Volumen final:</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInputRn
-              placeholder="Volumen final (en litros)"
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              keyboardType="numeric"
-            />
-          )}
-          name="volumenFinal"
-        />
-        {errors.volumenFinal && <Text style={styles.error}>{errors.volumenFinal.message}</Text>}
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Área aplicada:</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInputRn
-              placeholder="Área aplicada (en metros cuadrados)"
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              keyboardType="numeric"
-            />
-          )}
-          name="areaConocida"
-        />
-        {errors.areaConocida && <Text style={styles.error}>{errors.areaConocida.message}</Text>}
-      </View>
-
-      {camposVacios && <Text style={styles.error}>Aún hay campos vacíos</Text>}
-
-      <View style={styles.buttonContainer}>
-       <Button onPress={handleSubmit(onSubmit)} title="Calcular" disabled={camposVacios} />
-      </View>
-
-      {resultado !== null && <Text style={[styles.result, { textAlign: 'center' }]}>Resultado: {resultado} litros/ha</Text>}
-    </View>
+    </ScrollView>
   );
 }
 
