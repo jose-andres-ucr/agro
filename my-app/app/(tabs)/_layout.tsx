@@ -1,23 +1,43 @@
 import React from "react";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
-import { Pressable } from "react-native";
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
-}) {
-  return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
-}
+import LoginButton from "../components/login/LoginButton";
+import useuserRole from "../hooks/UserRole";
+import TabBarIcon from "../components/TabBarIcon";
+import { theme } from "@/constants/theme";
 
 export default function TabLayout() {
+  const { profile, manageUsers, education } = useuserRole();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "green",
+        tabBarActiveTintColor: theme.colors.secondary,
       }}
     >
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Perfil",
+          href: profile,
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+          tabBarLabelStyle: {
+            fontSize: 15,
+          },
+          headerRight: () => <LoginButton />,
+        }}
+      />
+      <Tabs.Screen
+        name="education"
+        options={{
+          title: "Educación",
+          href: education,
+          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+          tabBarLabelStyle: {
+            fontSize: 15,
+          },
+          headerRight: () => <LoginButton />,
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{
@@ -26,18 +46,7 @@ export default function TabLayout() {
           tabBarLabelStyle: {
             fontSize: 15,
           },
-          headerRight: () => (
-            <Pressable>
-              {({ pressed }) => (
-                <FontAwesome
-                  name="sign-in"
-                  size={25}
-                  color={"black"}
-                  style={{ marginRight: 20, opacity: pressed ? 0.5 : 1 }}
-                />
-              )}
-            </Pressable>
-          ),
+          headerRight: () => <LoginButton />,
         }}
       />
       <Tabs.Screen
@@ -48,18 +57,19 @@ export default function TabLayout() {
           tabBarLabelStyle: {
             fontSize: 15,
           },
-          headerRight: () => (
-            <Pressable>
-              {({ pressed }) => (
-                <FontAwesome
-                  name="sign-in"
-                  size={25}
-                  color={"black"}
-                  style={{ marginRight: 20, opacity: pressed ? 0.5 : 1 }}
-                />
-              )}
-            </Pressable>
-          ),
+          headerRight: () => <LoginButton />,
+        }}
+      />
+      <Tabs.Screen
+        name="manageUsers"
+        options={{
+          title: "Usuarios",
+          href: manageUsers,
+          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
+          tabBarLabelStyle: {
+            fontSize: 15,
+          },
+          headerRight: () => <LoginButton />,
         }}
       />
     </Tabs>
