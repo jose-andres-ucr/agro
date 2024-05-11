@@ -4,6 +4,7 @@ import {
   TextInput as TextInputRn,
   Keyboard,
   ScrollView
+
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 
@@ -12,6 +13,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { CommentLog } from "./CommentLog";
+
 
 const form = z.object({
   appliedArea: z.string().transform((value) => Number(value)),

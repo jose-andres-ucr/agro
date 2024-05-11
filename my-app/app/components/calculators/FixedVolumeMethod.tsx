@@ -4,6 +4,7 @@ import { View, Text, TextInput as TextInputRn, Button, StyleSheet, ScrollView } 
 import { z } from 'zod';
 import { CommentLog } from "./CommentLog";
 
+
 const schema = z.object({
   descargaPorMinuto: z.string(),
   anchoDeFranja: z.string(),
