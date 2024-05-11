@@ -5,6 +5,7 @@ node_modules/
 google-services.json
 
 # Expo
+android/
 .expo/
 dist/
 web-build/
@@ -41,3 +42,5 @@ yarn-error.*
 
 expo-env.d.ts
 # @end expo-cli
+
+google-services.json
