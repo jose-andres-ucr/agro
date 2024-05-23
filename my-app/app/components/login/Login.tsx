@@ -54,14 +54,13 @@ export default function Login() {
       .then(() => {
         console.log("User login!");
         setTimeout(() => {
-          setLoading(false);
           router.back();
           router.replace("/(tabs)/profile");
+          setLoading(false);
         }, 2000);
       })
       .catch((error) => {
         if (error.code == "auth/invalid-credential") {
-          console.log("rfryfgyrgf");
           setInvalidCredencial(true);
         }
         console.log(error);
@@ -115,6 +114,9 @@ export default function Login() {
                 autoCapitalize="none"
                 autoComplete="password"
                 returnKeyType="send"
+                onSubmitEditing={handleSubmit((form) => {
+                  onSubmit(form);
+                })}
                 blurOnSubmit={false}
               />
             )}
