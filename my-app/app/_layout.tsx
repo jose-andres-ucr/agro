@@ -1,9 +1,25 @@
-import React from "react";
-import { Stack } from "expo-router";
+import React, { useEffect } from "react";
+import { Stack, router, usePathname } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { theme } from "@/constants/theme";
+import useAuthState from "./hooks/Authentication";
 
 export default function TabLayout() {
+  const { userAuthState } = useAuthState();
+  const currentRoute = usePathname();
+
+  useEffect(() => {
+    if (userAuthState?.emailVerified) {
+      console.log("User login!");
+      router.replace("/(tabs)/profile");
+    } else {
+      if (!userAuthState && currentRoute !== "/components/signup/SignUp") {
+        console.log("User sign out or no role!");
+        router.replace("/(tabs)/");
+      }
+    }
+  }, [userAuthState]);
+
   return (
     <PaperProvider theme={theme}>
       <Stack>

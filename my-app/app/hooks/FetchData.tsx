@@ -24,7 +24,7 @@ const useFetchUserData = () => {
       }
     };
 
-    if (userAuthState) {
+    if (userAuthState?.emailVerified) {
       fetchData();
     } else {
       setUserData(null);

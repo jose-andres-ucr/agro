@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
 import { Button } from "react-native-paper";
-import { boolean } from "zod";
 
-type propsType = { label: string; isLoading: boolean; handlePress: () => void };
+type propsType = {
+  label: string;
+  isLoading: boolean;
+  handlePress: () => void;
+};
 
 const LoadingButton = ({ label, isLoading, handlePress }: propsType) => {
   const [opacity, setOpacity] = useState<number>(0);
@@ -15,14 +18,12 @@ const LoadingButton = ({ label, isLoading, handlePress }: propsType) => {
     }
   }, [isLoading]);
   return (
-    <>
-      <Button style={styles.button} mode="contained" onPress={handlePress}>
-        <View style={[styles.container, styles.horizontal]}>
-          <ActivityIndicator size="small" style={{ opacity: opacity }} />
-        </View>
-        <Text>{label}</Text>
-      </Button>
-    </>
+    <Button style={styles.button} mode="contained" onPress={handlePress}>
+      <View style={[styles.container, styles.horizontal]}>
+        <ActivityIndicator size="small" style={{ opacity: opacity }} />
+      </View>
+      <Text>{label}</Text>
+    </Button>
   );
 };
 

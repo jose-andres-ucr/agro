@@ -17,35 +17,33 @@ export default function CheckEmailModal({ checkEmail, userEmail }: propsType) {
     router.back();
   };
   return (
-    <>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          Alert.alert("Se ha cerrado la ventana emergente");
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Se ha enviado un correo de verificación a la dirección:
-            </Text>
-            <Text style={styles.emailText}>{userEmail}</Text>
-            <Text style={styles.modalText}>
-              Confirme el correo para finalizar el registro.
-            </Text>
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={handleClose}
-            >
-              <Text style={styles.textStyle}>Aceptar</Text>
-            </Pressable>
-          </View>
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => {
+        Alert.alert("Se ha cerrado la ventana emergente");
+        setModalVisible(!modalVisible);
+      }}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>
+            Se ha enviado un correo de verificación a la dirección:
+          </Text>
+          <Text style={styles.emailText}>{userEmail}</Text>
+          <Text style={styles.modalText}>
+            Confirme el correo para finalizar el registro.
+          </Text>
+          <Pressable
+            style={[styles.button, styles.buttonClose]}
+            onPress={handleClose}
+          >
+            <Text style={styles.textStyle}>Aceptar</Text>
+          </Pressable>
         </View>
-      </Modal>
-    </>
+      </View>
+    </Modal>
   );
 }
 

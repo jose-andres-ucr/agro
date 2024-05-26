@@ -1,6 +1,5 @@
 import { useState } from "react";
 import auth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
 import { router } from "expo-router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,14 +52,7 @@ export default function Login() {
     auth()
       .signInWithEmailAndPassword(data.userName, data.password)
       .then(() => {
-        if (auth().currentUser?.emailVerified) {
-          console.log("User login!");
-          setTimeout(() => {
-            router.back();
-            router.replace("/(tabs)/profile");
-            setLoading(false);
-          }, 2000);
-        } else {
+        if (!auth().currentUser?.emailVerified) {
           console.log("User email no verified!");
           setInvalidCredencial(true);
           setLoading(false);

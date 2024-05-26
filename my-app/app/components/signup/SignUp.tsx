@@ -1,9 +1,9 @@
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { Controller, useForm } from "react-hook-form";
-import { TextInput, Text, Button } from "react-native-paper";
+import { TextInput, Text } from "react-native-paper";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput as TextInputRn,
   StyleSheet,
@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import CheckEmailModal from "./CheckEmailModal";
 import LoadingButton from "../LoadingButton";
+import firestore from "@react-native-firebase/firestore";
+import DropDownRole from "./DropDownRole";
 
 const form = z
   .object({
@@ -22,16 +24,16 @@ const form = z
       .max(50, {
         message: "El nombre no puede exceder los 50 caracteres",
       })
-      .regex(/^[A-Z][a-z]+\s([A-Z][a-z]+|[A-Z][a-z]+\s)+$/, {
-        message: "Verifique el formato del nombre",
-      }),
+      .regex(
+        /^[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+\s([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+|[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+\s)+$/,
+        {
+          message: "Verifique el formato del nombre",
+        }
+      ),
 
-    userRole: z.string(),
+    userRole: z.string().min(1, { message: "Seleccione el rol" }),
 
     userName: z.string().email({ message: "El correo no es válido" }),
-    //.refine((email) => email.endsWith("@ucr.ac.cr"), {
-    //  message: "El correo debe pertenecer al dominio @ucr.ac.cr",
-    //}),
 
     password: z
       .string()
@@ -56,7 +58,30 @@ const form = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "La confirmación no coincide con la contraseña.",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) =>
+      ((data.userRole === "Docente" || data.userRole === "Estudiante") &&
+        data.userName.endsWith("@ucr.ac.cr")) ||
+      data.userRole === "Usuario Externo",
+    {
+      message: "El correo debe pertenecer al dominio @ucr.ac.cr",
+      path: ["userName"],
+    }
+  )
+  .refine(
+    (data) =>
+      (data.userRole === "Usuario Externo" &&
+        !data.userName.endsWith("@ucr.ac.cr")) ||
+      data.userRole === "Estudiante" ||
+      data.userRole === "Docente",
+    {
+      message:
+        "Los usuarios externos no pueden registrarse con un correo institucional",
+      path: ["userName"],
+    }
+  );
+
 type FormData = z.infer<typeof form>;
 
 export default function SignUp() {
@@ -64,6 +89,8 @@ export default function SignUp() {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
+    clearErrors,
   } = useForm({
     defaultValues: {
       fullname: "",
@@ -77,13 +104,13 @@ export default function SignUp() {
 
   const refs = {
     fullname: React.useRef<TextInputRn>(null),
-    userRole: React.useRef<TextInputRn>(null),
+    userRole: React.useRef(null),
     userName: React.useRef<TextInputRn>(null),
     password: React.useRef<TextInputRn>(null),
     confirmPassword: React.useRef<TextInputRn>(null),
   } as const;
 
-  const [invalidCredential, setInvalidCredencial] = useState<boolean | null>(
+  const [invalidCredential, setInvalidCredential] = useState<boolean | null>(
     null
   );
 
@@ -93,191 +120,224 @@ export default function SignUp() {
   );
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [role, setRole] = useState("");
+  const handleRole = (role: string) => {
+    setValue("userRole", role);
+    setRole(role);
+    clearErrors();
+  };
+
+  useEffect(() => {
+    if (errors) {
+      Keyboard.dismiss();
+    }
+  }, [errors]);
 
   const onSubmit = (data: FormData) => {
     Keyboard.dismiss();
+    console.log(data.userRole);
     setIsLoading(true);
     auth()
       .createUserWithEmailAndPassword(data.userName, data.password)
       .then(() => {
-        auth()
-          .currentUser?.updateProfile({ displayName: data.fullname })
+        let user = auth().currentUser;
+        firestore()
+          .collection("Users")
+          .doc(user?.uid)
+          .set({
+            Email: user?.email,
+            Name: data.fullname,
+            Role: data.userRole,
+          })
           .then(() => {
-            auth()
-              .currentUser?.sendEmailVerification()
+            console.log("Data was stored successfully");
+            user
+              ?.updateProfile({ displayName: data.fullname })
               .then(() => {
-                console.log("Check your email");
-                setUser(auth().currentUser);
-                setCheckEmail(true);
-                setIsLoading(false);
+                user
+                  .sendEmailVerification()
+                  .then(() => {
+                    console.log("Check your email");
+                    setUser(auth().currentUser);
+                    setCheckEmail(true);
+                    setIsLoading(false);
+                    auth()
+                      .signOut()
+                      .catch((error) => {
+                        console.log(error);
+                      });
+                  })
+                  .catch(() => {
+                    console.log("Error trying to verify email");
+                    setIsLoading(false);
+                  });
               })
-              .catch(() => {
-                console.log("Error trying to verify email");
+              .catch((error) => {
+                console.log("Error");
                 setIsLoading(false);
               });
           })
-          .catch((error) => {
-            console.log("Error");
-            setIsLoading(false);
+          .catch(() => {
+            console.log("Error when trying to store data");
           });
       })
       .catch((error) => {
-        setInvalidCredencial(true);
+        console.log(error);
+        setInvalidCredential(true);
         setIsLoading(false);
       });
   };
 
   return (
     <ScrollView
-      style={{ padding: 28, backgroundColor: "#FFF", paddingTop: 80 }}
+      style={{
+        padding: 28,
+        backgroundColor: "#FFF",
+        paddingTop: 50,
+      }}
     >
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            ref={refs.fullname}
-            mode="outlined"
-            autoFocus
-            style={styles.inputField}
-            label="Nombre Completo"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="default"
-            autoCapitalize="none"
-            autoComplete="cc-name"
-            returnKeyType="next"
-            onSubmitEditing={() => {
-              refs.userRole.current?.focus();
-            }}
-            blurOnSubmit={false}
-          />
+      <View style={{ marginBottom: 80 }}>
+        <Controller
+          control={control}
+          render={() => <DropDownRole handleRole={handleRole} />}
+          name="userRole"
+        />
+        {errors.userRole && (
+          <Text style={styles.error}>{errors.userRole.message}</Text>
         )}
-        name="fullname"
-      />
-      {errors.fullname && (
-        <Text style={styles.error}>{errors.fullname.message}</Text>
-      )}
-
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            ref={refs.userRole}
-            mode="outlined"
-            style={styles.inputField}
-            label="Rol del usuario"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="default"
-            autoCapitalize="none"
-            returnKeyType="next"
-            onSubmitEditing={() => {
-              refs.userName.current?.focus();
-            }}
-            blurOnSubmit={false}
+        <View style={{ display: role ? "flex" : "none" }}>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.fullname}
+                mode="outlined"
+                editable={role !== ""}
+                style={styles.inputField}
+                label="Nombre Completo"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="cc-name"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.userName.current?.focus();
+                }}
+                blurOnSubmit={false}
+              />
+            )}
+            name="fullname"
           />
-        )}
-        name="userRole"
-      />
-      {errors.userRole && (
-        <Text style={styles.error}>{errors.userRole.message}</Text>
-      )}
+          {errors.fullname && (
+            <Text style={styles.error}>{errors.fullname.message}</Text>
+          )}
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            ref={refs.userName}
-            mode="outlined"
-            style={styles.inputField}
-            label="Correo instituacional"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            returnKeyType="next"
-            onSubmitEditing={() => {
-              refs.password.current?.focus();
-            }}
-            blurOnSubmit={false}
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.userName}
+                mode="outlined"
+                editable={role !== ""}
+                style={styles.inputField}
+                label={
+                  role === "Usuario Externo"
+                    ? "Correo"
+                    : "Correo instituacional"
+                }
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.password.current?.focus();
+                }}
+                blurOnSubmit={false}
+              />
+            )}
+            name="userName"
           />
-        )}
-        name="userName"
-      />
-      {errors.userName && (
-        <Text style={styles.error}>{errors.userName.message}</Text>
-      )}
+          {errors.userName && (
+            <Text style={styles.error}>{errors.userName.message}</Text>
+          )}
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            ref={refs.password}
-            mode="outlined"
-            style={styles.inputField}
-            label="Contraseña"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            secureTextEntry
-            keyboardType="default"
-            autoCapitalize="none"
-            autoComplete="password"
-            returnKeyType="next"
-            onSubmitEditing={() => refs.confirmPassword.current?.focus()}
-            blurOnSubmit={false}
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.password}
+                mode="outlined"
+                editable={role !== ""}
+                style={styles.inputField}
+                label="Contraseña"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                secureTextEntry
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="password"
+                returnKeyType="next"
+                onSubmitEditing={() => refs.confirmPassword.current?.focus()}
+                blurOnSubmit={false}
+              />
+            )}
+            name="password"
           />
-        )}
-        name="password"
-      />
-      {errors.password && (
-        <Text style={styles.error}>{errors.password.message}</Text>
-      )}
+          {errors.password && (
+            <Text style={styles.error}>{errors.password.message}</Text>
+          )}
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            ref={refs.confirmPassword}
-            mode="outlined"
-            style={styles.inputField}
-            label="Confirmar contraseña"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            secureTextEntry
-            keyboardType="default"
-            autoCapitalize="none"
-            autoComplete="password"
-            returnKeyType="send"
-            onSubmitEditing={handleSubmit((form) => {
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.confirmPassword}
+                mode="outlined"
+                editable={role !== ""}
+                style={styles.inputField}
+                label="Confirmar contraseña"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                secureTextEntry
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="password"
+                returnKeyType="send"
+                onSubmitEditing={handleSubmit((form) => {
+                  onSubmit(form);
+                })}
+                blurOnSubmit={false}
+              />
+            )}
+            name="confirmPassword"
+          />
+          {errors.confirmPassword && (
+            <Text style={styles.error}>{errors.confirmPassword.message}</Text>
+          )}
+
+          {invalidCredential ? (
+            <Text style={styles.error}>
+              El correo ya se encuentra registrado.
+            </Text>
+          ) : null}
+          <CheckEmailModal checkEmail={checkEmail} userEmail={user?.email} />
+          <View style={{ marginVertical: 20 }} />
+          <LoadingButton
+            label="Registrarme"
+            isLoading={isLoading}
+            handlePress={handleSubmit((form) => {
               onSubmit(form);
             })}
-            blurOnSubmit={false}
           />
-        )}
-        name="confirmPassword"
-      />
-      {errors.confirmPassword && (
-        <Text style={styles.error}>{errors.confirmPassword.message}</Text>
-      )}
-
-      {invalidCredential ? (
-        <Text style={styles.error}>El correo ya se encuentra registrado.</Text>
-      ) : null}
-      <CheckEmailModal checkEmail={checkEmail} userEmail={user?.email} />
-      <View style={{ marginVertical: 20 }} />
-      <LoadingButton
-        label="Registrarme"
-        isLoading={isLoading}
-        handlePress={handleSubmit((form) => {
-          onSubmit(form);
-        })}
-      />
+        </View>
+      </View>
     </ScrollView>
   );
 }
