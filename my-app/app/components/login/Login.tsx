@@ -1,11 +1,11 @@
 import { useState } from "react";
 import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 import { router } from "expo-router";
-import Spinner from "../Spinner";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Text } from "react-native-paper";
 import {
   StyleSheet,
   View,
@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import React from "react";
 import { theme } from "@/constants/theme";
+import LoadingButton from "../LoadingButton";
 
 const form = z.object({
   userName: z.string().email({ message: "El nombre de usuario no es válido" }),
@@ -52,12 +53,18 @@ export default function Login() {
     auth()
       .signInWithEmailAndPassword(data.userName, data.password)
       .then(() => {
-        console.log("User login!");
-        setTimeout(() => {
-          router.back();
-          router.replace("/(tabs)/profile");
+        if (auth().currentUser?.emailVerified) {
+          console.log("User login!");
+          setTimeout(() => {
+            router.back();
+            router.replace("/(tabs)/profile");
+            setLoading(false);
+          }, 2000);
+        } else {
+          console.log("User email no verified!");
+          setInvalidCredencial(true);
           setLoading(false);
-        }, 2000);
+        }
       })
       .catch((error) => {
         if (error.code == "auth/invalid-credential") {
@@ -69,83 +76,85 @@ export default function Login() {
   };
 
   return (
-    <>
-      {loading === false ? (
-        <View style={theme.loginContainer}>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                mode="outlined"
-                style={styles.inputField}
-                label="Usuario"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.password.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="userName"
+    <View style={theme.loginContainer}>
+      <Controller
+        control={control}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            mode="outlined"
+            style={styles.inputField}
+            label="Usuario"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            returnKeyType="next"
+            onSubmitEditing={() => {
+              refs.password.current?.focus();
+            }}
+            blurOnSubmit={false}
           />
-          {errors.userName && (
-            <Text style={styles.error}>{errors.userName.message}</Text>
-          )}
+        )}
+        name="userName"
+      />
+      {errors.userName && (
+        <Text style={styles.error}>{errors.userName.message}</Text>
+      )}
 
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.password}
-                mode="outlined"
-                style={styles.inputField}
-                label="Contraseña"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry
-                keyboardType="default"
-                autoCapitalize="none"
-                autoComplete="password"
-                returnKeyType="send"
-                onSubmitEditing={handleSubmit((form) => {
-                  onSubmit(form);
-                })}
-                blurOnSubmit={false}
-              />
-            )}
-            name="password"
-          />
-          {errors.password && (
-            <Text style={styles.error}>{errors.password.message}</Text>
-          )}
-
-          {invalidCredential ? (
-            <Text style={styles.error}>
-              Su usuario o contraseña son incorrectos
-            </Text>
-          ) : null}
-
-          <Button
-            style={styles.button}
-            mode="contained"
-            onPress={handleSubmit((form) => {
+      <Controller
+        control={control}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            ref={refs.password}
+            mode="outlined"
+            style={styles.inputField}
+            label="Contraseña"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+            keyboardType="default"
+            autoCapitalize="none"
+            autoComplete="password"
+            returnKeyType="send"
+            onSubmitEditing={handleSubmit((form) => {
               onSubmit(form);
             })}
-          >
-            Ingresar
-          </Button>
-        </View>
-      ) : (
-        <Spinner />
+            blurOnSubmit={false}
+          />
+        )}
+        name="password"
+      />
+      {errors.password && (
+        <Text style={styles.error}>{errors.password.message}</Text>
       )}
-    </>
+
+      {invalidCredential ? (
+        <Text style={styles.error}>
+          Su usuario o contraseña son incorrectos
+        </Text>
+      ) : null}
+      <LoadingButton
+        label="Ingresar"
+        isLoading={loading}
+        handlePress={handleSubmit((form) => {
+          onSubmit(form);
+        })}
+      />
+      <View style={{ marginTop: 30, alignItems: "center" }}>
+        <Text style={{ marginTop: 5 }}>
+          ¿No posee una cuenta?{" "}
+          <Text
+            onPress={() => router.push("/components/signup/SignUp")}
+            style={{ color: theme.colors.primary, fontWeight: "bold" }}
+          >
+            registrese aquí.
+          </Text>
+        </Text>
+      </View>
+    </View>
   );
 }
 

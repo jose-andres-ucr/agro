@@ -31,6 +31,10 @@ export default function TabLayout() {
           name="components/login/Login"
           options={{ headerTitle: "Iniciar Sesión" }}
         />
+        <Stack.Screen
+          name="components/signup/SignUp"
+          options={{ headerTitle: "Registro" }}
+        />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </PaperProvider>
