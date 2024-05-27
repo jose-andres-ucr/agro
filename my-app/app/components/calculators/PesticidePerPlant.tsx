@@ -1,31 +1,51 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput as TextInputRn } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { StyleSheet, View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
+import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-
-const form = z.object({
-  cantidadPlantas: z.number(),
-  volumenInicial: z.number(),
-  volumenFinal: z.number(),
-  cantidadPlantasTotal: z.number(),
+// Define the schema with string inputs that are refined to positive numbers
+const schema = z.object({
+  cantidadPlantas: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    volumenInicial: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    volumenFinal: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    cantidadPlantasTotal: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
 });
 
-type FormData = z.infer<typeof form>;
+type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
+  const [resultado, setResultado] = useState<string | null>(null);
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(form),
+    resolver: zodResolver(schema),
   });
-
-  const [resultado, setResultado] = useState<number | null>(null);
 
   const refs = {
     cantidadPlantasRef: React.useRef<TextInputRn>(null),
@@ -49,23 +69,18 @@ export default function PesticidePerPlant() {
     ((volumenInicial - volumenFinal) * cantidadPlantasTotal) /
     cantidadPlantas;
     const resultadoRedondeado = result.toFixed(3);
-    setResultado(parseFloat(resultadoRedondeado));
-  
+    setResultado(resultadoRedondeado);
   };
 
   return (
     <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      ref={(scrollView) => {
-        scrollView?.scrollToEnd({ animated: true });
-      }}
+    contentContainerStyle={{ flexGrow: 1 }}
+    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
       <View style={styles.container}>
-        <Text style={styles.text}>
-          Cuente un número de plantas y aplique allí agua a la velocidad usual.{" "}
-        </Text>
+        <Text style={styles.text}>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
         <View style={styles.inputGroup}>
-          <Text>Cantidad de plantas {"\n"}aplicadas:</Text>
+          <Text>Cantidad de plantas     {"\n"}aplicadas:</Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -74,13 +89,7 @@ export default function PesticidePerPlant() {
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
+                onChangeText={onChange}
                 value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
@@ -94,20 +103,16 @@ export default function PesticidePerPlant() {
             )}
             name="cantidadPlantas"
           />
+          <Text>     </Text>
         </View>
 
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.cantidadPlantas && errors.cantidadPlantas.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.cantidadPlantas && errors.cantidadPlantas.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.cantidadPlantas && errors.cantidadPlantas.message}
-          </Text>
-        </View>
+        {errors.cantidadPlantas && (() => {
+        console.error(errors.cantidadPlantas.message);
+        return null;
+        })()}
 
         <View style={styles.inputGroup}>
-          <Text>Volumen inicial (litros):</Text>
+          <Text>Volumen Inicial                 </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -116,13 +121,7 @@ export default function PesticidePerPlant() {
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
+                onChangeText={onChange}
                 value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
@@ -135,20 +134,16 @@ export default function PesticidePerPlant() {
             )}
             name="volumenInicial"
           />
+          <Text>Litros</Text>
         </View>
-
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.volumenInicial && errors.volumenInicial.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.volumenInicial && errors.volumenInicial.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.volumenInicial && errors.volumenInicial.message}
-          </Text>
-        </View>
+        
+        {errors.volumenInicial && (() => {
+        console.error(errors.volumenInicial.message);
+        return null;
+        })()}
 
         <View style={styles.inputGroup}>
-          <Text>Volumen final (litros):</Text>
+          <Text>Volumen final                    </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -157,13 +152,7 @@ export default function PesticidePerPlant() {
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
+                onChangeText={onChange}
                 value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
@@ -176,22 +165,16 @@ export default function PesticidePerPlant() {
             )}
             name="volumenFinal"
           />
+          <Text>Litros</Text>
         </View>
-
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.volumenFinal && errors.volumenFinal.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.volumenFinal && errors.volumenFinal.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.volumenFinal && errors.volumenFinal.message}
-          </Text>
-        </View>
+        
+        {errors.volumenFinal && (() => {
+        console.error(errors.volumenFinal.message);
+        return null;
+        })()}
 
         <View style={styles.inputGroup}>
-          <Text>
-            Cantidad de plantas totales{"\n"}en la parcela por aplicar:
-          </Text>
+          <Text>Cantidad de plantas     {"\n"}totales en la parcela {"\n"}por aplicar:</Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -200,54 +183,40 @@ export default function PesticidePerPlant() {
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
+                onChangeText={onChange}
                 value={value?.toString()}
-                returnKeyType="next"
                 keyboardType="numeric"
-                onSubmitEditing={handleSubmit((form) => {
-                  onSubmit(form);
-                })}
+                autoCapitalize="none"
+                returnKeyType="send"
+                onSubmitEditing={handleSubmit(onSubmit)}
                 blurOnSubmit={false}
               />
             )}
             name="cantidadPlantasTotal"
           />
+          <Text>m2</Text>
         </View>
 
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message}
-          </Text>
-        </View>
+        {errors.cantidadPlantasTotal && (() => {
+        console.error(errors.cantidadPlantasTotal.message);
+        return null;
+        })()}
 
         <Button
           style={styles.button}
           mode="contained"
-          onPress={handleSubmit((form) => {
-            onSubmit(form);
-          })}
+          onPress={handleSubmit(onSubmit)}
         >
           Calcular
         </Button>
 
         <View style={styles.resultGroup}>
-          <Text style={styles.text}>Resultado: </Text>
           <TextInput
             style={styles.resultField}
             value={resultado?.toString()}
             editable={false}
           />
-          <Text style={styles.text}> litros.</Text>
+          <Text style={styles.text}> Litros</Text>
         </View>
       </View>
       <CommentLog text="PesticidePerPlantComments" />
@@ -257,10 +226,9 @@ export default function PesticidePerPlant() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "flex-start",
+    width: "100%",
     alignContent: "center",
-    padding: 28,
+    padding: 8,
   },
   text: {
     textAlign: "center",
@@ -300,5 +268,4 @@ const styles = StyleSheet.create({
   error: {
     color: "red",
   },
-
 });
