@@ -74,7 +74,7 @@ export default function PesticidePerArea() {
       <View style={styles.container}>
         <Text style={styles.text}> Marque un área conocida y aplique allí agua a la velocidad usual.</Text>
         <View style={styles.inputGroup}>
-          <Text>Área aplicada</Text>
+          <Text>Área aplicada    </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -106,7 +106,7 @@ export default function PesticidePerArea() {
         })()}
 
         <View style={styles.inputGroup}>
-          <Text>Volumen Inicial </Text>
+          <Text>Volumen Inicial     </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -137,7 +137,7 @@ export default function PesticidePerArea() {
         })()}
 
         <View style={styles.inputGroup}>
-          <Text>Volumen final</Text>
+          <Text>Volumen final        </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -168,7 +168,10 @@ export default function PesticidePerArea() {
         })()}
 
         <View style={styles.inputGroup}>
-          <Text>Área del cultivo {'\n'}por aplicar </Text>
+          <View>
+          <Text>Área del cultivo</Text>
+          <Text>por aplicar</Text>
+          </View>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (

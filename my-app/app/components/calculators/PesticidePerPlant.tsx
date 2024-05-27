@@ -80,7 +80,11 @@ export default function PesticidePerPlant() {
       <View style={styles.container}>
         <Text style={styles.text}>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
         <View style={styles.inputGroup}>
-          <Text>Cantidad de plantas     {"\n"}aplicadas:</Text>
+          <View>
+          <Text>Cantidad de plantas     </Text>
+          <Text>aplicadas:</Text>
+          </View>
+
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -174,7 +178,12 @@ export default function PesticidePerPlant() {
         })()}
 
         <View style={styles.inputGroup}>
-          <Text>Cantidad de plantas     {"\n"}totales en la parcela {"\n"}por aplicar:</Text>
+          <View>
+          <Text>Cantidad de plantas     </Text>
+          <Text>totales en la parcela </Text>
+          <Text>por aplicar:</Text>
+          </View>
+
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (

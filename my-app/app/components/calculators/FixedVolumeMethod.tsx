@@ -65,7 +65,10 @@ export default function KnownAreaMethod() {
       <View style={styles.container}>
         <Text style={styles.text}>Determina a qué velocidad se debe avanzar para aplicar el volumen del caldo deseado</Text>
         <View style={styles.inputGroup}>
-          <Text>Descarga por boquilla{'\n'}(en 1 minuto): </Text>
+          <View>
+          <Text>Descarga por boquilla  </Text>
+          <Text>(en 1 minuto).</Text>
+          </View>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -97,7 +100,10 @@ export default function KnownAreaMethod() {
         })()}
 
         <View style={styles.inputGroup}>
-          <Text>Ancho de franja o {'\n'}distancia entre boquillas </Text>
+          <View>
+          <Text>Ancho de franja o</Text>
+          <Text>distancia entre boquillas</Text>
+          </View>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -128,7 +134,10 @@ export default function KnownAreaMethod() {
         })()}
 
         <View style={styles.inputGroup}>
-          <Text>Volumen de aplicación{'\n'}por entrada</Text>
+          <View>
+          <Text>Volumen de aplicación </Text>
+          <Text>por entrada</Text>
+          </View>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (

@@ -66,7 +66,7 @@ export default function VolumeCalculator() {
         <Text style={styles.text}>Determina el volumen de aplicación por hectárea. Marque un área
           conocida y aplique ahí agua a la velocidad usual</Text>
         <View style={styles.inputGroup}>
-          <Text>Volumen inicial</Text>
+          <Text>Volumen inicial  </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -98,7 +98,7 @@ export default function VolumeCalculator() {
         })()}
 
         <View style={styles.inputGroup}>
-          <Text>Volumen final</Text>
+          <Text>Volumen final     </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
