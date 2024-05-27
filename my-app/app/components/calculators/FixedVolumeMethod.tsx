@@ -8,19 +8,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 // Define the schema with string inputs that are refined to positive numbers
 const schema = z.object({
-  descargaPorMinuto: z
+  dischargePerMinute: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-  anchoDeFranja: z
+  stripWidth: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-  volumenPorHectarea: z
+  volumePerHectare: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
@@ -31,7 +31,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function KnownAreaMethod() {
-  const [resultado, setResultado] = useState<string | null>(null);
+  const [result, setresult] = useState<string | null>(null);
 
   const {
     control,
@@ -42,19 +42,19 @@ export default function KnownAreaMethod() {
   });
 
   const refs = {
-    descargaPorMinutoRef: React.useRef<TextInputRn>(null),
-    anchoDeFranjaRef: React.useRef<TextInputRn>(null),
-    volumenPorHectareaRef: React.useRef<TextInputRn>(null),
+    dischargePerMinuteRef: React.useRef<TextInputRn>(null),
+    stripWidthRef: React.useRef<TextInputRn>(null),
+    volumePerHectareRef: React.useRef<TextInputRn>(null),
   } as const;
 
   useEffect(() => {
-    refs.descargaPorMinutoRef.current?.focus();
+    refs.dischargePerMinuteRef.current?.focus();
   }, []);
 
   const onSubmit = (data: FormData) => {
-    const { descargaPorMinuto, anchoDeFranja, volumenPorHectarea } = data;
-    const result = (1000 / anchoDeFranja) / (volumenPorHectarea / descargaPorMinuto) / 60;
-    setResultado(result.toFixed(2));
+    const { dischargePerMinute, stripWidth, volumePerHectare } = data;
+    const result = (1000 / stripWidth) / (volumePerHectare / dischargePerMinute) / 60;
+    setresult(result.toFixed(2));
   };
 
   return (
@@ -70,7 +70,7 @@ export default function KnownAreaMethod() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.descargaPorMinutoRef}
+                ref={refs.dischargePerMinuteRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -81,18 +81,18 @@ export default function KnownAreaMethod() {
                 autoFocus
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.anchoDeFranjaRef.current?.focus();
+                  refs.stripWidthRef.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="descargaPorMinuto"
+            name="dischargePerMinute"
           />
           <Text>Litros</Text>
         </View>
 
-        {errors.descargaPorMinuto && (() => {
-        console.error(errors.descargaPorMinuto.message);
+        {errors.dischargePerMinute && (() => {
+        console.error(errors.dischargePerMinute.message);
         return null;
         })()}
 
@@ -102,7 +102,7 @@ export default function KnownAreaMethod() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.anchoDeFranjaRef}
+                ref={refs.stripWidthRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -112,18 +112,18 @@ export default function KnownAreaMethod() {
                 autoCapitalize="none"
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.volumenPorHectareaRef.current?.focus();
+                  refs.volumePerHectareRef.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="anchoDeFranja"
+            name="stripWidth"
           />
           <Text>Metros</Text>
         </View>
         
-        {errors.anchoDeFranja && (() => {
-        console.error(errors.anchoDeFranja.message);
+        {errors.stripWidth && (() => {
+        console.error(errors.stripWidth.message);
         return null;
         })()}
 
@@ -133,7 +133,7 @@ export default function KnownAreaMethod() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.volumenPorHectareaRef}
+                ref={refs.volumePerHectareRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -146,13 +146,13 @@ export default function KnownAreaMethod() {
                 blurOnSubmit={false}
               />
             )}
-            name="volumenPorHectarea"
+            name="volumePerHectare"
           />
           <Text>Litros</Text>
         </View>
 
-        {errors.volumenPorHectarea && (() => {
-        console.error(errors.volumenPorHectarea.message);
+        {errors.volumePerHectare && (() => {
+        console.error(errors.volumePerHectare.message);
         return null;
         })()}
 
@@ -165,10 +165,9 @@ export default function KnownAreaMethod() {
         </Button>
 
         <View style={styles.resultGroup}>
-          <Text style={styles.text}>Resultado: </Text>
           <TextInput
             style={styles.resultField}
-            value={resultado?.toString()}
+            value={result?.toString()}
             editable={false}
           />
           <Text style={styles.text}> m/min.</Text>

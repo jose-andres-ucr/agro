@@ -8,25 +8,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 // Define the schema with string inputs that are refined to positive numbers
 const schema = z.object({
-  cantidadPlantas: z
+  plantCuantity: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    volumenInicial: z
+    initialVolume: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    volumenFinal: z
+    finalVolume: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    cantidadPlantasTotal: z
+    plantCuantityTotal: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
@@ -37,7 +37,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
-  const [resultado, setResultado] = useState<string | null>(null);
+  const [result, setresult] = useState<string | null>(null);
 
   const {
     control,
@@ -48,28 +48,28 @@ export default function PesticidePerPlant() {
   });
 
   const refs = {
-    cantidadPlantasRef: React.useRef<TextInputRn>(null),
-    volumenInicialRef: React.useRef<TextInputRn>(null),
-    volumenFinalRef: React.useRef<TextInputRn>(null),
-    cantidadTotal: React.useRef<TextInputRn>(null),
+    plantCuantityRef: React.useRef<TextInputRn>(null),
+    initialVolumeRef: React.useRef<TextInputRn>(null),
+    finalVolumeRef: React.useRef<TextInputRn>(null),
+    cuantityTotal: React.useRef<TextInputRn>(null),
   } as const;
 
   useEffect(() => {
-    refs.cantidadPlantasRef.current?.focus();
+    refs.plantCuantityRef.current?.focus();
   }, []);
 
   const onSubmit = (data: FormData) => {
     const {
-      cantidadPlantas,
-      volumenInicial,
-      volumenFinal,
-      cantidadPlantasTotal,
+      plantCuantity,
+      initialVolume,
+      finalVolume,
+      plantCuantityTotal,
     } = data;
     const result =
-    ((volumenInicial - volumenFinal) * cantidadPlantasTotal) /
-    cantidadPlantas;
-    const resultadoRedondeado = result.toFixed(3);
-    setResultado(resultadoRedondeado);
+    ((initialVolume - finalVolume) * plantCuantityTotal) /
+    plantCuantity;
+    const resultRedondeado = result.toFixed(3);
+    setresult(resultRedondeado);
   };
 
   return (
@@ -85,7 +85,7 @@ export default function PesticidePerPlant() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.cantidadPlantasRef}
+                ref={refs.plantCuantityRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -96,18 +96,18 @@ export default function PesticidePerPlant() {
                 autoFocus
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.volumenInicialRef.current?.focus();
+                  refs.initialVolumeRef.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="cantidadPlantas"
+            name="plantCuantity"
           />
           <Text>     </Text>
         </View>
 
-        {errors.cantidadPlantas && (() => {
-        console.error(errors.cantidadPlantas.message);
+        {errors.plantCuantity && (() => {
+        console.error(errors.plantCuantity.message);
         return null;
         })()}
 
@@ -117,7 +117,7 @@ export default function PesticidePerPlant() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.volumenInicialRef}
+                ref={refs.initialVolumeRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -127,18 +127,18 @@ export default function PesticidePerPlant() {
                 autoCapitalize="none"
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.volumenFinalRef.current?.focus();
+                  refs.finalVolumeRef.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="volumenInicial"
+            name="initialVolume"
           />
           <Text>Litros</Text>
         </View>
         
-        {errors.volumenInicial && (() => {
-        console.error(errors.volumenInicial.message);
+        {errors.initialVolume && (() => {
+        console.error(errors.initialVolume.message);
         return null;
         })()}
 
@@ -148,7 +148,7 @@ export default function PesticidePerPlant() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.volumenFinalRef}
+                ref={refs.finalVolumeRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -158,18 +158,18 @@ export default function PesticidePerPlant() {
                 autoCapitalize="none"
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.cantidadTotal.current?.focus();
+                  refs.cuantityTotal.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="volumenFinal"
+            name="finalVolume"
           />
           <Text>Litros</Text>
         </View>
         
-        {errors.volumenFinal && (() => {
-        console.error(errors.volumenFinal.message);
+        {errors.finalVolume && (() => {
+        console.error(errors.finalVolume.message);
         return null;
         })()}
 
@@ -179,7 +179,7 @@ export default function PesticidePerPlant() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.cantidadTotal}
+                ref={refs.cuantityTotal}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -192,13 +192,13 @@ export default function PesticidePerPlant() {
                 blurOnSubmit={false}
               />
             )}
-            name="cantidadPlantasTotal"
+            name="plantCuantityTotal"
           />
           <Text>m2</Text>
         </View>
 
-        {errors.cantidadPlantasTotal && (() => {
-        console.error(errors.cantidadPlantasTotal.message);
+        {errors.plantCuantityTotal && (() => {
+        console.error(errors.plantCuantityTotal.message);
         return null;
         })()}
 
@@ -213,7 +213,7 @@ export default function PesticidePerPlant() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={resultado?.toString()}
+            value={result?.toString()}
             editable={false}
           />
           <Text style={styles.text}> Litros</Text>

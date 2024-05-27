@@ -30,7 +30,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function FixedVelocityMethod() {
-  const [resultado, setResultado] = useState<string | null>(null);
+  const [result, setresult] = useState<string | null>(null);
 
   const {
     control,
@@ -51,11 +51,11 @@ export default function FixedVelocityMethod() {
   }, []);
 
   const onSubmit = (data: FormData) => {
-    let raw_calculus =
+    let rawCalculus =
       (Number(data.dischargePerMinute) * 10000) /
       (Number(data.velocity) * 60) /
       Number(data.distanceBetweenNozzles);
-    setResultado(raw_calculus.toFixed(3));
+    setresult(rawCalculus.toFixed(3));
   };
 
 
@@ -174,7 +174,7 @@ export default function FixedVelocityMethod() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={resultado?.toString()}
+            value={result?.toString()}
             editable={false}
           />
           <Text style={styles.text}>litros / hectárea.</Text>

@@ -37,7 +37,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerArea() {
-  const [resultado, setResultado] = useState<string | null>(null);
+  const [result, setresult] = useState<string | null>(null);
 
   const {
     control,
@@ -63,7 +63,7 @@ export default function PesticidePerArea() {
       ((data.initialVolume - data.finalVolume) * data.cultivationArea) /
       data.appliedArea
     ).toFixed(2);
-    setResultado(calc);
+    setresult(calc);
   };
 
   return (
@@ -207,7 +207,7 @@ export default function PesticidePerArea() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={resultado?.toString()}
+            value={result?.toString()}
             editable={false}
           />
           <Text style={styles.text}> Litros</Text>

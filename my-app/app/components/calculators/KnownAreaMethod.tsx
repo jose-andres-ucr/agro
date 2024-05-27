@@ -8,19 +8,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 // Define the schema with string inputs that are refined to positive numbers
 const schema = z.object({
-  volumenInicial: z
+  initialVolume: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    volumenFinal: z
+    finalVolume: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    areaConocida: z
+    knownArea: z
     .string()
     .nonempty({ message: "Este campo es obligatorio" })
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
@@ -31,7 +31,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function VolumeCalculator() {
-  const [resultado, setResultado] = useState<string | null>(null);
+  const [result, setresult] = useState<string | null>(null);
 
   const {
     control,
@@ -42,19 +42,19 @@ export default function VolumeCalculator() {
   });
 
   const refs = {
-    volumenInicialRef: React.useRef<TextInputRn>(null),
-    volumenFinalRef: React.useRef<TextInputRn>(null),
-    areaConocidaRef: React.useRef<TextInputRn>(null),
+    initialVolumeRef: React.useRef<TextInputRn>(null),
+    finalVolumeRef: React.useRef<TextInputRn>(null),
+    knownAreaRef: React.useRef<TextInputRn>(null),
   } as const;
 
   useEffect(() => {
-    refs.volumenInicialRef.current?.focus();
+    refs.initialVolumeRef.current?.focus();
   }, []);
 
   const onSubmit = (data: FormData) => {
-    const { volumenInicial, volumenFinal, areaConocida } = data;
-    const result = ((volumenInicial - volumenFinal) * 10000) / areaConocida;
-    setResultado(result.toFixed(2));
+    const { initialVolume, finalVolume, knownArea } = data;
+    const result = ((initialVolume - finalVolume) * 10000) / knownArea;
+    setresult(result.toFixed(2));
   };
 
   return (
@@ -71,7 +71,7 @@ export default function VolumeCalculator() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.volumenInicialRef}
+                ref={refs.initialVolumeRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -82,18 +82,18 @@ export default function VolumeCalculator() {
                 autoFocus
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.volumenFinalRef.current?.focus();
+                  refs.finalVolumeRef.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="volumenInicial"
+            name="initialVolume"
           />
           <Text>Litros</Text>
         </View>
 
-        {errors.volumenInicial && (() => {
-        console.error(errors.volumenInicial.message);
+        {errors.initialVolume && (() => {
+        console.error(errors.initialVolume.message);
         return null;
         })()}
 
@@ -103,7 +103,7 @@ export default function VolumeCalculator() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.volumenFinalRef}
+                ref={refs.finalVolumeRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -113,18 +113,18 @@ export default function VolumeCalculator() {
                 autoCapitalize="none"
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.areaConocidaRef.current?.focus();
+                  refs.knownAreaRef.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="volumenFinal"
+            name="finalVolume"
           />
           <Text>Litros</Text>
         </View>
         
-        {errors.volumenFinal && (() => {
-        console.error(errors.volumenFinal.message);
+        {errors.finalVolume && (() => {
+        console.error(errors.finalVolume.message);
         return null;
         })()}
 
@@ -134,7 +134,7 @@ export default function VolumeCalculator() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.areaConocidaRef}
+                ref={refs.knownAreaRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
@@ -147,13 +147,13 @@ export default function VolumeCalculator() {
                 blurOnSubmit={false}
               />
             )}
-            name="areaConocida"
+            name="knownArea"
           />
           <Text>m2</Text>
         </View>
 
-        {errors.areaConocida && (() => {
-        console.error(errors.areaConocida.message);
+        {errors.knownArea && (() => {
+        console.error(errors.knownArea.message);
         return null;
         })()}
 
@@ -168,7 +168,7 @@ export default function VolumeCalculator() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={resultado?.toString()}
+            value={result?.toString()}
             editable={false}
           />
           <Text style={styles.text}> litros / hectárea</Text>
