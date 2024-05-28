@@ -1,64 +1,63 @@
 import { View, StyleSheet, TextInput as TextInputRn, ScrollView } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
 
-
-const PositiveNumberSchema = z
-  .string()
-  .min(1, { message: "Valor requerido" })
-  .refine(
-    (value) => {
-      return !isNaN(Number(value));
-    },
-    { message: "El valor debe ser un numérico" }
-  )
-  .refine(
-    (value) => {
-      return Number(value) > 0;
-    },
-    { message: "El valor debe ser mayor a 0" }
-  );
-
-const FixedVelocityMethodFormSchema = z.object({
-  dischargePerMinute: PositiveNumberSchema,
-  distanceBetweenNozzles: PositiveNumberSchema,
-  velocity: PositiveNumberSchema,
+const schema = z.object({
+  dischargePerMinute: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    distanceBetweenNozzles: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    velocity: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
 });
 
-type FormData = z.infer<typeof FixedVelocityMethodFormSchema>;
+type FormData = z.infer<typeof schema>;
 
 export default function FixedVelocityMethod() {
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setresult] = useState<string | null>(null);
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: {
-      dischargePerMinute: "",
-      distanceBetweenNozzles: "",
-      velocity: "",
-    },
-    resolver: zodResolver(FixedVelocityMethodFormSchema),
+    resolver: zodResolver(schema),
   });
 
   const refs = {
-    dischargePerMinute: React.createRef<TextInputRn>(),
-    distanceBetweenNozzles: React.createRef<TextInputRn>(),
-    velocity: React.createRef<TextInputRn>(),
+    dischargePerMinuteRef: React.useRef<TextInputRn>(null),
+    distanceBetweenNozzlesRef: React.useRef<TextInputRn>(null),
+    velocityRef: React.useRef<TextInputRn>(null),
   } as const;
 
+  useEffect(() => {
+    refs.dischargePerMinuteRef.current?.focus();
+  }, []);
+
   const onSubmit = (data: FormData) => {
-    let raw_calculus =
+    let rawCalculus =
       (Number(data.dischargePerMinute) * 10000) /
       (Number(data.velocity) * 60) /
       Number(data.distanceBetweenNozzles);
-    setResult(raw_calculus.toFixed(3));
+    setresult(rawCalculus.toFixed(3));
   };
+
 
   return (
     <ScrollView
@@ -75,79 +74,94 @@ export default function FixedVelocityMethod() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={styles.inputField}
+                ref={refs.dischargePerMinuteRef}
                 mode="outlined"
+                style={styles.inputField}
                 onBlur={onBlur}
                 onChangeText={onChange}
-                value={value ? value.toString() : ""}
+                value={value?.toString()}
                 keyboardType="numeric"
+                autoCapitalize="none"
+                autoFocus
                 returnKeyType="next"
-                onSubmitEditing={() =>
-                  refs.distanceBetweenNozzles.current?.focus()
-                }
+                onSubmitEditing={() => {
+                  refs.distanceBetweenNozzlesRef.current?.focus();
+                }}
+                blurOnSubmit={false}
               />
             )}
             name="dischargePerMinute"
           />
-        </View>
-        <View style={styles.containerError}>
-          {errors.dischargePerMinute && (
-            <Text style={styles.error}>{errors.dischargePerMinute.message}</Text>
-          )}
+
+        <Text>Litros</Text>
         </View>
 
+        {errors.dischargePerMinute && (() => {
+        console.error(errors.dischargePerMinute.message);
+        return null;
+        })()}   
+        
+
         <View style={styles.inputGroup}>
-          <Text>Ancho de franja (metros):</Text>
+          <Text>Ancho de franja:              </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
+                ref={refs.distanceBetweenNozzlesRef}
+                mode="outlined"
                 style={styles.inputField}
-                mode="outlined"                
                 onBlur={onBlur}
                 onChangeText={onChange}
-                value={value ? value.toString() : ""}
+                value={value?.toString()}
                 keyboardType="numeric"
+                autoCapitalize="none"
                 returnKeyType="next"
-                ref={refs.distanceBetweenNozzles}
-                onSubmitEditing={() => refs.velocity.current?.focus()}
+                onSubmitEditing={() => {
+                  refs.velocityRef.current?.focus();
+                }}
+                blurOnSubmit={false}
               />
             )}
             name="distanceBetweenNozzles"
           />         
+            <Text>Metros</Text>
         </View>
-        <View style={styles.containerError}>
-          {errors.distanceBetweenNozzles && (
-            <Text style={styles.error}>
-              {errors.distanceBetweenNozzles.message}
-            </Text>
-          )}
-        </View>        
+
+        {errors.distanceBetweenNozzles && (() => {
+        console.error(errors.distanceBetweenNozzles.message);
+        return null;
+        })()}   
         
         <View style={styles.inputGroup}>
-          <Text>Velocidad (metros/segundo):</Text>
+          <Text>Velocidad:                             </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
+                ref={refs.velocityRef}
+                mode="outlined"
                 style={styles.inputField}
-                mode="outlined"                  
                 onBlur={onBlur}
                 onChangeText={onChange}
-                value={value ? value.toString() : ""}
+                value={value?.toString()}
                 keyboardType="numeric"
-                ref={refs.velocity}
-                returnKeyType="done"
-              />  
+                autoCapitalize="none"
+                returnKeyType="send"
+                onSubmitEditing={handleSubmit(onSubmit)}
+                blurOnSubmit={false}
+              />
             )}
             name="velocity"
           />
+
+          <Text>     m/s     </Text>
         </View>
-        <View style={styles.containerError}>
-          {errors.velocity && (
-            <Text style={styles.error}>{errors.velocity.message}</Text>
-          )}
-        </View>
+
+        {errors.velocity && (() => {
+        console.error(errors.velocity.message);
+        return null;
+        })()}   
 
         <Button
           style={styles.button}
@@ -158,14 +172,13 @@ export default function FixedVelocityMethod() {
         </Button>
 
         <View style={styles.resultGroup}>
-          <Text style={styles.text}>Resultado: </Text>
           <TextInput
             style={styles.resultField}
-            value={result ? result : ""}
+            value={result?.toString()}
             editable={false}
           />
-          <Text style={styles.text}> litros / hectárea</Text>
-        </View>       
+          <Text style={styles.text}>litros / hectárea.</Text>
+        </View>
       </View>
       <CommentLog text="VelocityComments" />
     </ScrollView>

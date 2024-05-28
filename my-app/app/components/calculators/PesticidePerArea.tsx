@@ -1,54 +1,69 @@
-import {
-  StyleSheet,
-  View,
-  TextInput as TextInputRn,
-  Keyboard,
-  ScrollView
-
-} from "react-native";
+import { StyleSheet, View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-
 import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-
-const form = z.object({
-  appliedArea: z.string().transform((value) => Number(value)),
-  initialVolume: z.string().transform((value) => Number(value)),
-  finalVolume: z.string().transform((value) => Number(value)),
-  cultivationArea: z.string().transform((value) => Number(value)),
+// Define the schema with string inputs that are refined to positive numbers
+const schema = z.object({
+  appliedArea: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    initialVolume: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    finalVolume: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    cultivationArea: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
 });
-type FormData = z.infer<typeof form>;
+
+type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerArea() {
-  const [result, setResult] = useState(0.0);
+  const [result, setresult] = useState<string | null>(null);
 
-  const { control, handleSubmit } = useForm({
-    defaultValues: {
-      appliedArea: 0,
-      initialVolume: 0,
-      finalVolume: 0,
-      cultivationArea: 0,
-    },
-    resolver: zodResolver(form),
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
   });
 
   const refs = {
+    appliedAreaRef: React.useRef<TextInputRn>(null),
     initialVolumeRef: React.useRef<TextInputRn>(null),
     finalVolumeRef: React.useRef<TextInputRn>(null),
     areaRef: React.useRef<TextInputRn>(null),
   } as const;
 
+  useEffect(() => {
+    refs.initialVolumeRef.current?.focus();
+  }, []);
+
   const onSubmit = (data: FormData) => {
-    Keyboard.dismiss();
     let calc = (
       ((data.initialVolume - data.finalVolume) * data.cultivationArea) /
       data.appliedArea
     ).toFixed(2);
-    setResult(parseInt(calc));
+    setresult(calc);
   };
 
   return (
@@ -57,20 +72,19 @@ export default function PesticidePerArea() {
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
       <View style={styles.container}>
-        <Text style={styles.text}>
-          Marque un área conocida y aplique allí agua a la velocidad usual.
-        </Text>
+        <Text style={styles.text}> Marque un área conocida y aplique allí agua a la velocidad usual.</Text>
         <View style={styles.inputGroup}>
-          <Text>Área aplicada (m2): </Text>
+          <Text>Área aplicada    </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
+                ref={refs.appliedAreaRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
                 onChangeText={onChange}
-                value={value === 0 ? "" : value.toString()}
+                value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
                 autoFocus
@@ -83,9 +97,16 @@ export default function PesticidePerArea() {
             )}
             name="appliedArea"
           />
+          <Text>m2</Text>
         </View>
+
+        {errors.appliedArea && (() => {
+        console.error(errors.appliedArea.message);
+        return null;
+        })()}
+
         <View style={styles.inputGroup}>
-          <Text>Volumen Inicial (litros):</Text>
+          <Text>Volumen Inicial     </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -95,7 +116,7 @@ export default function PesticidePerArea() {
                 style={styles.inputField}
                 onBlur={onBlur}
                 onChangeText={onChange}
-                value={value === 0 ? "" : value.toString()}
+                value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
                 returnKeyType="next"
@@ -107,9 +128,16 @@ export default function PesticidePerArea() {
             )}
             name="initialVolume"
           />
+          <Text>Litros</Text>
         </View>
+        
+        {errors.initialVolume && (() => {
+        console.error(errors.initialVolume.message);
+        return null;
+        })()}
+
         <View style={styles.inputGroup}>
-          <Text>Volumen final (litros):</Text>
+          <Text>Volumen final        </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -119,7 +147,7 @@ export default function PesticidePerArea() {
                 style={styles.inputField}
                 onBlur={onBlur}
                 onChangeText={onChange}
-                value={value === 0 ? "" : value.toString()}
+                value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
                 returnKeyType="next"
@@ -131,9 +159,19 @@ export default function PesticidePerArea() {
             )}
             name="finalVolume"
           />
+          <Text>Litros</Text>
         </View>
+        
+        {errors.finalVolume && (() => {
+        console.error(errors.finalVolume.message);
+        return null;
+        })()}
+
         <View style={styles.inputGroup}>
-          <Text>Área del cultivo por aplicar (m2):</Text>
+          <View>
+          <Text>Área del cultivo</Text>
+          <Text>por aplicar</Text>
+          </View>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -143,51 +181,51 @@ export default function PesticidePerArea() {
                 style={styles.inputField}
                 onBlur={onBlur}
                 onChangeText={onChange}
-                value={value === 0 ? "" : value.toString()}
+                value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
                 returnKeyType="send"
-                onSubmitEditing={handleSubmit((form) => {
-                  onSubmit(form);
-                })}
+                onSubmitEditing={handleSubmit(onSubmit)}
                 blurOnSubmit={false}
               />
             )}
             name="cultivationArea"
           />
+          <Text>m2</Text>
         </View>
+
+        {errors.cultivationArea && (() => {
+        console.error(errors.cultivationArea.message);
+        return null;
+        })()}
 
         <Button
           style={styles.button}
           mode="contained"
-          onPress={handleSubmit((form) => {
-            onSubmit(form);
-          })}
+          onPress={handleSubmit(onSubmit)}
         >
           Calcular
         </Button>
 
         <View style={styles.resultGroup}>
-          <Text style={styles.text}>Resultado: </Text>
           <TextInput
             style={styles.resultField}
-            value={result.toString()}
+            value={result?.toString()}
             editable={false}
           />
-          <Text style={styles.text}> litros.</Text>
+          <Text style={styles.text}> Litros</Text>
         </View>
-        <CommentLog text="PesticidePerAreaComments" />
       </View>
+      <CommentLog text="PesticidePerAreaComments" />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "flex-start",
+    width: "100%",
     alignContent: "center",
-    padding: 28,
+    padding: 8,
   },
   text: {
     textAlign: "center",
@@ -217,5 +255,14 @@ const styles = StyleSheet.create({
   resultField: {
     width: "50%",
     textAlign: "center",
+  },
+  containerError: {
+    flex: 1,
+    justifyContent: "flex-end",
+    flexDirection: "row",
+    padding: 8,   
+  },
+  error: {
+    color: "red",
   },
 });

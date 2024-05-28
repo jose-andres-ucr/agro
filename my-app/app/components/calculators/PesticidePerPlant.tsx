@@ -1,253 +1,231 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput as TextInputRn } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { StyleSheet, View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
+import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-
-const form = z.object({
-  cantidadPlantas: z.number(),
-  volumenInicial: z.number(),
-  volumenFinal: z.number(),
-  cantidadPlantasTotal: z.number(),
+// Define the schema with string inputs that are refined to positive numbers
+const schema = z.object({
+  plantCuantity: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    initialVolume: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    finalVolume: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+    plantCuantityTotal: z
+    .string()
+    .nonempty({ message: "Este campo es obligatorio" })
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
 });
 
-type FormData = z.infer<typeof form>;
+type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
+  const [result, setresult] = useState<string | null>(null);
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(form),
+    resolver: zodResolver(schema),
   });
 
-  const [resultado, setResultado] = useState<number | null>(null);
-
   const refs = {
-    cantidadPlantasRef: React.useRef<TextInputRn>(null),
-    volumenInicialRef: React.useRef<TextInputRn>(null),
-    volumenFinalRef: React.useRef<TextInputRn>(null),
-    cantidadTotal: React.useRef<TextInputRn>(null),
+    plantCuantityRef: React.useRef<TextInputRn>(null),
+    initialVolumeRef: React.useRef<TextInputRn>(null),
+    finalVolumeRef: React.useRef<TextInputRn>(null),
+    cuantityTotal: React.useRef<TextInputRn>(null),
   } as const;
 
   useEffect(() => {
-    refs.cantidadPlantasRef.current?.focus();
+    refs.plantCuantityRef.current?.focus();
   }, []);
 
   const onSubmit = (data: FormData) => {
     const {
-      cantidadPlantas,
-      volumenInicial,
-      volumenFinal,
-      cantidadPlantasTotal,
+      plantCuantity,
+      initialVolume,
+      finalVolume,
+      plantCuantityTotal,
     } = data;
     const result =
-    ((volumenInicial - volumenFinal) * cantidadPlantasTotal) /
-    cantidadPlantas;
-    const resultadoRedondeado = result.toFixed(3);
-    setResultado(parseFloat(resultadoRedondeado));
-  
+    ((initialVolume - finalVolume) * plantCuantityTotal) /
+    plantCuantity;
+    const resultRedondeado = result.toFixed(3);
+    setresult(resultRedondeado);
   };
 
   return (
     <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      ref={(scrollView) => {
-        scrollView?.scrollToEnd({ animated: true });
-      }}
+    contentContainerStyle={{ flexGrow: 1 }}
+    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
       <View style={styles.container}>
-        <Text style={styles.text}>
-          Cuente un número de plantas y aplique allí agua a la velocidad usual.{" "}
-        </Text>
+        <Text style={styles.text}>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
         <View style={styles.inputGroup}>
-          <Text>Cantidad de plantas {"\n"}aplicadas:</Text>
+          <View>
+          <Text>Cantidad de plantas     </Text>
+          <Text>aplicadas:</Text>
+          </View>
+
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.cantidadPlantasRef}
+                ref={refs.plantCuantityRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
+                onChangeText={onChange}
                 value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
                 autoFocus
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.volumenInicialRef.current?.focus();
+                  refs.initialVolumeRef.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="cantidadPlantas"
+            name="plantCuantity"
           />
+          <Text>     </Text>
         </View>
 
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.cantidadPlantas && errors.cantidadPlantas.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.cantidadPlantas && errors.cantidadPlantas.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.cantidadPlantas && errors.cantidadPlantas.message}
-          </Text>
-        </View>
+        {errors.plantCuantity && (() => {
+        console.error(errors.plantCuantity.message);
+        return null;
+        })()}
 
         <View style={styles.inputGroup}>
-          <Text>Volumen inicial (litros):</Text>
+          <Text>Volumen Inicial                 </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.volumenInicialRef}
+                ref={refs.initialVolumeRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
+                onChangeText={onChange}
                 value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.volumenFinalRef.current?.focus();
+                  refs.finalVolumeRef.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="volumenInicial"
+            name="initialVolume"
           />
+          <Text>Litros</Text>
         </View>
-
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.volumenInicial && errors.volumenInicial.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.volumenInicial && errors.volumenInicial.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.volumenInicial && errors.volumenInicial.message}
-          </Text>
-        </View>
+        
+        {errors.initialVolume && (() => {
+        console.error(errors.initialVolume.message);
+        return null;
+        })()}
 
         <View style={styles.inputGroup}>
-          <Text>Volumen final (litros):</Text>
+          <Text>Volumen final                    </Text>
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.volumenFinalRef}
+                ref={refs.finalVolumeRef}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
+                onChangeText={onChange}
                 value={value?.toString()}
                 keyboardType="numeric"
                 autoCapitalize="none"
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.cantidadTotal.current?.focus();
+                  refs.cuantityTotal.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="volumenFinal"
+            name="finalVolume"
           />
+          <Text>Litros</Text>
         </View>
-
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.volumenFinal && errors.volumenFinal.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.volumenFinal && errors.volumenFinal.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.volumenFinal && errors.volumenFinal.message}
-          </Text>
-        </View>
+        
+        {errors.finalVolume && (() => {
+        console.error(errors.finalVolume.message);
+        return null;
+        })()}
 
         <View style={styles.inputGroup}>
-          <Text>
-            Cantidad de plantas totales{"\n"}en la parcela por aplicar:
-          </Text>
+          <View>
+          <Text>Cantidad de plantas     </Text>
+          <Text>totales en la parcela </Text>
+          <Text>por aplicar:</Text>
+          </View>
+
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.cantidadTotal}
+                ref={refs.cuantityTotal}
                 mode="outlined"
                 style={styles.inputField}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
+                onChangeText={onChange}
                 value={value?.toString()}
-                returnKeyType="next"
                 keyboardType="numeric"
-                onSubmitEditing={handleSubmit((form) => {
-                  onSubmit(form);
-                })}
+                autoCapitalize="none"
+                returnKeyType="send"
+                onSubmitEditing={handleSubmit(onSubmit)}
                 blurOnSubmit={false}
               />
             )}
-            name="cantidadPlantasTotal"
+            name="plantCuantityTotal"
           />
+          <Text>m2</Text>
         </View>
 
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message}
-          </Text>
-        </View>
+        {errors.plantCuantityTotal && (() => {
+        console.error(errors.plantCuantityTotal.message);
+        return null;
+        })()}
 
         <Button
           style={styles.button}
           mode="contained"
-          onPress={handleSubmit((form) => {
-            onSubmit(form);
-          })}
+          onPress={handleSubmit(onSubmit)}
         >
           Calcular
         </Button>
 
         <View style={styles.resultGroup}>
-          <Text style={styles.text}>Resultado: </Text>
           <TextInput
             style={styles.resultField}
-            value={resultado?.toString()}
+            value={result?.toString()}
             editable={false}
           />
-          <Text style={styles.text}> litros.</Text>
+          <Text style={styles.text}> Litros</Text>
         </View>
       </View>
       <CommentLog text="PesticidePerPlantComments" />
@@ -257,10 +235,9 @@ export default function PesticidePerPlant() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "flex-start",
+    width: "100%",
     alignContent: "center",
-    padding: 28,
+    padding: 8,
   },
   text: {
     textAlign: "center",
@@ -300,5 +277,4 @@ const styles = StyleSheet.create({
   error: {
     color: "red",
   },
-
 });
