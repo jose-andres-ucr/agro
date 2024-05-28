@@ -1,6 +1,6 @@
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { Controller, useForm } from "react-hook-form";
-import { TextInput, Text } from "react-native-paper";
+import { TextInput, Text, Card } from "react-native-paper";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
@@ -130,12 +130,35 @@ export default function SignUp() {
   useEffect(() => {
     if (errors) {
       Keyboard.dismiss();
+      if (errors.userRole) {
+        console.groupCollapsed();
+        console.error(errors.userRole.message);
+        console.groupEnd();
+      } else if (errors.fullname) {
+        console.groupCollapsed();
+        console.error(errors.fullname.message);
+        console.groupEnd();
+      } else if (errors.userName) {
+        console.groupCollapsed();
+        console.error(errors.userName.message);
+        console.groupEnd();
+      } else if (errors.password) {
+        console.groupCollapsed();
+        console.error(errors.password.message);
+        console.groupEnd();
+      } else if (errors.confirmPassword) {
+        console.groupCollapsed();
+        console.error(errors.confirmPassword.message);
+        console.groupEnd();
+      }
+    } else {
+      console.error();
     }
   }, [errors]);
 
+  useEffect(() => {}, []);
   const onSubmit = (data: FormData) => {
     Keyboard.dismiss();
-    console.log(data.userRole);
     setIsLoading(true);
     auth()
       .createUserWithEmailAndPassword(data.userName, data.password)
@@ -157,6 +180,7 @@ export default function SignUp() {
                 user
                   .sendEmailVerification()
                   .then(() => {
+                    console.log(user.email);
                     console.log("Check your email");
                     setUser(auth().currentUser);
                     setCheckEmail(true);
@@ -183,7 +207,10 @@ export default function SignUp() {
       })
       .catch((error) => {
         console.log(error);
-        setInvalidCredential(true);
+        if (error.message === "auth/email-already-in-use") {
+          setInvalidCredential(true);
+        }
+
         setIsLoading(false);
       });
   };
@@ -192,152 +219,161 @@ export default function SignUp() {
     <ScrollView
       style={{
         padding: 28,
-        backgroundColor: "#FFF",
         paddingTop: 50,
+        backgroundColor: "#FFF",
       }}
     >
-      <View style={{ marginBottom: 80 }}>
-        <Controller
-          control={control}
-          render={() => <DropDownRole handleRole={handleRole} />}
-          name="userRole"
-        />
-        {errors.userRole && (
-          <Text style={styles.error}>{errors.userRole.message}</Text>
-        )}
-        <View style={{ display: role ? "flex" : "none" }}>
+      <Card
+        style={{
+          marginBottom: 80,
+          paddingBottom: 28,
+          borderColor: "gray",
+          borderWidth: 1,
+        }}
+      >
+        <Card.Content>
           <Controller
             control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.fullname}
-                mode="outlined"
-                editable={role !== ""}
-                style={styles.inputField}
-                label="Nombre Completo"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                keyboardType="default"
-                autoCapitalize="none"
-                autoComplete="cc-name"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.userName.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="fullname"
+            render={() => <DropDownRole handleRole={handleRole} />}
+            name="userRole"
           />
-          {errors.fullname && (
-            <Text style={styles.error}>{errors.fullname.message}</Text>
+          {errors.userRole && (
+            <Text style={styles.error}>{errors.userRole.message}</Text>
           )}
-
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.userName}
-                mode="outlined"
-                editable={role !== ""}
-                style={styles.inputField}
-                label={
-                  role === "Usuario Externo"
-                    ? "Correo"
-                    : "Correo instituacional"
-                }
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.password.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
+          <View style={{ display: role ? "flex" : "none" }}>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.fullname}
+                  mode="outlined"
+                  editable={role !== ""}
+                  style={styles.inputField}
+                  label="Nombre Completo"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  keyboardType="default"
+                  autoCapitalize="none"
+                  autoComplete="cc-name"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.userName.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="fullname"
+            />
+            {errors.fullname && (
+              <Text style={styles.error}>{errors.fullname.message}</Text>
             )}
-            name="userName"
-          />
-          {errors.userName && (
-            <Text style={styles.error}>{errors.userName.message}</Text>
-          )}
 
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.password}
-                mode="outlined"
-                editable={role !== ""}
-                style={styles.inputField}
-                label="Contraseña"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry
-                keyboardType="default"
-                autoCapitalize="none"
-                autoComplete="password"
-                returnKeyType="next"
-                onSubmitEditing={() => refs.confirmPassword.current?.focus()}
-                blurOnSubmit={false}
-              />
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.userName}
+                  mode="outlined"
+                  editable={role !== ""}
+                  style={styles.inputField}
+                  label={
+                    role === "Usuario Externo"
+                      ? "Correo"
+                      : "Correo institucional"
+                  }
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.password.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="userName"
+            />
+            {errors.userName && (
+              <Text style={styles.error}>{errors.userName.message}</Text>
             )}
-            name="password"
-          />
-          {errors.password && (
-            <Text style={styles.error}>{errors.password.message}</Text>
-          )}
 
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.confirmPassword}
-                mode="outlined"
-                editable={role !== ""}
-                style={styles.inputField}
-                label="Confirmar contraseña"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry
-                keyboardType="default"
-                autoCapitalize="none"
-                autoComplete="password"
-                returnKeyType="send"
-                onSubmitEditing={handleSubmit((form) => {
-                  onSubmit(form);
-                })}
-                blurOnSubmit={false}
-              />
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.password}
+                  mode="outlined"
+                  editable={role !== ""}
+                  style={styles.inputField}
+                  label="Contraseña"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  secureTextEntry
+                  keyboardType="default"
+                  autoCapitalize="none"
+                  autoComplete="password"
+                  returnKeyType="next"
+                  onSubmitEditing={() => refs.confirmPassword.current?.focus()}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="password"
+            />
+            {errors.password && (
+              <Text style={styles.error}>{errors.password.message}</Text>
             )}
-            name="confirmPassword"
-          />
-          {errors.confirmPassword && (
-            <Text style={styles.error}>{errors.confirmPassword.message}</Text>
-          )}
 
-          {invalidCredential ? (
-            <Text style={styles.error}>
-              El correo ya se encuentra registrado.
-            </Text>
-          ) : null}
-          <CheckEmailModal checkEmail={checkEmail} userEmail={user?.email} />
-          <View style={{ marginVertical: 20 }} />
-          <LoadingButton
-            label="Registrarme"
-            isLoading={isLoading}
-            handlePress={handleSubmit((form) => {
-              onSubmit(form);
-            })}
-          />
-        </View>
-      </View>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.confirmPassword}
+                  mode="outlined"
+                  editable={role !== ""}
+                  style={styles.inputField}
+                  label="Confirmar contraseña"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  secureTextEntry
+                  keyboardType="default"
+                  autoCapitalize="none"
+                  autoComplete="password"
+                  returnKeyType="send"
+                  onSubmitEditing={handleSubmit((form) => {
+                    onSubmit(form);
+                  })}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="confirmPassword"
+            />
+            {errors.confirmPassword && (
+              <Text style={styles.error}>{errors.confirmPassword.message}</Text>
+            )}
+
+            {invalidCredential ? (
+              <Text style={styles.error}>
+                El correo ya se encuentra registrado.
+              </Text>
+            ) : null}
+            <CheckEmailModal checkEmail={checkEmail} userEmail={user?.email} />
+            <View style={{ marginVertical: 20 }} />
+            <LoadingButton
+              label="Registrarme"
+              isLoading={isLoading}
+              handlePress={handleSubmit((form) => {
+                onSubmit(form);
+              })}
+            />
+          </View>
+        </Card.Content>
+      </Card>
     </ScrollView>
   );
 }

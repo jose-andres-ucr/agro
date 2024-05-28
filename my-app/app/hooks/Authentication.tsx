@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 
 const useAuthState = () => {
   const [initializing, setInitializing] = useState(true);
-  const [userAuthState, setUserAuthState] =
-    useState<FirebaseAuthTypes.User | null>(null);
+  const [user, setUserAuthState] = useState<FirebaseAuthTypes.User | null>(
+    null
+  );
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged((user) => {
@@ -15,7 +16,7 @@ const useAuthState = () => {
     return unsubscribe; // unsubscribe on unmount
   }, [initializing]);
 
-  return { initializing, userAuthState };
+  return { initializing, user };
 };
 
 export default useAuthState;

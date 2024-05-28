@@ -5,16 +5,16 @@ import { useEffect, useState } from "react";
 import useAuthState from "./Authentication";
 
 const useFetchUserData = () => {
-  const { initializing, userAuthState } = useAuthState();
+  const { user } = useAuthState();
   const [userData, setUserData] =
     useState<FirebaseFirestoreTypes.DocumentData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (userAuthState?.email) {
+      if (user?.email) {
         //TODO: handle errors
         let response = (
-          await firestore().collection("Users").doc(userAuthState.uid).get()
+          await firestore().collection("Users").doc(user.uid).get()
         ).data();
         if (response !== undefined) {
           setUserData(response);
@@ -24,15 +24,15 @@ const useFetchUserData = () => {
       }
     };
 
-    if (userAuthState?.emailVerified) {
+    if (user?.emailVerified) {
       fetchData();
     } else {
       setUserData(null);
     }
-  }, [userAuthState]);
-  let userId = userAuthState?.uid;
+  }, [user]);
+  let userId = user?.uid;
 
-  return { initializing, userId, userData };
+  return { userId, userData };
 };
 
 export default useFetchUserData;

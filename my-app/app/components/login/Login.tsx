@@ -14,6 +14,7 @@ import {
 import React from "react";
 import { theme } from "@/constants/theme";
 import LoadingButton from "../LoadingButton";
+import useUserRole from "@/app/hooks/UserRole";
 
 const form = z.object({
   userName: z.string().email({ message: "El nombre de usuario no es válido" }),
@@ -41,7 +42,7 @@ export default function Login() {
     password: React.useRef<TextInputRn>(null),
   } as const;
 
-  const [invalidCredential, setInvalidCredencial] = useState<boolean | null>(
+  const [invalidCredential, setInvalidCredential] = useState<boolean | null>(
     null
   );
   const [loading, setLoading] = useState(false);
@@ -52,15 +53,21 @@ export default function Login() {
     auth()
       .signInWithEmailAndPassword(data.userName, data.password)
       .then(() => {
+        // Block login of users with unverified email
         if (!auth().currentUser?.emailVerified) {
-          console.log("User email no verified!");
-          setInvalidCredencial(true);
+          console.log("Unverified user email");
+          setInvalidCredential(true);
           setLoading(false);
+          auth()
+            .signOut()
+            .catch((error) => {
+              console.log(error);
+            });
         }
       })
       .catch((error) => {
         if (error.code == "auth/invalid-credential") {
-          setInvalidCredencial(true);
+          setInvalidCredential(true);
         }
         console.log(error);
         setLoading(false);
@@ -142,7 +149,7 @@ export default function Login() {
             onPress={() => router.push("/components/signup/SignUp")}
             style={{ color: theme.colors.primary, fontWeight: "bold" }}
           >
-            registrese aquí.
+            regístrese aquí.
           </Text>
         </Text>
       </View>

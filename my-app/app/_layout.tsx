@@ -1,31 +1,35 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Stack, router, usePathname } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { theme } from "@/constants/theme";
 import useAuthState from "./hooks/Authentication";
 
 export default function TabLayout() {
-  const { userAuthState } = useAuthState();
   const currentRoute = usePathname();
+  const { initializing, user } = useAuthState();
 
   useEffect(() => {
-    if (userAuthState?.emailVerified) {
-      console.log("User login!");
+    if (user?.emailVerified) {
+      console.log("Welcome User!");
       router.replace("/(tabs)/profile");
-    } else {
-      if (!userAuthState && currentRoute !== "/components/signup/SignUp") {
-        console.log("User sign out or no role!");
-        router.replace("/(tabs)/");
-      }
+    } else if (
+      !user &&
+      currentRoute !== "/components/signup/SignUp" &&
+      currentRoute !== "/components/login/Login"
+    ) {
+      console.log("User sign out or is not authenticated!");
+      router.replace("/(tabs)/");
     }
-  }, [userAuthState]);
+  }, [user]);
 
   return (
     <PaperProvider theme={theme}>
       <Stack>
         <Stack.Screen
           name="components/calculators/FixedVolumeMethod"
-          options={{ headerTitle: "Herbicidas" }}
+          options={{
+            headerTitle: "Herbicidas",
+          }}
         />
         <Stack.Screen
           name="components/calculators/FixedVelocityMethod"
@@ -49,7 +53,7 @@ export default function TabLayout() {
         />
         <Stack.Screen
           name="components/signup/SignUp"
-          options={{ headerTitle: "Registro" }}
+          options={{ headerTitle: "Registro", headerTitleAlign: "center" }}
         />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
