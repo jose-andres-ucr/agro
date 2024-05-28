@@ -14,7 +14,6 @@ import {
 import React from "react";
 import { theme } from "@/constants/theme";
 import LoadingButton from "../LoadingButton";
-import useUserRole from "@/app/hooks/UserRole";
 
 const form = z.object({
   userName: z.string().email({ message: "El nombre de usuario no es válido" }),
@@ -28,6 +27,7 @@ export default function Login() {
   const {
     control,
     handleSubmit,
+    clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -45,25 +45,34 @@ export default function Login() {
   const [invalidCredential, setInvalidCredential] = useState<boolean | null>(
     null
   );
+  const [sessionActive, setSessionActive] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
 
+  const clearErrorMessages = () => {
+    clearErrors();
+    setInvalidCredential(false);
+    setSessionActive(false);
+  };
+
+  const handleSignUp = () => {
+    router.push("/components/signup/SignUp");
+    clearErrorMessages();
+  };
   const onSubmit = (data: FormData) => {
     Keyboard.dismiss();
+    clearErrorMessages();
     setLoading(true);
+    let previousUser = auth().currentUser;
     auth()
       .signInWithEmailAndPassword(data.userName, data.password)
       .then(() => {
         // Block login of users with unverified email
         if (!auth().currentUser?.emailVerified) {
-          console.log("Unverified user email");
           setInvalidCredential(true);
-          setLoading(false);
-          auth()
-            .signOut()
-            .catch((error) => {
-              console.log(error);
-            });
+        } else if (previousUser?.email === auth().currentUser?.email) {
+          setSessionActive(true);
         }
+        setLoading(false);
       })
       .catch((error) => {
         if (error.code == "auth/invalid-credential") {
@@ -135,6 +144,10 @@ export default function Login() {
           Su usuario o contraseña son incorrectos
         </Text>
       ) : null}
+
+      {sessionActive ? (
+        <Text style={styles.error}>Su sesión ya se encuentra activa</Text>
+      ) : null}
       <LoadingButton
         label="Ingresar"
         isLoading={loading}
@@ -146,7 +159,7 @@ export default function Login() {
         <Text style={{ marginTop: 5 }}>
           ¿No posee una cuenta?{" "}
           <Text
-            onPress={() => router.push("/components/signup/SignUp")}
+            onPress={handleSignUp}
             style={{ color: theme.colors.primary, fontWeight: "bold" }}
           >
             regístrese aquí.

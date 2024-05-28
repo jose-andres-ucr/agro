@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import * as React from "react";
 import { View } from "react-native";
 import { Divider, List, Text } from "react-native-paper";
@@ -19,6 +20,7 @@ const DropDownRole = ({
     <View style={{ marginBottom: 20 }}>
       <List.Section
         title="Rol del Usuario"
+        titleStyle={{ fontSize: 16, paddingLeft: 0 }}
         style={{ width: "80%", alignSelf: "center" }}
         focusable={true}
       >
@@ -26,7 +28,8 @@ const DropDownRole = ({
           title={role}
           left={(props) => <List.Icon {...props} icon="account" />}
           style={{
-            borderColor: "gray",
+            borderColor:
+              role === "Seleccione el rol" ? theme.colors.primary : "gray",
             borderWidth: 1,
           }}
           expanded={expanded}

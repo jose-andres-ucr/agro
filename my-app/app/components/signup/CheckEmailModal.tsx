@@ -1,4 +1,3 @@
-import { theme } from "@/constants/theme";
 import { router } from "expo-router";
 import * as React from "react";
 import { View } from "react-native";
