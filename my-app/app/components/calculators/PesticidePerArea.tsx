@@ -1,4 +1,4 @@
-import { StyleSheet, View, TextInput as TextInputRn, ScrollView } from "react-native";
+import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";

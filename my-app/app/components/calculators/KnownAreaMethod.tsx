@@ -5,24 +5,25 @@ import { z } from "zod";
 import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
+import useGlobalCalculatorStyles from "@/constants/styles";
+import { showToastError } from "@/constants/utils";
 
-// Define the schema with string inputs that are refined to positive numbers
+
 const schema = z.object({
   initialVolume: z
-    .string()
-    .nonempty({ message: "Este campo es obligatorio" })
+    .string({required_error: "Este campo es obligatorio"})    
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    finalVolume: z
-    .string()
-    .nonempty({ message: "Este campo es obligatorio" })
+
+  finalVolume: z
+    .string({required_error: "Este campo es obligatorio"})
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    knownArea: z
-    .string()
-    .nonempty({ message: "Este campo es obligatorio" })
+
+  knownArea: z
+    .string({required_error: "Este campo es obligatorio"})
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
@@ -31,7 +32,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function VolumeCalculator() {
-  const [result, setresult] = useState<string | null>(null);
+  const styles = useGlobalCalculatorStyles();
+  const [result, setResult] = useState<string | null>(null);
 
   const {
     control,
@@ -40,6 +42,18 @@ export default function VolumeCalculator() {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+
+  useEffect(() => {
+    if (errors) {
+      if (errors.initialVolume) {
+        showToastError("Volumen inicial", errors.initialVolume.message);
+      } else if (errors.finalVolume) {
+        showToastError("Volumen final", errors.finalVolume.message);
+      } else if (errors.knownArea) {
+        showToastError("Área conocida", errors.knownArea.message);
+      }
+    }
+  }, [errors]);
 
   const refs = {
     initialVolumeRef: React.useRef<TextInputRn>(null),
@@ -54,108 +68,96 @@ export default function VolumeCalculator() {
   const onSubmit = (data: FormData) => {
     const { initialVolume, finalVolume, knownArea } = data;
     const result = ((initialVolume - finalVolume) * 10000) / knownArea;
-    setresult(result.toFixed(2));
+    setResult(result.toFixed(3));
   };
 
   return (
     <ScrollView
-    contentContainerStyle={{ flexGrow: 1 }}
+    contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.container}>
-        <Text style={styles.text}>Determina el volumen de aplicación por hectárea. Marque un área
+      <View style={styles.mainContainer}>
+        <Text style={styles.header}>Volumen en área conocida</Text>
+        <Text style={styles.body}>Determina el volumen de aplicación por hectárea. Marque un área
           conocida y aplique ahí agua a la velocidad usual</Text>
-        <View style={styles.inputGroup}>
-          <Text>Volumen inicial  </Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.initialVolumeRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                autoFocus
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.finalVolumeRef.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="initialVolume"
-          />
-          <Text>Litros</Text>
+        <View style={styles.formContainer}>
+          <View style={styles.inputGroup}>            
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.initialVolumeRef}
+                  label="Volumen inicial"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  autoFocus
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.finalVolumeRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="initialVolume"
+            />
+            <Text style={styles.text}>Litros</Text>
+          </View>
+
+          <View style={styles.inputGroup}>            
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.finalVolumeRef}
+                  label="Volumen final"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.knownAreaRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="finalVolume"
+            />
+            <Text style={styles.text}>Litros</Text>
+          </View>
+
+          <View style={styles.inputGroup}>            
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.knownAreaRef}
+                  label="Área conocida"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="send"
+                  onSubmitEditing={handleSubmit(onSubmit)}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="knownArea"
+            />
+            <Text style={styles.text}>m2</Text>
+          </View>
         </View>
-
-        {errors.initialVolume && (() => {
-        console.error(errors.initialVolume.message);
-        return null;
-        })()}
-
-        <View style={styles.inputGroup}>
-          <Text>Volumen final     </Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.finalVolumeRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.knownAreaRef.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="finalVolume"
-          />
-          <Text>Litros</Text>
-        </View>
-        
-        {errors.finalVolume && (() => {
-        console.error(errors.finalVolume.message);
-        return null;
-        })()}
-
-        <View style={styles.inputGroup}>
-          <Text>Área aplicada</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.knownAreaRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                returnKeyType="send"
-                onSubmitEditing={handleSubmit(onSubmit)}
-                blurOnSubmit={false}
-              />
-            )}
-            name="knownArea"
-          />
-          <Text>m2</Text>
-        </View>
-
-        {errors.knownArea && (() => {
-        console.error(errors.knownArea.message);
-        return null;
-        })()}
 
         <Button
           style={styles.button}
@@ -178,49 +180,3 @@ export default function VolumeCalculator() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    alignContent: "center",
-    padding: 8,
-  },
-  text: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  inputField: {
-    marginVertical: 4,
-    width: "30%",
-    textAlign: "center",
-  },
-  inputGroup: {
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  button: {
-    marginVertical: 8,
-    alignSelf: "flex-end",
-  },
-  resultGroup: {
-    justifyContent: "flex-end",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  resultField: {
-    width: "50%",
-    textAlign: "center",
-  },
-  containerError: {
-    flex: 1,
-    justifyContent: "flex-end",
-    flexDirection: "row",
-    padding: 8,   
-  },
-  error: {
-    color: "red",
-  },
-});
