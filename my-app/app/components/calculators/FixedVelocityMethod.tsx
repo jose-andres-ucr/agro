@@ -81,7 +81,7 @@ export default function FixedVelocityMethod() {
         <Text style={styles.header}>Método de velocidad fija</Text>
         <Text style={styles.body}>Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
-        <View>
+        <View style={styles.formContainer}>
           <View style={styles.inputGroup}>            
             <Controller
               control={control}
