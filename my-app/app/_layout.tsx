@@ -15,7 +15,7 @@ const toastConfig = {
         fontSize: 15
       }}
       style={{
-        borderLeftColor: 'red'
+        borderLeftColor: theme.colors.error
       }}
     />
   ),
@@ -52,6 +52,6 @@ export default function TabLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
       <Toast config={toastConfig}/>
-    </PaperProvider>    
+    </PaperProvider>
   );
 }
