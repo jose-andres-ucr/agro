@@ -1,4 +1,4 @@
-import { StyleSheet, View, TextInput as TextInputRn, ScrollView } from "react-native";
+import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Button, Text} from "react-native-paper";
 import { z } from "zod";
@@ -6,6 +6,8 @@ import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Toast from "react-native-toast-message";
+import useGlobalCalculatorStyles from "@/constants/styles";
+
 
 const schema = z.object({
   plantCuantity: z
@@ -33,6 +35,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
+  const calculatorStyles = useGlobalCalculatorStyles();
   const [result, setResult] = useState<string | null>(null);
   const showToast = (title:string, message: string | undefined) => {
     Toast.show({
@@ -59,7 +62,6 @@ export default function PesticidePerPlant() {
   });
 
   useEffect(() => {
-    console.log(errors);
     if (errors) {
       if (errors.plantCuantity) {
         showToast("Cantidad de plantas aplicadas", errors.plantCuantity.message);
@@ -98,14 +100,15 @@ export default function PesticidePerPlant() {
 
   return (
     <ScrollView
-    contentContainerStyle={{ flexGrow: 1 }}
+    contentContainerStyle={calculatorStyles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.container}>
-        <Text style={styles.header}>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
+      <View style={calculatorStyles.mainContainer}>
+        <Text style={calculatorStyles.header}>Calibración por planta</Text>
+        <Text style={ calculatorStyles.body }>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
         
-        <View style={styles.formContainer}>
-          <View style={styles.inputGroup}>
+        <View style={calculatorStyles.formContainer}>
+          <View style={calculatorStyles.inputGroup}>
             <Controller
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
@@ -113,7 +116,7 @@ export default function PesticidePerPlant() {
                   ref={refs.plantCuantityRef}
                   label="Cantidad de plantas aplicadas"
                   mode="outlined"
-                  style={styles.inputField}
+                  style={calculatorStyles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value?.toString()}                  
@@ -131,7 +134,7 @@ export default function PesticidePerPlant() {
             />
           </View>
 
-          <View style={styles.inputGroup}>          
+          <View style={calculatorStyles.inputGroup}>          
             <Controller
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
@@ -139,7 +142,7 @@ export default function PesticidePerPlant() {
                   ref={refs.initialVolumeRef}
                   label="Volumen inicial"
                   mode="outlined"
-                  style={styles.inputField}
+                  style={calculatorStyles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value?.toString()}                  
@@ -154,10 +157,10 @@ export default function PesticidePerPlant() {
               )}
               name="initialVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <Text style={calculatorStyles.text}>Litros</Text>
           </View>
 
-          <View style={styles.inputGroup}>          
+          <View style={calculatorStyles.inputGroup}>          
             <Controller
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
@@ -165,7 +168,7 @@ export default function PesticidePerPlant() {
                   ref={refs.finalVolumeRef}
                   label="Volumen final"
                   mode="outlined"
-                  style={styles.inputField}
+                  style={calculatorStyles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value?.toString()}                  
@@ -180,10 +183,10 @@ export default function PesticidePerPlant() {
               )}
               name="finalVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <Text style={calculatorStyles.text}>Litros</Text>
           </View>
           
-          <View style={styles.inputGroup}>
+          <View style={calculatorStyles.inputGroup}>
             <Controller
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
@@ -191,7 +194,7 @@ export default function PesticidePerPlant() {
                   ref={refs.cuantityTotal}
                   label="Cantidad de plantas por aplicar"
                   mode="outlined"
-                  style={styles.inputField}
+                  style={calculatorStyles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value?.toString()}
@@ -204,93 +207,28 @@ export default function PesticidePerPlant() {
               )}
               name="plantCuantityTotal"
             />
-            <Text style={styles.text}>m2</Text>
+            <Text style={calculatorStyles.text}>m2</Text>
           </View>
         </View>        
 
         <Button
-          style={styles.button}
+          style={calculatorStyles.button}
           mode="contained"
           onPress={handleSubmit(onSubmit)}
         >
           Calcular
         </Button>
 
-        <View style={styles.resultGroup}>
+        <View style={calculatorStyles.resultGroup}>
           <TextInput
-            style={styles.resultField}
+            style={calculatorStyles.resultField}
             value={result?.toString()}
             editable={false}
           />
-          <Text style={styles.text}> Litros</Text>
+          <Text style={calculatorStyles.text}> Litros</Text>
         </View>
       </View>
       <CommentLog text="PesticidePerPlantComments" />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    marginTop: 10,
-  },
-  dropdown: {    
-    borderColor: "gray",
-    borderWidth: 1.0,
-    borderRadius: 5,
-    flex: 1,
-    marginLeft: 10, 
-    marginTop: 10,   
-    paddingLeft: 20,
-  },
-  placeholderStyle: {
-    fontWeight: "bold",
-  },
-  selectedTextStyle: {
-    fontWeight: "bold",
-  },
-  formContainer: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  header: {
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 20,
-  },
-  text: {    
-    fontWeight: "bold",
-    alignSelf: "center",
-    marginLeft: 10
-  },
-  inputField: {
-    width: "70%",
-    marginTop: 5
-  },
-  inputGroup: {
-    flexDirection: "row"
-  },
-  button: {
-    alignSelf: "flex-end",
-  },
-  resultGroup: {
-    justifyContent: "flex-end",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  resultField: {
-    width: "50%",
-    textAlign: "center",
-  },
-  containerError: {
-    flex: 1,
-    justifyContent: "flex-end",
-    flexDirection: "row",
-    padding: 8,
-  },
-  error: {
-    color: "red",
-  },
-});
