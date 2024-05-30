@@ -1,4 +1,4 @@
-import { StyleSheet, View, TextInput as TextInputRn, ScrollView } from "react-native";
+import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";
@@ -77,7 +77,7 @@ export default function KnownAreaMethod() {
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
       <View style={styles.mainContainer}>
-        <Text style={styles.header}>Volumen fijo</Text>
+        <Text style={styles.header}>Método de Volumen fijo</Text>
         <Text style={styles.body}>Determina a qué velocidad se debe avanzar para aplicar el volumen del caldo deseado</Text>
         <View style={styles.formContainer}> 
           <View style={styles.inputGroup}>
