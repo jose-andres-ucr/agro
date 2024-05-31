@@ -1,34 +1,35 @@
-import { StyleSheet, View, TextInput as TextInputRn, ScrollView } from "react-native";
+import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Button, Text} from "react-native-paper";
 import { z } from "zod";
 import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { showToastError } from "@/constants/utils";
+import useGlobalstyles from "@/constants/styles";
 
-// Define the schema with string inputs that are refined to positive numbers
+
 const schema = z.object({
   plantCuantity: z
-    .string()
-    .nonempty({ message: "Este campo es obligatorio" })
+    .string({required_error: "Este campo es obligatorio"})
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    initialVolume: z
-    .string()
-    .nonempty({ message: "Este campo es obligatorio" })
+
+  initialVolume: z
+    .string({required_error: "Este campo es obligatorio"})    
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    finalVolume: z
-    .string()
-    .nonempty({ message: "Este campo es obligatorio" })
+
+  finalVolume: z
+    .string({required_error: "Este campo es obligatorio"})    
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
-    plantCuantityTotal: z
-    .string()
-    .nonempty({ message: "Este campo es obligatorio" })
+
+  plantCuantityTotal: z
+    .string({required_error: "Este campo es obligatorio"})    
     .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
     .transform((val) => Number(val)),
@@ -37,15 +38,30 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
-  const [result, setresult] = useState<string | null>(null);
+  const styles = useGlobalstyles();
+  const [result, setResult] = useState<string | null>(null);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<FormData>({    
     resolver: zodResolver(schema),
   });
+
+  useEffect(() => {
+    if (errors) {
+      if (errors.plantCuantity) {
+        showToastError("Cantidad de plantas aplicadas", errors.plantCuantity.message);
+      } else if (errors.initialVolume) {
+        showToastError("Volumen inicial", errors.initialVolume.message);
+      } else if (errors.finalVolume) {
+        showToastError("Volumen final", errors.finalVolume.message);
+      } else if (errors.plantCuantityTotal) {
+        showToastError("Plantas por aplicar", errors.plantCuantityTotal.message);
+      }
+    }
+  }, [errors]);
 
   const refs = {
     plantCuantityRef: React.useRef<TextInputRn>(null),
@@ -65,151 +81,123 @@ export default function PesticidePerPlant() {
       finalVolume,
       plantCuantityTotal,
     } = data;
-    const result =
-    ((initialVolume - finalVolume) * plantCuantityTotal) /
-    plantCuantity;
-    const resultRedondeado = result.toFixed(3);
-    setresult(resultRedondeado);
+
+    let result = ((initialVolume - finalVolume) * plantCuantityTotal) / plantCuantity;
+    setResult(result.toFixed(3));
   };
 
   return (
     <ScrollView
-    contentContainerStyle={{ flexGrow: 1 }}
+    contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.container}>
-        <Text style={styles.text}>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
-        <View style={styles.inputGroup}>
-          <View>
-          <Text>Cantidad de plantas     </Text>
-          <Text>aplicadas:</Text>
+      <View style={styles.mainContainer}>
+        <Text style={styles.header}>Calibración por planta</Text>
+        <Text style={ styles.body }>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
+        
+        <View style={styles.formContainer}>
+          <View style={styles.inputGroup}>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.plantCuantityRef}
+                  label="Cantidad de plantas aplicadas"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}                  
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  autoFocus
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.initialVolumeRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="plantCuantity"
+            />
           </View>
 
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.plantCuantityRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                autoFocus
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.initialVolumeRef.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="plantCuantity"
-          />
-          <Text>     </Text>
-        </View>
-
-        {errors.plantCuantity && (() => {
-        console.error(errors.plantCuantity.message);
-        return null;
-        })()}
-
-        <View style={styles.inputGroup}>
-          <Text>Volumen Inicial                 </Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.initialVolumeRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.finalVolumeRef.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="initialVolume"
-          />
-          <Text>Litros</Text>
-        </View>
-        
-        {errors.initialVolume && (() => {
-        console.error(errors.initialVolume.message);
-        return null;
-        })()}
-
-        <View style={styles.inputGroup}>
-          <Text>Volumen final                    </Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.finalVolumeRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.cuantityTotal.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="finalVolume"
-          />
-          <Text>Litros</Text>
-        </View>
-        
-        {errors.finalVolume && (() => {
-        console.error(errors.finalVolume.message);
-        return null;
-        })()}
-
-        <View style={styles.inputGroup}>
-          <View>
-          <Text>Cantidad de plantas     </Text>
-          <Text>totales en la parcela </Text>
-          <Text>por aplicar:</Text>
+          <View style={styles.inputGroup}>          
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.initialVolumeRef}
+                  label="Volumen inicial"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}                  
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.finalVolumeRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="initialVolume"
+            />
+            <Text style={styles.text}>Litros</Text>
           </View>
 
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.cuantityTotal}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                returnKeyType="send"
-                onSubmitEditing={handleSubmit(onSubmit)}
-                blurOnSubmit={false}
-              />
-            )}
-            name="plantCuantityTotal"
-          />
-          <Text>m2</Text>
-        </View>
-
-        {errors.plantCuantityTotal && (() => {
-        console.error(errors.plantCuantityTotal.message);
-        return null;
-        })()}
+          <View style={styles.inputGroup}>          
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.finalVolumeRef}
+                  label="Volumen final"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}                  
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.cuantityTotal.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="finalVolume"
+            />
+            <Text style={styles.text}>Litros</Text>
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.cuantityTotal}
+                  label="Cantidad de plantas por aplicar"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="send"
+                  onSubmitEditing={handleSubmit(onSubmit)}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="plantCuantityTotal"
+            />
+            <Text style={styles.text}>m2</Text>
+          </View>
+        </View>        
 
         <Button
           style={styles.button}
@@ -232,49 +220,3 @@ export default function PesticidePerPlant() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    alignContent: "center",
-    padding: 8,
-  },
-  text: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  inputField: {
-    marginVertical: 4,
-    width: "30%",
-    textAlign: "center",
-  },
-  inputGroup: {
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  button: {
-    marginVertical: 8,
-    alignSelf: "flex-end",
-  },
-  resultGroup: {
-    justifyContent: "flex-end",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  resultField: {
-    width: "50%",
-    textAlign: "center",
-  },
-  containerError: {
-    flex: 1,
-    justifyContent: "flex-end",
-    flexDirection: "row",
-    padding: 8,   
-  },
-  error: {
-    color: "red",
-  },
-});

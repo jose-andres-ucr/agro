@@ -2,6 +2,24 @@ import React from "react";
 import { Stack } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { theme } from "@/constants/theme";
+import Toast, { ErrorToast } from 'react-native-toast-message';
+
+const toastConfig = {
+  error: (props: any) => (
+    <ErrorToast
+      {...props}
+      text1Style={{
+        fontSize: 17
+      }}
+      text2Style={{
+        fontSize: 15
+      }}
+      style={{
+        borderLeftColor: theme.colors.error
+      }}
+    />
+  ),
+};
 
 export default function TabLayout() {
   return (
@@ -33,6 +51,7 @@ export default function TabLayout() {
         />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
+      <Toast config={toastConfig}/>
     </PaperProvider>
   );
 }
