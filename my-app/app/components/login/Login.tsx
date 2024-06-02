@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import React from "react";
 import { theme } from "@/constants/theme";
+import firestore from "@react-native-firebase/firestore";
 import LoadingButton from "../LoadingButton";
 
 const form = z.object({
@@ -42,45 +43,52 @@ export default function Login() {
     password: React.useRef<TextInputRn>(null),
   } as const;
 
-  const [invalidCredential, setInvalidCredential] = useState<boolean | null>(
-    null
-  );
-  const [sessionActive, setSessionActive] = useState<boolean>(false);
+  const [credentialError, setCredentialError] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const clearErrorMessages = () => {
     clearErrors();
-    setInvalidCredential(false);
-    setSessionActive(false);
+    setCredentialError("");
   };
 
   const handleSignUp = () => {
     router.push("/components/signup/SignUp");
     clearErrorMessages();
   };
-  const onSubmit = (data: FormData) => {
+
+  const onSubmit = async (data: FormData) => {
     Keyboard.dismiss();
     clearErrorMessages();
     setLoading(true);
     let previousUser = auth().currentUser;
-    auth()
-      .signInWithEmailAndPassword(data.userName, data.password)
-      .then(() => {
-        // Block login of users with unverified email
-        if (!auth().currentUser?.emailVerified) {
-          setInvalidCredential(true);
-        } else if (previousUser?.email === auth().currentUser?.email) {
-          setSessionActive(true);
+    try {
+      await auth().signInWithEmailAndPassword(data.userName, data.password);
+      let user = auth().currentUser;
+      if (user) {
+        let userData = (
+          await firestore().collection("Users").doc(user.uid).get()
+        ).data();
+        // Block login of users with unverified email or unapproved registration
+        if (!user?.emailVerified) {
+          setCredentialError("No ha verificado su correo electrónico");
+        } else if (userData?.Approved === 0) {
+          setCredentialError(
+            "Se está validando su registro. Intentelo más tarde."
+          );
+        } else if (userData?.Approved === -1) {
+          setCredentialError("Su registro no fue aprobado.");
+        } else if (previousUser?.email === user?.email) {
+          setCredentialError("Su sesión ya se encuentra activa");
         }
-        setLoading(false);
-      })
-      .catch((error) => {
-        if (error.code == "auth/invalid-credential") {
-          setInvalidCredential(true);
-        }
-        console.log(error);
-        setLoading(false);
-      });
+      }
+    } catch (error: any) {
+      if (error.code == "auth/invalid-credential") {
+        setCredentialError("Su usuario o contraseña son incorrectos");
+      }
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -139,15 +147,10 @@ export default function Login() {
         <Text style={styles.error}>{errors.password.message}</Text>
       )}
 
-      {invalidCredential ? (
-        <Text style={styles.error}>
-          Su usuario o contraseña son incorrectos
-        </Text>
+      {credentialError ? (
+        <Text style={styles.error}>{credentialError}</Text>
       ) : null}
 
-      {sessionActive ? (
-        <Text style={styles.error}>Su sesión ya se encuentra activa</Text>
-      ) : null}
       <LoadingButton
         label="Ingresar"
         isLoading={loading}

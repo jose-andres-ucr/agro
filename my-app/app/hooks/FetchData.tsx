@@ -1,10 +1,20 @@
+import auth from "@react-native-firebase/auth";
 import firestore, {
   FirebaseFirestoreTypes,
 } from "@react-native-firebase/firestore";
 import { useEffect, useState } from "react";
 import useAuthState from "./Authentication";
+type User = {
+  id: string;
+  FirstName: string;
+  LastName: string;
+  SecondLastName: string | null;
+  Email: string;
+  Role: string;
+  Approved: number;
+};
 
-const useFetchUserData = () => {
+export const useFetchUserData = () => {
   const { user } = useAuthState();
   const [userData, setUserData] =
     useState<FirebaseFirestoreTypes.DocumentData | null>(null);
@@ -30,9 +40,44 @@ const useFetchUserData = () => {
       setUserData(null);
     }
   }, [user]);
-  let userId = user?.uid;
 
-  return { userId, userData };
+  return { userAuth: user, userId: user?.uid, userData };
 };
 
-export default useFetchUserData;
+export const useFetchPendingRegistration = () => {
+  const [users, setUsers] = useState<User[]>([]);
+
+  const onResult = (querySnapshot: FirebaseFirestoreTypes.QuerySnapshot) => {
+    let data: User[] = [];
+
+    querySnapshot.forEach((userInfo) => {
+      //TODO: check if user email was verified
+      if (userInfo.data().Approved === 0) {
+        let user: User = {
+          id: userInfo.id,
+          FirstName: userInfo.data().FirstName,
+          LastName: userInfo.data().LastName,
+          SecondLastName: userInfo.data().SecondLastName,
+          Email: userInfo.data().Email,
+          Role: userInfo.data().Role,
+          Approved: userInfo.data().Approved,
+        };
+        if (auth().currentUser?.emailVerified) data.push(user);
+      }
+    });
+    setUsers(data);
+  };
+
+  const onError = (error: Error) => {
+    console.error(error);
+  };
+
+  useEffect(() => {
+    firestore()
+      .collection("Users")
+      .orderBy("Email", "desc")
+      .onSnapshot(onResult, onError);
+  }, []);
+
+  return users;
+};

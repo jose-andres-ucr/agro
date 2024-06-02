@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import useFetchUserData from "./FetchData";
+import { useFetchUserData } from "./FetchData";
 
 const useUserRole = () => {
   const { userData } = useFetchUserData();
@@ -13,12 +13,12 @@ const useUserRole = () => {
     }
   }, [userData]);
 
-  // Show specific roll functionalities (calculators are available by default)
+  // Show specific role functionalities (calculators are available by default)
   const [profile, setProfile] = useState<string | null>(null);
   const [manageUsers, setManageUsers] = useState<string | null>(null);
   const [education, setEducation] = useState<string | null>(null);
   useEffect(() => {
-    if (userRole == "Admin") {
+    if (userRole == "Administrador") {
       setProfile("/profile");
       setEducation(null);
       setManageUsers("/manageUsers");

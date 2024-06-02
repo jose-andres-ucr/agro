@@ -1,10 +1,11 @@
 import { theme } from "@/constants/theme";
+import { router } from "expo-router";
 import { View, ScrollView } from "react-native";
 import { Button, Card } from "react-native-paper";
 
 export default function ManageUsers() {
   return (
-    <ScrollView>
+    <ScrollView style={{ backgroundColor: "#FFF" }}>
       <View style={theme.screenContainer}>
         <Card
           style={{
@@ -13,48 +14,16 @@ export default function ManageUsers() {
             borderWidth: 1,
           }}
         >
-          <Card.Title
-            title="Base de Datos"
-            style={{ backgroundColor: "#6dc067" }}
-          />
-          <Card.Title title="Usuarios y Grupos" />
-          <Card.Content>
-            <Button style={{ marginVertical: 15, padding: 8 }} mode="contained">
-              Docentes
-            </Button>
-            <Button style={{ marginVertical: 15, padding: 8 }} mode="contained">
-              Estudiantes
-            </Button>
-            <Button style={{ marginVertical: 15, padding: 8 }} mode="contained">
-              Usuarios Externos
-            </Button>
-            <Button style={{ marginVertical: 15, padding: 8 }} mode="contained">
-              Grupos
-            </Button>
-          </Card.Content>
-        </Card>
-
-        <Card
-          style={{
-            marginVertical: 20,
-            borderColor: "gray",
-            borderWidth: 1,
-          }}
-        >
-          <Card.Title title="Gestión" style={{ backgroundColor: "#6dc067" }} />
           <Card.Title title="Seguridad y Control" />
-          <Card.Content>
-            <Button style={{ marginVertical: 15, padding: 8 }} mode="contained">
+          <Card.Content style={{ marginTop: 20 }}>
+            <Button
+              style={{ marginVertical: 15, padding: 8 }}
+              mode="contained"
+              onPress={() =>
+                router.push("/components/managment/ApproveRegistration")
+              }
+            >
               Aprobaciones de Registro
-            </Button>
-            <Button style={{ marginVertical: 15, padding: 8 }} mode="contained">
-              Control de Comentarios
-            </Button>
-            <Button style={{ marginVertical: 15, padding: 8 }} mode="contained">
-              Cuentas no Verificadas
-            </Button>
-            <Button style={{ marginVertical: 15, padding: 8 }} mode="contained">
-              Cuentas Deshabilitadas
             </Button>
           </Card.Content>
         </Card>

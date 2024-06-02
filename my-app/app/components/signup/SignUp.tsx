@@ -18,22 +18,27 @@ import DropDownRole from "./DropDownRole";
 
 const form = z
   .object({
-    fullname: z
+    firstName: z
       .string()
       .min(1, { message: "El nombre no es válido" })
       .max(50, {
         message: "El nombre no puede exceder los 50 caracteres",
-      })
-      .regex(
-        /^[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+\s([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+|[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+\s)+$/,
-        {
-          message: "Verifique el formato del nombre",
-        }
-      ),
+      }),
+
+    lastName: z
+      .string()
+      .min(1, { message: "El apellido no es válido" })
+      .max(50, {
+        message: "El apellido no puede exceder los 50 caracteres",
+      }),
+
+    secondLastName: z.string().max(50, {
+      message: "El segundo apellido no puede exceder los 50 caracteres",
+    }),
 
     userRole: z.string().min(1, { message: "Seleccione el rol" }),
 
-    userName: z.string().email({ message: "El correo no es válido" }),
+    email: z.string().email({ message: "El correo no es válido" }),
 
     password: z
       .string()
@@ -62,7 +67,7 @@ const form = z
   .refine(
     (data) =>
       ((data.userRole === "Docente" || data.userRole === "Estudiante") &&
-        data.userName.endsWith("@ucr.ac.cr")) ||
+        data.email.endsWith("@ucr.ac.cr")) ||
       data.userRole === "Usuario Externo",
     {
       message: "El correo debe pertenecer al dominio @ucr.ac.cr",
@@ -72,7 +77,7 @@ const form = z
   .refine(
     (data) =>
       (data.userRole === "Usuario Externo" &&
-        !data.userName.endsWith("@ucr.ac.cr")) ||
+        !data.email.endsWith("@ucr.ac.cr")) ||
       data.userRole === "Estudiante" ||
       data.userRole === "Docente",
     {
@@ -93,9 +98,11 @@ export default function SignUp() {
     clearErrors,
   } = useForm({
     defaultValues: {
-      fullname: "",
+      firstName: "",
+      lastName: "",
+      secondLastName: "",
       userRole: "",
-      userName: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
@@ -103,16 +110,16 @@ export default function SignUp() {
   });
 
   const refs = {
-    fullname: React.useRef<TextInputRn>(null),
+    firstName: React.useRef<TextInputRn>(null),
+    lastName: React.useRef<TextInputRn>(null),
+    secondLastName: React.useRef<TextInputRn>(null),
     userRole: React.useRef(null),
-    userName: React.useRef<TextInputRn>(null),
+    email: React.useRef<TextInputRn>(null),
     password: React.useRef<TextInputRn>(null),
     confirmPassword: React.useRef<TextInputRn>(null),
   } as const;
 
-  const [invalidCredential, setInvalidCredential] = useState<boolean | null>(
-    null
-  );
+  const [invalidEmail, setInvalidEmail] = useState<boolean | null>(null);
 
   const [checkEmail, setCheckEmail] = useState<boolean>(false);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null | undefined>(
@@ -125,70 +132,61 @@ export default function SignUp() {
     setValue("userRole", role);
     setRole(role);
     clearErrorMessages();
-    refs.fullname.current?.focus();
+    refs.firstName.current?.focus();
   };
 
   const clearErrorMessages = () => {
     clearErrors();
-    setInvalidCredential(false);
+    setInvalidEmail(false);
   };
-  useEffect(() => {}, []);
-  const onSubmit = (data: FormData) => {
+
+  const onSubmit = async (data: FormData) => {
     Keyboard.dismiss();
     clearErrorMessages();
     setIsLoading(true);
-    auth()
-      .createUserWithEmailAndPassword(data.userName, data.password)
-      .then(() => {
-        let user = auth().currentUser;
-        firestore()
-          .collection("Users")
-          .doc(user?.uid)
-          .set({
-            Email: data.userName,
-            Name: data.fullname,
-            Role: data.userRole,
-          })
-          .then(() => {
-            console.log("Data was stored successfully");
-            user
-              ?.updateProfile({ displayName: data.fullname })
-              .then(() => {
-                user
-                  .sendEmailVerification()
-                  .then(() => {
-                    console.log("Check your email");
-                    setUser(auth().currentUser);
-                    setCheckEmail(true);
-                    setIsLoading(false);
-                    auth()
-                      .signOut()
-                      .catch((error) => {
-                        console.log(error);
-                      });
-                  })
-                  .catch(() => {
-                    console.log("Error trying to verify email");
-                    setIsLoading(false);
-                  });
-              })
-              .catch((error) => {
-                console.log("Error");
-                setIsLoading(false);
-              });
-          })
-          .catch(() => {
-            console.log("Error when trying to store data");
-          });
-      })
-      .catch((error) => {
-        console.log(error);
-        if (error.code === "auth/email-already-in-use") {
-          setInvalidCredential(true);
-        }
+    try {
+      await auth().createUserWithEmailAndPassword(data.email, data.password);
+      let user = auth().currentUser;
 
-        setIsLoading(false);
-      });
+      if (user) {
+        await firestore()
+          .collection("Users")
+          .doc(user.uid)
+          .set({
+            Email: data.email,
+            FirstName: data.firstName,
+            LastName: data.lastName,
+            SecondLastName: data.secondLastName,
+            Role: data.userRole,
+            Approved: data.userRole === "Estudiante" ? 1 : 0,
+          });
+        console.log("Data was stored successfully");
+
+        let fullname =
+          data.firstName + " " + data.lastName + " " + data.secondLastName;
+        await user.updateProfile({ displayName: fullname });
+        await user.sendEmailVerification();
+        setUser(auth().currentUser);
+        setCheckEmail(true);
+        console.log("Check your email");
+
+        auth()
+          .signOut()
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    } catch (error: any) {
+      console.log(error);
+      if (error.code == "auth/email-already-in-use") {
+        console.log("The email address is already in use.");
+        setInvalidEmail(true);
+      } else {
+        console.log("An unknown Firebase error occurred:", error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -220,10 +218,10 @@ export default function SignUp() {
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.fullname}
+                ref={refs.firstName}
                 mode="outlined"
                 style={styles.inputField}
-                label="Nombre Completo"
+                label="Nombre"
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
@@ -232,22 +230,76 @@ export default function SignUp() {
                 autoComplete="cc-name"
                 returnKeyType="next"
                 onSubmitEditing={() => {
-                  refs.userName.current?.focus();
+                  refs.lastName.current?.focus();
                 }}
                 blurOnSubmit={false}
               />
             )}
-            name="fullname"
+            name="firstName"
           />
-          {errors.fullname && (
-            <Text style={styles.error}>{errors.fullname.message}</Text>
+          {errors.firstName && (
+            <Text style={styles.error}>{errors.firstName.message}</Text>
           )}
 
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                ref={refs.userName}
+                ref={refs.lastName}
+                mode="outlined"
+                style={styles.inputField}
+                label="Primer Apellido"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="cc-name"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.secondLastName.current?.focus();
+                }}
+                blurOnSubmit={false}
+              />
+            )}
+            name="lastName"
+          />
+          {errors.lastName && (
+            <Text style={styles.error}>{errors.lastName.message}</Text>
+          )}
+
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.secondLastName}
+                mode="outlined"
+                style={styles.inputField}
+                label="Segundo Apellido (opcional)"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="cc-name"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.email.current?.focus();
+                }}
+                blurOnSubmit={false}
+              />
+            )}
+            name="secondLastName"
+          />
+          {errors.secondLastName && (
+            <Text style={styles.error}>{errors.secondLastName.message}</Text>
+          )}
+
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.email}
                 mode="outlined"
                 style={styles.inputField}
                 label={
@@ -266,10 +318,10 @@ export default function SignUp() {
                 blurOnSubmit={false}
               />
             )}
-            name="userName"
+            name="email"
           />
-          {errors.userName && (
-            <Text style={styles.error}>{errors.userName.message}</Text>
+          {errors.email && (
+            <Text style={styles.error}>{errors.email.message}</Text>
           )}
 
           <Controller
@@ -326,11 +378,11 @@ export default function SignUp() {
             <Text style={styles.error}>{errors.confirmPassword.message}</Text>
           )}
 
-          {invalidCredential ? (
+          {invalidEmail && (
             <Text style={styles.error}>
               El correo ya se encuentra registrado.
             </Text>
-          ) : null}
+          )}
           <CheckEmailModal checkEmail={checkEmail} userEmail={user?.email} />
           <View style={{ marginVertical: 20 }} />
           <LoadingButton

@@ -7,10 +7,10 @@ type propsType = {
   checkEmail: boolean;
   userEmail: string | null | undefined;
 };
-const MyComponent = ({ checkEmail, userEmail }: propsType) => {
+const CheckEmailModal = ({ checkEmail, userEmail }: propsType) => {
   return (
     <Portal>
-      <Dialog visible={checkEmail}>
+      <Dialog visible={checkEmail} dismissable={false}>
         <Dialog.Title>Verifique su correo electrónico</Dialog.Title>
         <Dialog.Content>
           <Text style={{ fontSize: 18 }}>
@@ -30,4 +30,4 @@ const MyComponent = ({ checkEmail, userEmail }: propsType) => {
   );
 };
 
-export default MyComponent;
+export default CheckEmailModal;
