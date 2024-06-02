@@ -5,6 +5,24 @@ import { theme } from "@/constants/theme";
 import useAuthState from "./hooks/Authentication";
 import auth from "@react-native-firebase/auth";
 import { useFetchUserData } from "./hooks/FetchData";
+import Toast, { ErrorToast } from 'react-native-toast-message';
+
+const toastConfig = {
+  error: (props: any) => (
+    <ErrorToast
+      {...props}
+      text1Style={{
+        fontSize: 17
+      }}
+      text2Style={{
+        fontSize: 15
+      }}
+      style={{
+        borderLeftColor: theme.colors.error
+      }}
+    />
+  ),
+};
 
 export default function TabLayout() {
   const currentRoute = usePathname();
@@ -74,6 +92,7 @@ export default function TabLayout() {
         />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
+      <Toast config={toastConfig}/>
     </PaperProvider>
   );
 }

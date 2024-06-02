@@ -1,152 +1,165 @@
 import { View, StyleSheet, TextInput as TextInputRn, ScrollView } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
+import useGlobalCalculatorStyles from "@/constants/styles";
+import { showToastError } from "@/constants/utils";
 
 
-const PositiveNumberSchema = z
-  .string()
-  .min(1, { message: "Valor requerido" })
-  .refine(
-    (value) => {
-      return !isNaN(Number(value));
-    },
-    { message: "El valor debe ser un numérico" }
-  )
-  .refine(
-    (value) => {
-      return Number(value) > 0;
-    },
-    { message: "El valor debe ser mayor a 0" }
-  );
+const schema = z.object({
+  dischargePerMinute: z
+    .string({required_error: "Este campo es obligatorio"})    
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
 
-const FixedVelocityMethodFormSchema = z.object({
-  dischargePerMinute: PositiveNumberSchema,
-  distanceBetweenNozzles: PositiveNumberSchema,
-  velocity: PositiveNumberSchema,
+  distanceBetweenNozzles: z
+    .string({required_error: "Este campo es obligatorio"})
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
+  
+  velocity: z
+    .string({required_error: "Este campo es obligatorio"})    
+    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
+    .transform((val) => Number(val)),
 });
 
-type FormData = z.infer<typeof FixedVelocityMethodFormSchema>;
+type FormData = z.infer<typeof schema>;
 
 export default function FixedVelocityMethod() {
+  const styles = useGlobalCalculatorStyles();
   const [result, setResult] = useState<string | null>(null);
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: {
-      dischargePerMinute: "",
-      distanceBetweenNozzles: "",
-      velocity: "",
-    },
-    resolver: zodResolver(FixedVelocityMethodFormSchema),
+    resolver: zodResolver(schema),
   });
 
+  useEffect(() => {
+    if (errors) {
+      if (errors.dischargePerMinute) {
+        showToastError("Descarga por minuto", errors.dischargePerMinute.message);
+      } else if (errors.distanceBetweenNozzles) {
+        showToastError("Distancia entre boquillas", errors.distanceBetweenNozzles.message);
+      } else if (errors.velocity) {
+        showToastError("Velocidad", errors.velocity.message);
+      }
+    }
+  }, [errors]);
+
   const refs = {
-    dischargePerMinute: React.createRef<TextInputRn>(),
-    distanceBetweenNozzles: React.createRef<TextInputRn>(),
-    velocity: React.createRef<TextInputRn>(),
+    dischargePerMinuteRef: React.useRef<TextInputRn>(null),
+    distanceBetweenNozzlesRef: React.useRef<TextInputRn>(null),
+    velocityRef: React.useRef<TextInputRn>(null),
   } as const;
 
+  useEffect(() => {
+    refs.dischargePerMinuteRef.current?.focus();
+  }, []);
+
   const onSubmit = (data: FormData) => {
-    let raw_calculus =
-      (Number(data.dischargePerMinute) * 10000) /
-      (Number(data.velocity) * 60) /
-      Number(data.distanceBetweenNozzles);
-    setResult(raw_calculus.toFixed(3));
+    const { dischargePerMinute, distanceBetweenNozzles, velocity } = data;
+    const result = (dischargePerMinute * 10000) / (velocity * 60) / distanceBetweenNozzles;
+    setResult(result.toFixed(3));
   };
+
 
   return (
     <ScrollView
-    contentContainerStyle={{ flexGrow: 1 }}
+    contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.container}>
-        <Text style={styles.text}>
-          Determina el volumen de caldo que se aplicará en una hectárea.
+      <View style={styles.mainContainer}>
+        <Text style={styles.header}>Método de velocidad fija</Text>
+        <Text style={styles.body}>Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
-        <View style={styles.inputGroup}>
-          <Text>Descarga en 1 minuto:</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={styles.inputField}
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value ? value.toString() : ""}
-                keyboardType="numeric"
-                returnKeyType="next"
-                onSubmitEditing={() =>
-                  refs.distanceBetweenNozzles.current?.focus()
-                }
-              />
-            )}
-            name="dischargePerMinute"
-          />
-        </View>
-        <View style={styles.containerError}>
-          {errors.dischargePerMinute && (
-            <Text style={styles.error}>{errors.dischargePerMinute.message}</Text>
-          )}
-        </View>
+        <View style={styles.formContainer}>
+          <View style={styles.inputGroup}>            
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.dischargePerMinuteRef}
+                  label="Descarga por minuto"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  autoFocus
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.distanceBetweenNozzlesRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="dischargePerMinute"
+            />
 
-        <View style={styles.inputGroup}>
-          <Text>Ancho de franja (metros):</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={styles.inputField}
-                mode="outlined"                
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value ? value.toString() : ""}
-                keyboardType="numeric"
-                returnKeyType="next"
-                ref={refs.distanceBetweenNozzles}
-                onSubmitEditing={() => refs.velocity.current?.focus()}
-              />
-            )}
-            name="distanceBetweenNozzles"
-          />         
-        </View>
-        <View style={styles.containerError}>
-          {errors.distanceBetweenNozzles && (
-            <Text style={styles.error}>
-              {errors.distanceBetweenNozzles.message}
-            </Text>
-          )}
-        </View>        
-        
-        <View style={styles.inputGroup}>
-          <Text>Velocidad (metros/segundo):</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={styles.inputField}
-                mode="outlined"                  
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value ? value.toString() : ""}
-                keyboardType="numeric"
-                ref={refs.velocity}
-                returnKeyType="done"
-              />  
-            )}
-            name="velocity"
-          />
-        </View>
-        <View style={styles.containerError}>
-          {errors.velocity && (
-            <Text style={styles.error}>{errors.velocity.message}</Text>
-          )}
+          <Text style={styles.text}>Litros</Text>
+          </View>        
+
+          <View style={styles.inputGroup}>            
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.distanceBetweenNozzlesRef}
+                  label="Distancia entre boquillas"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.velocityRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="distanceBetweenNozzles"
+            />         
+              <Text style={styles.text}>Metros</Text>
+          </View>
+          
+          <View style={styles.inputGroup}>            
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.velocityRef}
+                  label="Velocidad"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value?.toString()}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="send"
+                  onSubmitEditing={handleSubmit(onSubmit)}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="velocity"
+            />
+
+            <Text style={styles.text}>m/s</Text>
+          </View>
         </View>
 
         <Button
@@ -158,62 +171,15 @@ export default function FixedVelocityMethod() {
         </Button>
 
         <View style={styles.resultGroup}>
-          <Text style={styles.text}>Resultado: </Text>
           <TextInput
             style={styles.resultField}
-            value={result ? result : ""}
+            value={result?.toString()}
             editable={false}
           />
-          <Text style={styles.text}> litros / hectárea</Text>
-        </View>       
+          <Text style={styles.text}>litros / hectárea.</Text>
+        </View>
       </View>
       <CommentLog text="VelocityComments" />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    alignContent: "center",
-    padding: 8,
-  },
-  text: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  inputField: {
-    marginVertical: 4,
-    width: "30%",
-    textAlign: "center",
-  },
-  inputGroup: {
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  button: {
-    marginVertical: 8,
-    alignSelf: "flex-end",
-  },
-  resultGroup: {
-    justifyContent: "flex-end",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  resultField: {
-    width: "50%",
-    textAlign: "center",
-  },
-  containerError: {
-    flex: 1,
-    justifyContent: "flex-end",
-    flexDirection: "row",
-    padding: 8,   
-  },
-  error: {
-    color: "red",
-  },
-});
