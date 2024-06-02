@@ -25,7 +25,6 @@ const useUserRole = () => {
     } else if (userRole == "Docente") {
       setProfile("/profile");
       setEducation("/education");
-      setManageUsers("/manageUsers");
     } else if (userRole == "Estudiante") {
       setProfile("/profile");
       setEducation("/education");

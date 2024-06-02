@@ -82,7 +82,7 @@ const ApproveModal = ({ showModal, handleOnDismiss, user }: propsType) => {
           <Text
             style={{
               alignSelf: "center",
-              fontSize: 18,
+              fontSize: 20,
               marginTop: 10,
               marginBottom: 20,
             }}
@@ -92,7 +92,12 @@ const ApproveModal = ({ showModal, handleOnDismiss, user }: propsType) => {
           <Dialog.Actions style={{ alignSelf: "center" }}>
             <Button
               mode="contained"
-              style={{ marginHorizontal: 5 }}
+              style={{
+                marginHorizontal: 5,
+                paddingHorizontal: 20,
+                paddingVertical: 5,
+              }}
+              labelStyle={{ fontSize: 18 }}
               buttonColor={theme.colors.secondary}
               onPress={handleAcceptRegistration}
             >
@@ -100,15 +105,22 @@ const ApproveModal = ({ showModal, handleOnDismiss, user }: propsType) => {
             </Button>
             <Button
               mode="contained"
-              style={{ marginHorizontal: 5 }}
+              style={{
+                marginHorizontal: 5,
+                paddingHorizontal: 20,
+                paddingVertical: 5,
+              }}
+              labelStyle={{ fontSize: 18 }}
               buttonColor="red"
               onPress={handleRejectRegistration}
             >
               Rechazar
             </Button>
           </Dialog.Actions>
+          <Divider style={{ marginVertical: 10 }} />
           <Button
-            style={{ marginTop: 10, width: "40%", alignSelf: "center" }}
+            style={{ width: "40%", alignSelf: "center" }}
+            labelStyle={{ fontSize: 22, fontWeight: "bold" }}
             onPress={handleOnDismiss}
           >
             Cerrar
