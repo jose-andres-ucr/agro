@@ -28,18 +28,32 @@ const getGlobalCalculatorStyles = (theme: any) => StyleSheet.create({
         marginLeft: 10
     },
     formContainer: {
-        marginTop: 20,
-        marginBottom: 20,
+        marginVertical: 20,
     },  
-    inputField: {
-        width: "70%",
-        marginTop: 5
-    },
     inputGroup: {
-        flexDirection: "row"
+        marginVertical: 5,
+        flexDirection: "row",
+    },
+    inputField: {        
+        marginTop: -5,
+        width: "70%",
     },
     button: {
         alignSelf: "flex-end",
+    },
+    multiUnitButton: {        
+        justifyContent: "center",
+        alignItems: "flex-start",                
+        borderColor: theme.colors.inputBorderColor,
+        borderWidth: 1,
+        borderRadius: 5,
+        backgroundColor: theme.colors.inputBackgroundColor,
+        width: "30%",
+    },
+    multiUnitButtonText: {
+        fontSize: 16,
+        fontWeight: "bold",        
+        color: theme.colors.inputColor,        
     },
     resultGroup: {
         justifyContent: "flex-end",
@@ -55,7 +69,5 @@ const getGlobalCalculatorStyles = (theme: any) => StyleSheet.create({
 
 export default function useGlobalCalculatorStyles() {
   const theme = useTheme();
-  const styles = useMemo(() => getGlobalCalculatorStyles(theme), [theme]);
-
-  return styles;
+  return useMemo(() => getGlobalCalculatorStyles(theme), [theme]);
 }

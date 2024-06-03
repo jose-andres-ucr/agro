@@ -5,8 +5,10 @@ import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
-import useGlobalCalculatorStyles from "@/constants/styles";
+import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 import { showToastError } from "@/constants/utils";
+import { DropdownComponent } from "./UnitDropdown";
+import { volumeUnits, distanceUnits } from "@/constants/units";
 
 
 const schema = z.object({
@@ -82,84 +84,88 @@ export default function FixedVelocityMethod() {
         <Text style={styles.body}>Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
         <View style={styles.formContainer}>
-          <View style={styles.inputGroup}>            
-            <Controller
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  ref={refs.dischargePerMinuteRef}
-                  label="Descarga por minuto"
-                  mode="outlined"
-                  style={styles.inputField}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value?.toString()}
-                  keyboardType="numeric"
-                  autoCapitalize="none"
-                  autoFocus
-                  returnKeyType="next"
-                  onSubmitEditing={() => {
-                    refs.distanceBetweenNozzlesRef.current?.focus();
-                  }}
-                  blurOnSubmit={false}
-                />
-              )}
-              name="dischargePerMinute"
-            />
-
-          <Text style={styles.text}>Litros</Text>
-          </View>        
-
-          <View style={styles.inputGroup}>            
-            <Controller
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  ref={refs.distanceBetweenNozzlesRef}
-                  label="Distancia entre boquillas"
-                  mode="outlined"
-                  style={styles.inputField}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value?.toString()}
-                  keyboardType="numeric"
-                  autoCapitalize="none"
-                  returnKeyType="next"
-                  onSubmitEditing={() => {
-                    refs.velocityRef.current?.focus();
-                  }}
-                  blurOnSubmit={false}
-                />
-              )}
-              name="distanceBetweenNozzles"
-            />         
-              <Text style={styles.text}>Metros</Text>
-          </View>
-          
-          <View style={styles.inputGroup}>            
-            <Controller
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  ref={refs.velocityRef}
-                  label="Velocidad"
-                  mode="outlined"
-                  style={styles.inputField}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value?.toString()}
-                  keyboardType="numeric"
-                  autoCapitalize="none"
-                  returnKeyType="send"
-                  onSubmitEditing={handleSubmit(onSubmit)}
-                  blurOnSubmit={false}
-                />
-              )}
-              name="velocity"
-            />
-
-            <Text style={styles.text}>m/s</Text>
-          </View>
+        <View style={styles.inputGroup}>            
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    ref={refs.dischargePerMinuteRef}
+                    label="Descarga por minuto"
+                    mode="outlined"
+                    style={styles.inputField}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value?.toString()}
+                    keyboardType="numeric"
+                    autoCapitalize="none"
+                    autoFocus
+                    returnKeyType="next"
+                    onSubmitEditing={() => {
+                      refs.distanceBetweenNozzlesRef.current?.focus();
+                    }}
+                    blurOnSubmit={false}
+                  />
+                )}
+                name="dischargePerMinute"
+              />
+              <DropdownComponent data={volumeUnits}>              
+              </DropdownComponent>
+            </View>
+            <View style={styles.inputGroup}>            
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    ref={refs.distanceBetweenNozzlesRef}
+                    label="Distancia entre boquillas"
+                    mode="outlined"
+                    style={styles.inputField}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value?.toString()}
+                    keyboardType="numeric"
+                    autoCapitalize="none"
+                    returnKeyType="next"
+                    onSubmitEditing={() => {
+                      refs.velocityRef.current?.focus();
+                    }}
+                    blurOnSubmit={false}
+                  />
+                )}
+                name="distanceBetweenNozzles"
+              />
+              <DropdownComponent data={distanceUnits}>              
+              </DropdownComponent>         
+            </View>
+            <View style={styles.inputGroup}>            
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    ref={refs.velocityRef}
+                    label="Velocidad"
+                    mode="outlined"
+                    style={styles.inputField}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value?.toString()}
+                    keyboardType="numeric"
+                    autoCapitalize="none"
+                    returnKeyType="send"
+                    onSubmitEditing={handleSubmit(onSubmit)}
+                    blurOnSubmit={false}
+                  />
+                )}
+                name="velocity"
+              />
+              <Button
+                style={styles.multiUnitButton}
+                mode="outlined"
+                labelStyle={styles.multiUnitButtonText}
+              >
+                m/s
+              </Button>
+            </View>            
         </View>
 
         <Button

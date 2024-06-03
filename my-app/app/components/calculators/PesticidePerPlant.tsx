@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { showToastError } from "@/constants/utils";
-import useGlobalstyles from "@/constants/styles";
+import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 
 
 const schema = z.object({
@@ -38,7 +38,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
-  const styles = useGlobalstyles();
+  const styles = useGlobalCalculatorStyles();
   const [result, setResult] = useState<string | null>(null);
 
   const {

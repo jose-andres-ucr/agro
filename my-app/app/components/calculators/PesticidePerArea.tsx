@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { showToastError } from "@/constants/utils";
-import useGlobalCalculatorStyles from "@/constants/styles";
+import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 
 
 const schema = z.object({
