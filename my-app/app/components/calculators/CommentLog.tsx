@@ -111,9 +111,8 @@ export const CommentLog = (props: { text: string }) => {
 
 const styles = StyleSheet.create({
   container: {
-
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     paddingVertical: 10,
   },
   title: {

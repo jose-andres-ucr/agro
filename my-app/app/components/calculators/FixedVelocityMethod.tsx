@@ -1,45 +1,76 @@
-import { View, StyleSheet, TextInput as TextInputRn, ScrollView } from "react-native";
+import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
 import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 import { showToastError } from "@/constants/utils";
 import { DropdownComponent } from "./UnitDropdown";
-import { volumeUnits, distanceUnits } from "@/constants/units";
+import { volumeUnits, distanceUnits, convertVolume, convertDistance, timeUnits, convertTime, convertArea, areaUnits} from "@/constants/units";
+import useUnit from "../../hooks/useUnit";
+import { UnitModal } from "./UnitModal";
+import useCompoundUnit from "../../hooks/useCompoundUnit";
 
+const positiveNumber = z
+  .coerce
+  .number({ invalid_type_error: 'Debe ser un valor numérico' })
+  .refine((val) => val > 0, { message: 'Debe ser un número positivo' });
 
 const schema = z.object({
-  dischargePerMinute: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  distanceBetweenNozzles: z
-    .string({required_error: "Este campo es obligatorio"})
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-  
-  velocity: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
+  dischargePerMinute: positiveNumber,
+  distanceBetweenNozzles: positiveNumber,
+  velocity: positiveNumber,
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function FixedVelocityMethod() {
   const styles = useGlobalCalculatorStyles();
-  const [result, setResult] = useState<string | null>(null);
+
+  const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
+  const { value: distanceBetweenNozzles, unit: distanceBetweenNozzlesUnit, handleUnitChange: distanceBetweenNozzlesHandler} = useUnit("m", 0, convertDistance);
+  
+  const {
+    value: velocity,
+    leftUnit: velocityDistanceUnit,
+    rightUnit: velocityTimeUnit,
+    handleLeftUnitChange: velocityDistanceHandler,
+    handleRightUnitChange: velocityTimeHandler
+  } = useCompoundUnit("m", "seg", 0, convertDistance, convertTime);
+
+  const {
+    value: result,
+    leftUnit: resultVolumeUnit,
+    rightUnit: resultAreaUnit,
+    handleLeftUnitChange: resultVolumeHandler,
+    handleRightUnitChange: resultAreaHandler
+  } = useCompoundUnit("L", "ha", 0, convertVolume, convertArea);
+
+  const [displayResult, setDisplayResult] = React.useState(result);
+
+  useEffect(() => {    
+    setValue("dischargePerMinute", dischargePerMinute)
+  }, [dischargePerMinute]);
+
+  useEffect(() => {    
+    setValue("distanceBetweenNozzles", distanceBetweenNozzles)
+  }, [distanceBetweenNozzles]);
+
+  useEffect(() => {        
+    setValue("velocity", velocity);
+  }, [velocity]);
+
+  useEffect(() => {
+    setDisplayResult(result);
+  }, [result]);
 
   const {
     control,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -67,10 +98,68 @@ export default function FixedVelocityMethod() {
     refs.dischargePerMinuteRef.current?.focus();
   }, []);
 
+  const handleDischargePerMinuteUnitChange = (value: string) => {
+    dischargePerMinuteHandler(value, getValues("dischargePerMinute"));
+  };
+
+  const handleDistanceBetweenNozzlesUnitChange = (value: string) => {
+    distanceBetweenNozzlesHandler(value, getValues("distanceBetweenNozzles"));
+  };
+
+  const handleVelocityDistanceUnitChange = (value: string) => {    
+    velocityDistanceHandler(value, getValues("velocity"));
+  }
+
+  const handleVelocityTimeUnitChange = (value: string) => {
+    velocityTimeHandler(value, getValues("velocity"));
+  }
+
+  const handleResultVolumeUnitChange = (value: string) => {    
+    resultVolumeHandler(value, displayResult);
+  }
+
+  const handleResultAreaUnitChange = (value: string) => {    
+    resultAreaHandler(value, displayResult);
+  }
+
   const onSubmit = (data: FormData) => {
-    const { dischargePerMinute, distanceBetweenNozzles, velocity } = data;
-    const result = (dischargePerMinute * 10000) / (velocity * 60) / distanceBetweenNozzles;
-    setResult(result.toFixed(3));
+    let { dischargePerMinute, distanceBetweenNozzles, velocity } = data;
+
+    if (dischargePerMinuteUnit !== "L"){
+      dischargePerMinute = convertVolume(dischargePerMinute, dischargePerMinuteUnit, "L");
+    }
+
+    if (distanceBetweenNozzlesUnit !== "m"){
+      distanceBetweenNozzles = convertDistance(distanceBetweenNozzles, distanceBetweenNozzlesUnit, "m");
+    }
+
+    if (velocityDistanceUnit !== "m"){
+      velocity = convertDistance(velocity, velocityDistanceUnit, "m");
+    }
+
+    if (velocityTimeUnit !== "seg"){
+      let factor = convertTime(1, velocityTimeUnit, "seg");
+      if (factor > 0){
+        factor = 1 / factor;
+      }
+      velocity = velocity * factor;
+    }
+
+    let result = ((dischargePerMinute * 10000) / (velocity * 60)) / distanceBetweenNozzles;
+
+    if (resultVolumeUnit !== "L"){
+      result = convertVolume(result, "L", resultVolumeUnit);
+    }
+
+    if (resultAreaUnit !== "ha"){
+      let factor = convertArea(1, "ha", resultAreaUnit);
+      if (factor > 0){
+        factor = 1 / factor;
+      }
+      result = result * factor;
+    }
+    
+    setDisplayResult(result);
   };
 
 
@@ -95,7 +184,7 @@ export default function FixedVelocityMethod() {
                     style={styles.inputField}
                     onBlur={onBlur}
                     onChangeText={onChange}
-                    value={value?.toString()}
+                    value={value ? value.toString() : ""}
                     keyboardType="numeric"
                     autoCapitalize="none"
                     autoFocus
@@ -108,21 +197,26 @@ export default function FixedVelocityMethod() {
                 )}
                 name="dischargePerMinute"
               />
-              <DropdownComponent data={volumeUnits}>              
+              <DropdownComponent
+              data={volumeUnits}
+              isModal={false}
+              value={"L"}
+              onValueChange={handleDischargePerMinuteUnitChange}>              
               </DropdownComponent>
             </View>
             <View style={styles.inputGroup}>            
               <Controller
                 control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
+                render={({ field: { onBlur, onChange, value} }) => (
+                  <>
+                    <TextInput
                     ref={refs.distanceBetweenNozzlesRef}
                     label="Distancia entre boquillas"
                     mode="outlined"
                     style={styles.inputField}
                     onBlur={onBlur}
                     onChangeText={onChange}
-                    value={value?.toString()}
+                    value={value ? value.toString() : ""}
                     keyboardType="numeric"
                     autoCapitalize="none"
                     returnKeyType="next"
@@ -130,12 +224,17 @@ export default function FixedVelocityMethod() {
                       refs.velocityRef.current?.focus();
                     }}
                     blurOnSubmit={false}
-                  />
+                    />
+                    <DropdownComponent
+                    data={distanceUnits}
+                    isModal={false}
+                    value={"m"}
+                    onValueChange={handleDistanceBetweenNozzlesUnitChange}>              
+                    </DropdownComponent>
+                  </>                  
                 )}
                 name="distanceBetweenNozzles"
-              />
-              <DropdownComponent data={distanceUnits}>              
-              </DropdownComponent>         
+              />                       
             </View>
             <View style={styles.inputGroup}>            
               <Controller
@@ -148,7 +247,7 @@ export default function FixedVelocityMethod() {
                     style={styles.inputField}
                     onBlur={onBlur}
                     onChangeText={onChange}
-                    value={value?.toString()}
+                    value={value ? value.toString() : ""}
                     keyboardType="numeric"
                     autoCapitalize="none"
                     returnKeyType="send"
@@ -157,19 +256,21 @@ export default function FixedVelocityMethod() {
                   />
                 )}
                 name="velocity"
+              />              
+              <UnitModal
+              leftUnits={distanceUnits}
+              rightUnits={timeUnits}
+              leftValue={velocityDistanceUnit}
+              rightValue={velocityTimeUnit}
+              onLeftUnitChange={handleVelocityDistanceUnitChange}
+              onRightUnitChange={handleVelocityTimeUnitChange}
               />
-              <Button
-                style={styles.multiUnitButton}
-                mode="outlined"
-                labelStyle={styles.multiUnitButtonText}
-              >
-                m/s
-              </Button>
-            </View>            
+            </View>
         </View>
 
         <Button
           style={styles.button}
+          labelStyle={styles.buttonText}
           mode="contained"
           onPress={handleSubmit(onSubmit)}
         >
@@ -179,10 +280,17 @@ export default function FixedVelocityMethod() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={result?.toString()}
+            value={displayResult?.toFixed(3)}
             editable={false}
           />
-          <Text style={styles.text}>litros / hectárea.</Text>
+          <UnitModal
+            leftUnits={volumeUnits}
+            rightUnits={areaUnits}
+            leftValue={resultVolumeUnit}
+            rightValue={resultAreaUnit}
+            onLeftUnitChange={handleResultVolumeUnitChange}
+            onRightUnitChange={handleResultAreaUnitChange}
+            />
         </View>
       </View>
       <CommentLog text="VelocityComments" />
