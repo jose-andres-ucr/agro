@@ -39,31 +39,19 @@ const getGlobalCalculatorStyles = (theme: any) => StyleSheet.create({
         width: "70%",
     },
     button: {
-        alignSelf: "flex-end",
-    },
-    multiUnitButton: {        
-        justifyContent: "center",
-        alignItems: "flex-start",                
-        borderColor: theme.colors.inputBorderColor,
-        borderWidth: 1,
+        alignSelf: "flex-start",
         borderRadius: 5,
-        backgroundColor: theme.colors.inputBackgroundColor,
-        width: "30%",
-    },
-    multiUnitButtonText: {
+    },    
+    buttonText: {
         fontSize: 16,
-        fontWeight: "bold",        
-        color: theme.colors.inputColor,        
+        fontWeight: "bold",  
     },
     resultGroup: {
-        justifyContent: "flex-end",
-        alignItems: "center",
-        padding: 8,
+        marginVertical: 5,                      
         flexDirection: "row",
     },
-    resultField: {
-        width: "50%",
-        textAlign: "center",
+    resultField: {       
+        width: "70%",
     },
 });
 
