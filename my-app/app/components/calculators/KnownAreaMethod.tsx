@@ -1,4 +1,4 @@
-import { StyleSheet, View, TextInput as TextInputRn, ScrollView } from "react-native";
+import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Button, Text } from "react-native-paper";
 import { z } from "zod";
@@ -7,37 +7,62 @@ import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 import { showToastError } from "@/constants/utils";
+import { positiveNumber } from "@/constants/schemas";
+import useUnit from "@/app/hooks/useUnit";
+import { areaUnits, convertArea, convertVolume, volumeUnits } from "@/constants/units";
+import useCompoundUnit from "@/app/hooks/useCompoundUnit";
+import { DropdownComponent } from "./UnitDropdown";
+import { UnitModal } from "./UnitModal";
 
 
 const schema = z.object({
-  initialVolume: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  finalVolume: z
-    .string({required_error: "Este campo es obligatorio"})
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  knownArea: z
-    .string({required_error: "Este campo es obligatorio"})
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
+  initialVolume: positiveNumber,
+  finalVolume: positiveNumber,
+  knownArea: positiveNumber,
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function VolumeCalculator() {
   const styles = useGlobalCalculatorStyles();
-  const [result, setResult] = useState<string | null>(null);
+
+  const { value: knownArea, unit: knownAreaUnit, handleUnitChange: knownAreaHandler} = useUnit("m²", 0, convertArea);
+
+  const { value: initialVolume, unit: initialVolumeUnit, handleUnitChange: initialVolumeHandler} = useUnit("L", 0, convertVolume);
+
+  const { value: finalVolume, unit: finalVolumeUnit, handleUnitChange: finalVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const {
+    value: result,
+    leftUnit: resultVolumeUnit,
+    rightUnit: resultAreaUnit,
+    handleLeftUnitChange: resultVolumeHandler,
+    handleRightUnitChange: resultAreaHandler,
+  } = useCompoundUnit("L", "ha", 0, convertVolume, convertArea);
+
+  const [displayResult, setDisplayResult] = useState(result);
+
+  useEffect(() => {
+    setValue("knownArea", knownArea);    
+  }, [knownArea]);
+
+  useEffect(() => {
+    setValue("initialVolume", initialVolume);
+  }, [initialVolume]);
+
+  useEffect(() => {
+    setValue("finalVolume", finalVolume);
+  }, [finalVolume]);
+
+  useEffect(() => {
+    setDisplayResult(result);
+  }, [result]);
 
   const {
     control,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -65,10 +90,56 @@ export default function VolumeCalculator() {
     refs.initialVolumeRef.current?.focus();
   }, []);
 
+  const handleKnownAreaUnitChange = (value: string) => {
+    knownAreaHandler(value, getValues("knownArea"));
+  };
+
+  const handleInitialVolumeUnitChange = (value: string) => {
+    initialVolumeHandler(value, getValues("initialVolume"));
+  };
+
+  const handleFinalVolumeUnitChange = (value: string) => {
+    finalVolumeHandler(value, getValues("finalVolume"));
+  };
+
+  const handleResultVolumeUnitChange = (value: string) => {
+    resultVolumeHandler(value, displayResult);
+  };
+
+  const handleResultAreaUnitChange = (value: string) => {
+    resultAreaHandler(value, displayResult);
+  };
+
   const onSubmit = (data: FormData) => {
-    const { initialVolume, finalVolume, knownArea } = data;
-    const result = ((initialVolume - finalVolume) * 10000) / knownArea;
-    setResult(result.toFixed(3));
+    let { initialVolume, finalVolume, knownArea } = data;
+
+    if (knownAreaUnit !== "m²") {
+      knownArea = convertArea(knownArea, knownAreaUnit, "m²");
+    }
+
+    if (initialVolumeUnit !== "L") {
+      initialVolume = convertVolume(initialVolume, initialVolumeUnit, "L");
+    }
+
+    if (finalVolumeUnit !== "L") {
+      finalVolume = convertVolume(finalVolume, finalVolumeUnit, "L");
+    }
+
+    let result = ((initialVolume - finalVolume) * 10000) / knownArea;
+
+    if (resultVolumeUnit !== "L") {
+      result = convertVolume(result, resultVolumeUnit, "L");
+    }
+
+    if (resultAreaUnit !== "ha"){
+      let factor = convertArea(1, "ha", resultAreaUnit);
+      if (factor > 0){
+        factor = 1 / factor;
+      }
+      result = result * factor;
+    }
+    
+    setDisplayResult(result);
   };
 
   return (
@@ -105,7 +176,12 @@ export default function VolumeCalculator() {
               )}
               name="initialVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <DropdownComponent
+            data={volumeUnits}
+            isModal={false}
+            value={"L"}
+            onValueChange={handleInitialVolumeUnitChange}
+            />  
           </View>
 
           <View style={styles.inputGroup}>            
@@ -131,7 +207,12 @@ export default function VolumeCalculator() {
               )}
               name="finalVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <DropdownComponent
+            data={volumeUnits}
+            isModal={false}
+            value={"L"}
+            onValueChange={handleFinalVolumeUnitChange}
+            /> 
           </View>
 
           <View style={styles.inputGroup}>            
@@ -155,7 +236,12 @@ export default function VolumeCalculator() {
               )}
               name="knownArea"
             />
-            <Text style={styles.text}>m2</Text>
+            <DropdownComponent
+            data={areaUnits}
+            isModal={false}
+            value={"m²"}
+            onValueChange={handleKnownAreaUnitChange}>              
+            </DropdownComponent> 
           </View>
         </View>
 
@@ -170,10 +256,17 @@ export default function VolumeCalculator() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={result?.toString()}
+            value={result?.toFixed(3)}
             editable={false}
           />
-          <Text style={styles.text}> litros / hectárea</Text>
+          <UnitModal
+            leftUnits={volumeUnits}
+            rightUnits={areaUnits}
+            leftValue={resultVolumeUnit}
+            rightValue={resultAreaUnit}
+            onLeftUnitChange={handleResultVolumeUnitChange}
+            onRightUnitChange={handleResultAreaUnitChange}
+            />
         </View>
       </View>
       <CommentLog text="KnownAreaComments" />

@@ -7,43 +7,61 @@ import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { showToastError } from "@/constants/utils";
 import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
+import { positiveNumber } from "@/constants/schemas";
+import useUnit from "@/app/hooks/useUnit";
+import { areaUnits, convertArea, convertVolume, volumeUnits } from "@/constants/units";
+import { DropdownComponent } from "./UnitDropdown";
 
 
 const schema = z.object({
-  appliedArea: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  initialVolume: z
-    .string({required_error: "Este campo es obligatorio"})
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  finalVolume: z
-    .string({required_error: "Este campo es obligatorio"})
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  cultivationArea: z
-    .string({required_error: "Este campo es obligatorio"})
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
+  appliedArea: positiveNumber,
+  initialVolume: positiveNumber,
+  finalVolume: positiveNumber,
+  cultivationArea: positiveNumber,
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerArea() {
   const styles = useGlobalCalculatorStyles();
-  const [result, setResult] = useState<string | null>(null);
+
+  const { value: appliedArea, unit: appliedAreaUnit, handleUnitChange: appliedAreaHandler } = useUnit("m²", 0, convertArea);
+
+  const { value: initialVolume, unit: initialVolumeUnit, handleUnitChange: initialVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const { value: finalVolume, unit: finalVolumeUnit, handleUnitChange: finalVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const { value: cultivationArea, unit: cultivationAreaUnit, handleUnitChange: cultivationAreaHandler } = useUnit("m²", 0, convertArea);
+
+  const { value: result, unit: resultUnit, handleUnitChange: resultHandler } = useUnit("L", 0, convertVolume);
+
+  const [displayResult, setDisplayResult] = useState(result);
+
+  useEffect(() => {
+    setValue("appliedArea", appliedArea);
+  }, [appliedArea]);
+
+  useEffect(() => {
+    setValue("initialVolume", initialVolume);
+  }, [initialVolume]);
+
+  useEffect(() => {
+    setValue("finalVolume", finalVolume);
+  }, [finalVolume]);
+
+  useEffect(() => {
+    setValue("cultivationArea", cultivationArea);
+  }, [cultivationArea]);
+
+  useEffect(() => {
+    setDisplayResult(result);
+  }, [result]);
 
   const {
     control,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -74,10 +92,52 @@ export default function PesticidePerArea() {
     refs.appliedAreaRef.current?.focus();
   }, []);
 
+  const handleAppliedAreaUnitChange = (value: string) => {
+    appliedAreaHandler(value, getValues("appliedArea"));
+  };
+
+  const handleInitialVolumeUnitChange = (value: string) => {
+    initialVolumeHandler(value, getValues("initialVolume"));
+  };
+
+  const handleFinalVolumeUnitChange = (value: string) => {
+    finalVolumeHandler(value, getValues("finalVolume"));
+  };
+
+  const handleCultivationAreaUnitChange = (value: string) => {
+    cultivationAreaHandler(value, getValues("cultivationArea"));
+  };
+
+  const handleResultUnitChange = (value: string) => {
+    resultHandler(value, displayResult);
+  };
+
   const onSubmit = (data: FormData) => {
-    let result = (((data.initialVolume - data.finalVolume) * data.cultivationArea) / 
-    data.appliedArea);
-    setResult(result.toFixed(3));
+    let { appliedArea, initialVolume, finalVolume, cultivationArea } = data;
+
+    if (appliedAreaUnit !== "m²") {
+      appliedArea = convertArea(appliedArea, appliedAreaUnit, "m²");
+    }
+
+    if (initialVolumeUnit !== "L") {
+      initialVolume = convertVolume(initialVolume, "L", initialVolumeUnit);
+    }
+
+    if (finalVolumeUnit !== "L") {
+      finalVolume = convertVolume(finalVolume, "L", finalVolumeUnit);
+    }
+
+    if (cultivationAreaUnit !== "m²") {
+      cultivationArea = convertArea(cultivationArea, cultivationAreaUnit, "m²");
+    }
+
+    let result = (((initialVolume - finalVolume) * cultivationArea) / appliedArea);
+
+    if (resultUnit !== "L") {
+      result = convertVolume(result, "L", resultUnit);
+    }
+    
+    setDisplayResult(result);
   };
 
   return (
@@ -113,7 +173,12 @@ export default function PesticidePerArea() {
               )}
               name="appliedArea"
             />
-            <Text style={styles.text}>m2</Text>
+            <DropdownComponent
+            data={areaUnits}
+            isModal={false}
+            value={"m²"}
+            onValueChange={handleAppliedAreaUnitChange}>              
+            </DropdownComponent> 
           </View>
 
           <View style={styles.inputGroup}>          
@@ -139,7 +204,12 @@ export default function PesticidePerArea() {
               )}
               name="initialVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <DropdownComponent
+            data={volumeUnits}
+            isModal={false}
+            value={"L"}
+            onValueChange={handleInitialVolumeUnitChange}>              
+            </DropdownComponent>
           </View>
 
           <View style={styles.inputGroup}>          
@@ -165,7 +235,12 @@ export default function PesticidePerArea() {
               )}
               name="finalVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <DropdownComponent
+            data={volumeUnits}
+            isModal={false}
+            value={"L"}
+            onValueChange={handleFinalVolumeUnitChange}>              
+            </DropdownComponent>
           </View>
 
           <View style={styles.inputGroup}>
@@ -189,7 +264,12 @@ export default function PesticidePerArea() {
               )}
               name="cultivationArea"
             />
-            <Text style={styles.text}>m2</Text>
+            <DropdownComponent
+            data={areaUnits}
+            isModal={false}
+            value={"m²"}
+            onValueChange={handleCultivationAreaUnitChange}>              
+            </DropdownComponent> 
           </View>
         </View>
 
@@ -204,10 +284,15 @@ export default function PesticidePerArea() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={result?.toString()}
+            value={result?.toFixed(3)}
             editable={false}
           />
-          <Text style={styles.text}> Litros</Text>
+          <DropdownComponent
+            data={volumeUnits}
+            isModal={false}
+            value={"m"}
+            onValueChange={handleResultUnitChange}>              
+          </DropdownComponent> 
         </View>
       </View>
       <CommentLog text="PesticidePerAreaComments" />

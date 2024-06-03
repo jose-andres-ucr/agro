@@ -1,7 +1,7 @@
 import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { Text, TextInput, Button } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
@@ -12,11 +12,7 @@ import { volumeUnits, distanceUnits, convertVolume, convertDistance, timeUnits, 
 import useUnit from "../../hooks/useUnit";
 import { UnitModal } from "./UnitModal";
 import useCompoundUnit from "../../hooks/useCompoundUnit";
-
-const positiveNumber = z
-  .coerce
-  .number({ invalid_type_error: 'Debe ser un valor numérico' })
-  .refine((val) => val > 0, { message: 'Debe ser un número positivo' });
+import { positiveNumber } from "@/constants/schemas";
 
 const schema = z.object({
   dischargePerMinute: positiveNumber,
@@ -30,6 +26,7 @@ export default function FixedVelocityMethod() {
   const styles = useGlobalCalculatorStyles();
 
   const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
+
   const { value: distanceBetweenNozzles, unit: distanceBetweenNozzlesUnit, handleUnitChange: distanceBetweenNozzlesHandler} = useUnit("m", 0, convertDistance);
   
   const {
@@ -48,7 +45,7 @@ export default function FixedVelocityMethod() {
     handleRightUnitChange: resultAreaHandler
   } = useCompoundUnit("L", "ha", 0, convertVolume, convertArea);
 
-  const [displayResult, setDisplayResult] = React.useState(result);
+  const [displayResult, setDisplayResult] = useState(result);
 
   useEffect(() => {    
     setValue("dischargePerMinute", dischargePerMinute)
@@ -208,33 +205,31 @@ export default function FixedVelocityMethod() {
               <Controller
                 control={control}
                 render={({ field: { onBlur, onChange, value} }) => (
-                  <>
-                    <TextInput
-                    ref={refs.distanceBetweenNozzlesRef}
-                    label="Distancia entre boquillas"
-                    mode="outlined"
-                    style={styles.inputField}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value ? value.toString() : ""}
-                    keyboardType="numeric"
-                    autoCapitalize="none"
-                    returnKeyType="next"
-                    onSubmitEditing={() => {
-                      refs.velocityRef.current?.focus();
-                    }}
-                    blurOnSubmit={false}
-                    />
-                    <DropdownComponent
-                    data={distanceUnits}
-                    isModal={false}
-                    value={"m"}
-                    onValueChange={handleDistanceBetweenNozzlesUnitChange}>              
-                    </DropdownComponent>
-                  </>                  
+                  <TextInput
+                  ref={refs.distanceBetweenNozzlesRef}
+                  label="Distancia entre boquillas"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value ? value.toString() : ""}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.velocityRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                  />                
                 )}
                 name="distanceBetweenNozzles"
-              />                       
+              />
+              <DropdownComponent
+              data={distanceUnits}
+              isModal={false}
+              value={"m"}
+              onValueChange={handleDistanceBetweenNozzlesUnitChange}>              
+              </DropdownComponent>                       
             </View>
             <View style={styles.inputGroup}>            
               <Controller
