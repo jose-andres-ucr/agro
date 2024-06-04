@@ -128,7 +128,7 @@ export default function VolumeCalculator() {
     let result = ((initialVolume - finalVolume) * 10000) / knownArea;
 
     if (resultVolumeUnit !== "L") {
-      result = convertVolume(result, resultVolumeUnit, "L");
+      result = convertVolume(result, "L", resultVolumeUnit);
     }
 
     if (resultAreaUnit !== "ha"){
@@ -163,7 +163,7 @@ export default function VolumeCalculator() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   autoFocus
@@ -195,7 +195,7 @@ export default function VolumeCalculator() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -226,7 +226,7 @@ export default function VolumeCalculator() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="send"
@@ -256,7 +256,7 @@ export default function VolumeCalculator() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={result?.toFixed(3)}
+            value={displayResult?.toFixed(3)}
             editable={false}
           />
           <UnitModal

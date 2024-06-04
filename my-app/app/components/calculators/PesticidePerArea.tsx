@@ -120,11 +120,11 @@ export default function PesticidePerArea() {
     }
 
     if (initialVolumeUnit !== "L") {
-      initialVolume = convertVolume(initialVolume, "L", initialVolumeUnit);
+      initialVolume = convertVolume(initialVolume, initialVolumeUnit, "L");
     }
 
     if (finalVolumeUnit !== "L") {
-      finalVolume = convertVolume(finalVolume, "L", finalVolumeUnit);
+      finalVolume = convertVolume(finalVolume, finalVolumeUnit, "L");
     }
 
     if (cultivationAreaUnit !== "m²") {
@@ -160,7 +160,7 @@ export default function PesticidePerArea() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   autoFocus
@@ -192,7 +192,7 @@ export default function PesticidePerArea() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -223,7 +223,7 @@ export default function PesticidePerArea() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -254,7 +254,7 @@ export default function PesticidePerArea() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="send"
@@ -284,13 +284,13 @@ export default function PesticidePerArea() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={result?.toFixed(3)}
+            value={displayResult?.toFixed(3)}
             editable={false}
           />
           <DropdownComponent
             data={volumeUnits}
             isModal={false}
-            value={"m"}
+            value={"L"}
             onValueChange={handleResultUnitChange}>              
           </DropdownComponent> 
         </View>

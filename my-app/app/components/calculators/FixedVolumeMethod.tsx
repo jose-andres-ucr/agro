@@ -46,7 +46,7 @@ export default function KnownAreaMethod() {
     setValue("dischargePerMinute", dischargePerMinute);
   }, [dischargePerMinute]);
 
-  useEffect(() => {
+  useEffect(() => {    
     setValue("stripWidth", stripWidth);
   }, [stripWidth]);
 
@@ -128,11 +128,11 @@ export default function KnownAreaMethod() {
     let result = ((10000 / stripWidth) / (volumePerHectare / dischargePerMinute)) / 60;
 
     if (resultDistanceUnit !== "m") {
-      result = convertDistance(result, resultDistanceUnit, "m");
+      result = convertDistance(result, "m", resultDistanceUnit);
     }
 
     if (resultTimeUnit !== "seg") {
-      let factor = convertTime(1, resultTimeUnit, "seg");
+      let factor = convertTime(1, "seg", resultTimeUnit);
       if (factor > 0) {
         factor = 1 / factor;
       }
@@ -162,7 +162,7 @@ export default function KnownAreaMethod() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   autoFocus
@@ -194,7 +194,7 @@ export default function KnownAreaMethod() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -225,7 +225,7 @@ export default function KnownAreaMethod() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="send"

@@ -45,10 +45,6 @@ export default function PesticidePerPlant() {
     setDisplayResult(result);
   }, [result]);
 
-  useEffect(() => {
-    setDisplayResult(result);
-  }, [displayResult]);
-
   const {
     control,
     handleSubmit,
@@ -105,11 +101,11 @@ export default function PesticidePerPlant() {
     } = data;
 
     if (initialVolumeUnit !== "L") {
-      initialVolume = convertVolume(initialVolume, "L", initialVolumeUnit);
+      initialVolume = convertVolume(initialVolume, initialVolumeUnit, "L");
     }
 
     if (finalVolumeUnit !== "L") {
-      finalVolume = convertVolume(finalVolume, "L", finalVolumeUnit);
+      finalVolume = convertVolume(finalVolume, finalVolumeUnit, "L");
     }
 
     let result = ((initialVolume - finalVolume) * plantCuantityTotal) / plantCuantity;
@@ -142,7 +138,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   autoFocus
@@ -168,7 +164,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -199,7 +195,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -230,7 +226,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="send"
@@ -254,7 +250,7 @@ export default function PesticidePerPlant() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={result?.toFixed(3)}
+            value={displayResult?.toFixed(3)}
             editable={false}
           />
           <DropdownComponent
