@@ -2,35 +2,56 @@ import { Button, Text, View, StyleSheet, ScrollView, TextInput } from "react-nat
 import React, { useEffect, useState } from 'react';
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Controller, useForm } from 'react-hook-form';
-
+import useUserRole from '../../hooks/UserRole'; // Importa el hook para obtener el rol del usuario
+import { getUniqueUserId } from '../../hooks/UserUtils'; // Ruta al archivo UserUtils.js
 
 type Comment = {
+  id: string; // Agrega la propiedad id
   Name: string;
   DateTime: FirebaseFirestoreTypes.Timestamp;
   Comment: string;
+  UserId: string; // incluir el UserId en el tipo Comment
+  Response?: string; // Agrega el campo de respuesta
 }
 
 export const CommentLog = (props: { text: string }) => {
+  const { userRole, userId: loggedUserId } = useUserRole(); //rol y el ID del usuario
   const [comments, setComments] = useState([] as Comment[]);
   const [showComments, setShowComments] = useState(false);
   const { control, handleSubmit, reset } = useForm();
+  const [userId, setUserId] = useState('');
+
+    //asignar id unica a un usuario no logueado
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await getUniqueUserId();
+      setUserId(id);
+    };
+
+    fetchUserId();
+  }, []);
   
   useEffect(() => {
     const subscriber = firestore().collection(props.text).onSnapshot((res) => {
       const comments = [] as Comment[];
-      res.forEach((documentSnapshot) => comments.push(documentSnapshot.data() as Comment));
+      res.forEach((documentSnapshot) => {
+        const commentData = documentSnapshot.data() as Comment;
+        commentData.id = documentSnapshot.id;
+        comments.push(commentData);
+      });
       setComments(comments);
     });
 
   return () => subscriber();
   }, []);
 
-  const addComment = async (data:any) => {
+  const addComment = async (data:any) => { //quitar any!!!!!!!!
     try {
       await firestore().collection(props.text).add({
         Name: data.Name,
         DateTime: firestore.Timestamp.fromDate(new Date()),
-        Comment: data.Comment
+        Comment: data.Comment,
+        UserId: userRole ? loggedUserId : userId  // Agrega el ID del usuario al comentario
       });
       reset();
     } catch (error) {
@@ -38,68 +59,120 @@ export const CommentLog = (props: { text: string }) => {
     }
   };
 
+  const addResponse = async (data: any, commentId: string) => { //respuesta, quitar any!!!
+    try {
+      await firestore().collection(props.text).doc(commentId).update({
+        Response: data.Response
+      });
+      reset();
+    } catch (error) {
+      console.error("Error agregando la respuesta: ", error);
+    }
+  };
+
+  const filteredComments = comments
+  .slice()
+  .sort((a, b) => b.DateTime.toMillis() - a.DateTime.toMillis())
+  .filter(comment => {
+    if (userRole === 'Admin' || userRole === 'Docente') {
+      return true;
+    }
+    return comment.UserId === (userRole ? loggedUserId : userId);
+  });
+
   return (
     <ScrollView
-    contentContainerStyle={{ flexGrow: 1 }}
-    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+      contentContainerStyle={{ flexGrow: 1 }}
+      ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
       <View style={styles.container}>
-        <View style={{alignItems: 'flex-start'}}>
-        <Button
-          title={showComments ? "Ocultar comentarios" : "Mostrar comentarios"}
-          onPress={() => setShowComments(!showComments)}
-        />
+        <View style={{ alignItems: 'flex-start' }}>
+          <Button
+            title={showComments ? "Ocultar comentarios" : "Mostrar comentarios"}
+            onPress={() => setShowComments(!showComments)}
+          />
         </View>
         {showComments && (
           <View>
             <View style={styles.separator} />
             <Text style={styles.title}>Nuevo comentario</Text>
-              <View>
-                <Controller
-                  control={control}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      placeholder="Nombre"
-                      style={styles.input}
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="default"
-                    />
-                  )}
-                  name="Name"
-                />
-                <Controller
-                  control={control}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      placeholder="Comentario"
-                      style={styles.inputComment}
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="default"
-                      multiline={true}
-                    />
-                  )}
-                  name="Comment"
-                />
-                <Button onPress={handleSubmit(addComment)} title="Enviar" />
-              </View>
+            <View>
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Nombre"
+                    style={styles.input}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    keyboardType="default"
+                  />
+                )}
+                name="Name"
+              />
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Comentario"
+                    style={styles.inputComment}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    keyboardType="default"
+                    multiline={true}
+                  />
+                )}
+                name="Comment"
+              />
+              <Button onPress={handleSubmit(addComment)} title="Enviar" />
+            </View>
             <Text style={styles.title}>Comentarios</Text>
-            {comments.map((comment, index) => (
-              <View key={index}>
-              {comment.Name && comment.DateTime && comment.Comment ? (
-                <>
-                  <View style={styles.commentBox} key={index}>
+            {filteredComments.map((comment, index) => (
+              <View key={comment.id}>
+                {comment.Name && comment.DateTime && comment.Comment ? (
+                  <View style={styles.commentBox} key={comment.id}>
                     <View style={styles.commentContainer}>
                       <Text style={styles.commentName}>Nombre: {comment.Name}</Text>
                       <Text style={styles.commentDateTime}>Fecha y hora: {new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
                       <Text style={styles.commentText}>Comentario: {comment.Comment}</Text>
                     </View>
+                    {comment.Response ? (
+                      <View style={styles.commentContainer}>
+                        <Text style={styles.title}>Respuestas</Text>
+                        <Text style={styles.commentResponse}>Respuesta: {comment.Response}</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.commentContainer}>
+                        <Text style={styles.title}>
+                          {userRole === 'Admin' || userRole === 'Docente'
+                            ? 'Sin respuestas todavía'
+                            : 'Respuestas brindadas'}
+                        </Text>
+                      </View>
+                    )}
+                    {(userRole === 'Admin' || userRole === 'Docente') && !comment.Response && (
+                      <View>
+                        <Controller
+                          control={control}
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              placeholder="Respuesta"
+                              style={styles.input}
+                              onBlur={onBlur}
+                              onChangeText={onChange}
+                              value={value}
+                              keyboardType="default"
+                            />
+                          )}
+                          name={`response-${index}`}
+                        />
+                        <Button onPress={handleSubmit((data) => addResponse(data, comment.id))} title="Responder" />
+                      </View>
+                    )}
                   </View>
-                </>
-              ) : null}
+                ) : null}
               </View>
             ))}
           </View>
@@ -111,7 +184,6 @@ export const CommentLog = (props: { text: string }) => {
 
 const styles = StyleSheet.create({
   container: {
-
     justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -149,6 +221,11 @@ const styles = StyleSheet.create({
   },
   commentText: {
     lineHeight: 20,
+  },
+  commentResponse: {
+    marginTop: 10,
+    fontStyle: 'italic',
+    color: 'green',
   },
   input: {
     width: '100%',
