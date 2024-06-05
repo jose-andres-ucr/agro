@@ -3,19 +3,19 @@ import { useEffect, useState } from "react";
 
 const useAuthState = () => {
   const [initializing, setInitializing] = useState(true);
-  const [userAuthState, setUserAuthState] =
-    useState<FirebaseAuthTypes.User | null>(null);
+  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
 
   useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged((user) => {
-      setUserAuthState(user);
+    const unsubscribe = auth().onAuthStateChanged(() => {
+      let user = auth().currentUser;
+      setUser(user);
       if (initializing) setInitializing(false);
     });
 
     return unsubscribe; // unsubscribe on unmount
   }, [initializing]);
 
-  return { initializing, userAuthState };
+  return { initializing, user };
 };
 
 export default useAuthState;
