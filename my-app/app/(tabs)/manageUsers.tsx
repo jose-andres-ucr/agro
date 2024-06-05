@@ -20,7 +20,7 @@ export default function ManageUsers() {
               style={{ marginVertical: 15, padding: 8 }}
               mode="contained"
               onPress={() =>
-                router.push("/components/managment/ApproveRegistration")
+                router.push("/components/management/ApproveRegistration")
               }
             >
               Aprobaciones de Registro

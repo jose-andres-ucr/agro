@@ -4,12 +4,12 @@ import { useFetchUserData } from "./FetchData";
 const useUserRole = () => {
   const { userData } = useFetchUserData();
   //Get User Roll
-  const [userRole, setuserRole] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   useEffect(() => {
     if (userData) {
-      setuserRole(userData.Role);
+      setUserRole(userData.Role);
     } else {
-      setuserRole(null);
+      setUserRole(null);
     }
   }, [userData]);
 
@@ -25,6 +25,7 @@ const useUserRole = () => {
     } else if (userRole == "Docente") {
       setProfile("/profile");
       setEducation("/education");
+      setManageUsers(null);
     } else if (userRole == "Estudiante") {
       setProfile("/profile");
       setEducation("/education");
@@ -34,7 +35,7 @@ const useUserRole = () => {
       setEducation(null);
       setManageUsers(null);
     } else {
-      // no roll
+      // no role
       setProfile(null);
       setEducation(null);
       setManageUsers(null);

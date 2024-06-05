@@ -2,23 +2,22 @@ import React, { useEffect } from "react";
 import { Stack, router, usePathname } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { theme } from "@/constants/theme";
-import useAuthState from "./hooks/Authentication";
 import auth from "@react-native-firebase/auth";
 import { useFetchUserData } from "./hooks/FetchData";
-import Toast, { ErrorToast } from 'react-native-toast-message';
+import Toast, { ErrorToast } from "react-native-toast-message";
 
 const toastConfig = {
   error: (props: any) => (
     <ErrorToast
       {...props}
       text1Style={{
-        fontSize: 17
+        fontSize: 17,
       }}
       text2Style={{
-        fontSize: 15
+        fontSize: 15,
       }}
       style={{
-        borderLeftColor: theme.colors.error
+        borderLeftColor: theme.colors.error,
       }}
     />
   ),
@@ -79,7 +78,7 @@ export default function TabLayout() {
           options={{ headerTitle: "Fungicidas e Insecticidas" }}
         />
         <Stack.Screen
-          name="components/managment/ApproveRegistration"
+          name="components/management/ApproveRegistration"
           options={{ headerTitle: "Aprobaciones de Registro" }}
         />
         <Stack.Screen
@@ -92,7 +91,7 @@ export default function TabLayout() {
         />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
-      <Toast config={toastConfig}/>
+      <Toast config={toastConfig} />
     </PaperProvider>
   );
 }
