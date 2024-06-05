@@ -165,8 +165,7 @@ export default function FixedVelocityMethod() {
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.mainContainer}>
-        <Text style={styles.header}>Método de velocidad fija</Text>
+      <View style={styles.mainContainer}>        
         <Text style={styles.body}>Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
         <View style={styles.formContainer}>

@@ -23,7 +23,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function KnownAreaMethod() {
+export default function FixedVolumeMethod() {
   const styles = useGlobalCalculatorStyles();
 
   const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
@@ -147,8 +147,7 @@ export default function KnownAreaMethod() {
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.mainContainer}>
-        <Text style={styles.header}>Método de Volumen fijo</Text>
+      <View style={styles.mainContainer}>        
         <Text style={styles.body}>Determina a qué velocidad se debe avanzar para aplicar el volumen del caldo deseado</Text>
         <View style={styles.formContainer}> 
           <View style={styles.inputGroup}>

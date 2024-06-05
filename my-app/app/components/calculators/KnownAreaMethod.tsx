@@ -23,7 +23,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function VolumeCalculator() {
+export default function KnownAreaMethod() {
   const styles = useGlobalCalculatorStyles();
 
   const { value: knownArea, unit: knownAreaUnit, handleUnitChange: knownAreaHandler} = useUnit("m²", 0, convertArea);
@@ -148,7 +148,6 @@ export default function VolumeCalculator() {
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
       <View style={styles.mainContainer}>
-        <Text style={styles.header}>Volumen en área conocida</Text>
         <Text style={styles.body}>Determina el volumen de aplicación por hectárea. Marque un área
           conocida y aplique ahí agua a la velocidad usual</Text>
         <View style={styles.formContainer}>

@@ -122,8 +122,7 @@ export default function PesticidePerPlant() {
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.mainContainer}>
-        <Text style={styles.header}>Calibración por planta</Text>
+      <View style={styles.mainContainer}>        
         <Text style={ styles.body }>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
         
         <View style={styles.formContainer}>

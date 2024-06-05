@@ -146,8 +146,7 @@ export default function PesticidePerArea() {
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
       <View style={styles.mainContainer}>
-        <Text style={styles.header}>Calibración por área</Text>
-        <Text style={styles.body}> Marque un área conocida y aplique allí agua a la velocidad usual.</Text>
+        <Text style={styles.body}>Marque un área conocida y aplique allí agua a la velocidad usual.</Text>
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>          
             <Controller
