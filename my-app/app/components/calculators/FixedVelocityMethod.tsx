@@ -1,5 +1,5 @@
 import { View, TextInput as TextInputRn, ScrollView } from "react-native";
-import { Text, TextInput, Button } from "react-native-paper";
+import { Text, TextInput, Button, Divider } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
@@ -7,12 +7,51 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
 import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 import { showToastError } from "@/constants/utils";
-import { DropdownComponent } from "./UnitDropdown";
-import { volumeUnits, distanceUnits, convertVolume, convertDistance, timeUnits, convertTime, convertArea, areaUnits} from "@/constants/units";
+import { CustomDropdown } from "./CustomDropdown";
+import { volumeUnits, distanceUnits, convertVolume, convertDistance, timeUnits, convertTime, convertArea, areaUnits, CompoundUnit} from "@/constants/units";
 import useUnit from "../../hooks/useUnit";
 import { UnitModal } from "./UnitModal";
 import useCompoundUnit from "../../hooks/useCompoundUnit";
 import { positiveNumber } from "@/constants/schemas";
+import { Unit } from "@/constants/units";
+import { CalculatorStateManager } from "./CalculatorStateManager";
+
+let DBDATA = [
+  {
+    name: 'Fixed Velocity',
+    profile: 'Profile 1',
+    data: '[{"name":"dischargePerMinute","value":"0","unit":{"label":"litros","value":"L"}},{"name":"distanceBetweenNozzles","value":"0","unit":{"label":"metros","value":"m"}},{"name":"velocity","value":"0","unit":{"right":{"label":"metros","value":"m"},"left":{"label":"segundos","value":"seg"}}},{"name":"result","value":"0","unit":{"right":{"label":"litros","value":"L"},"left":{"label":"hectáreas","value":"ha"}}}]'
+  },
+  {
+    name: 'Fixed Velocity',
+    profile: 'Profile 2',
+    data: '[{"name":"dischargePerMinute","value":"10","unit":{"label":"litros","value":"L"}},{"name":"distanceBetweenNozzles","value":"10","unit":{"label":"metros","value":"m"}},{"name":"velocity","value":"10","unit":{"right":{"label":"metros","value":"m"},"left":{"label":"segundos","value":"seg"}}},{"name":"result","value":"","unit":{"right":{"label":"litros","value":"L"},"left":{"label":"hectáreas","value":"ha"}}}]'
+  },
+  {
+    name: 'Fixed Velocity',
+    profile: 'Profile 3',
+    data: '[{"name":"dischargePerMinute","value":"","unit":{"label":"litros","value":"L"}},{"name":"distanceBetweenNozzles","value":"","unit":{"label":"metros","value":"m"}},{"name":"velocity","value":"","unit":{"right":{"label":"metros","value":"m"},"left":{"label":"segundos","value":"seg"}}},{"name":"result","value":"","unit":{"right":{"label":"litros","value":"L"},"left":{"label":"hectáreas","value":"ha"}}}]'
+  }
+];
+
+type SavedCalculator = {
+  name: string;
+  profile: string;
+  data: string;
+}
+
+type Field = {
+  name: string;
+  value?: string;
+  unit?: Unit | CompoundUnit;
+}
+
+const fieldMappings = {
+  dischargePerMinute: "dischargePerMinute",
+  distanceBetweenNozzles: "distanceBetweenNozzles",
+  velocity: "velocity",
+  result: "result",
+}
 
 const schema = z.object({
   dischargePerMinute: positiveNumber,
@@ -164,11 +203,15 @@ export default function FixedVelocityMethod() {
     <ScrollView
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
-    >
+    > 
+      <Divider></Divider>
+        <CalculatorStateManager /> 
+      <Divider></Divider>
       <View style={styles.mainContainer}>
         <Text style={styles.header}>Método de velocidad fija</Text>
         <Text style={styles.body}>Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
+        
         <View style={styles.formContainer}>
         <View style={styles.inputGroup}>            
               <Controller
@@ -194,12 +237,12 @@ export default function FixedVelocityMethod() {
                 )}
                 name="dischargePerMinute"
               />
-              <DropdownComponent
+              <CustomDropdown
               data={volumeUnits}
               isModal={false}
               value={"L"}
               onValueChange={handleDischargePerMinuteUnitChange}>              
-              </DropdownComponent>
+              </CustomDropdown>
             </View>
             <View style={styles.inputGroup}>            
               <Controller
@@ -224,12 +267,12 @@ export default function FixedVelocityMethod() {
                 )}
                 name="distanceBetweenNozzles"
               />
-              <DropdownComponent
+              <CustomDropdown
               data={distanceUnits}
               isModal={false}
               value={"m"}
               onValueChange={handleDistanceBetweenNozzlesUnitChange}>              
-              </DropdownComponent>                       
+              </CustomDropdown>                       
             </View>
             <View style={styles.inputGroup}>            
               <Controller

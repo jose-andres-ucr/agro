@@ -10,7 +10,7 @@ import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 import { positiveNumber } from "@/constants/schemas";
 import useUnit from "@/app/hooks/useUnit";
 import { areaUnits, convertArea, convertVolume, volumeUnits } from "@/constants/units";
-import { DropdownComponent } from "./UnitDropdown";
+import { CustomDropdown } from "./CustomDropdown";
 
 
 const schema = z.object({
@@ -173,12 +173,12 @@ export default function PesticidePerArea() {
               )}
               name="appliedArea"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={areaUnits}
             isModal={false}
             value={"m²"}
             onValueChange={handleAppliedAreaUnitChange}>              
-            </DropdownComponent> 
+            </CustomDropdown> 
           </View>
 
           <View style={styles.inputGroup}>          
@@ -204,12 +204,12 @@ export default function PesticidePerArea() {
               )}
               name="initialVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
             value={"L"}
             onValueChange={handleInitialVolumeUnitChange}>              
-            </DropdownComponent>
+            </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>          
@@ -235,12 +235,12 @@ export default function PesticidePerArea() {
               )}
               name="finalVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
             value={"L"}
             onValueChange={handleFinalVolumeUnitChange}>              
-            </DropdownComponent>
+            </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>
@@ -264,12 +264,12 @@ export default function PesticidePerArea() {
               )}
               name="cultivationArea"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={areaUnits}
             isModal={false}
             value={"m²"}
             onValueChange={handleCultivationAreaUnitChange}>              
-            </DropdownComponent> 
+            </CustomDropdown> 
           </View>
         </View>
 
@@ -287,12 +287,12 @@ export default function PesticidePerArea() {
             value={displayResult?.toFixed(3)}
             editable={false}
           />
-          <DropdownComponent
+          <CustomDropdown
             data={volumeUnits}
             isModal={false}
             value={"L"}
             onValueChange={handleResultUnitChange}>              
-          </DropdownComponent> 
+          </CustomDropdown> 
         </View>
       </View>
       <CommentLog text="PesticidePerAreaComments" />

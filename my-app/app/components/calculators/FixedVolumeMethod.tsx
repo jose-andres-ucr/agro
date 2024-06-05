@@ -11,7 +11,7 @@ import { positiveNumber } from "@/constants/schemas";
 import { convertDistance, convertTime, convertVolume, distanceUnits, timeUnits, volumeUnits } from "@/constants/units";
 import useUnit from "@/app/hooks/useUnit";
 import useCompoundUnit from "@/app/hooks/useCompoundUnit";
-import { DropdownComponent } from "./UnitDropdown";
+import { CustomDropdown } from "./CustomDropdown";
 import { UnitModal } from "./UnitModal";
 
 
@@ -175,12 +175,12 @@ export default function KnownAreaMethod() {
               )}
               name="dischargePerMinute"
             />
-            <DropdownComponent
+            <CustomDropdown
               data={volumeUnits}
               isModal={false}
               value={"L"}
               onValueChange={handleDischargePerMinuteUnitChange}>              
-              </DropdownComponent>
+              </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>
@@ -206,12 +206,12 @@ export default function KnownAreaMethod() {
               )}
               name="stripWidth"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={distanceUnits}
             isModal={false}
             value={"m"}
             onValueChange={handleStripWidthUnitChange}>              
-            </DropdownComponent>
+            </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>
@@ -235,12 +235,12 @@ export default function KnownAreaMethod() {
               )}
               name="volumePerHectare"
             />
-            <DropdownComponent
+            <CustomDropdown
               data={volumeUnits}
               isModal={false}
               value={"L"}
               onValueChange={handleVolumePerHectareUnitChange}>              
-              </DropdownComponent>
+              </CustomDropdown>
           </View>
         </View>
 

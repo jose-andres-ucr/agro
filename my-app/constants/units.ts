@@ -14,6 +14,16 @@ export type Unit = {
     value: string;
 }
 
+export type DropdownItem = {
+    label: string;
+    value: string;
+}
+
+export type CompoundUnit = {
+    left: Unit;
+    right: Unit;
+}
+
 export const volumeUnits: Unit[] = [
     { label: 'litros', value: 'L' },
     { label: 'mililitros', value: 'mL' },

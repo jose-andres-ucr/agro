@@ -10,7 +10,7 @@ import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 import { positiveNumber } from "@/constants/schemas";
 import useUnit from "@/app/hooks/useUnit";
 import { convertVolume, volumeUnits } from "@/constants/units";
-import { DropdownComponent } from "./UnitDropdown";
+import { CustomDropdown } from "./CustomDropdown";
 
 
 const schema = z.object({
@@ -176,12 +176,12 @@ export default function PesticidePerPlant() {
               )}
               name="initialVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
             value={"L"}
             onValueChange={handleInitialVolumeUnitChange}>              
-            </DropdownComponent>
+            </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>          
@@ -207,12 +207,12 @@ export default function PesticidePerPlant() {
               )}
               name="finalVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
             value={"L"}
             onValueChange={handleFinalVolumeUnitChange}>              
-            </DropdownComponent>
+            </CustomDropdown>
           </View>
           
           <View style={styles.inputGroup}>
@@ -253,12 +253,12 @@ export default function PesticidePerPlant() {
             value={displayResult?.toFixed(3)}
             editable={false}
           />
-          <DropdownComponent
+          <CustomDropdown
           data={volumeUnits}
           isModal={false}
           value={"L"}
           onValueChange={handleResultUnitChange}>              
-          </DropdownComponent>
+          </CustomDropdown>
         </View>
       </View>
       <CommentLog text="PesticidePerPlantComments" />

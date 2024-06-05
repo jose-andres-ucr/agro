@@ -1,7 +1,7 @@
 import useGlobalDropdownStyles from '@/constants/GlobalDropdownStyle';
 import { useState } from 'react';
 import { Modal, Portal, Text, Button } from 'react-native-paper';
-import { DropdownComponent } from './UnitDropdown';
+import { CustomDropdown } from './CustomDropdown';
 import { Unit } from '@/constants/units';
 import { View } from 'react-native';
 
@@ -31,19 +31,19 @@ export const UnitModal = (props: {leftUnits: Unit[], rightUnits: Unit[], leftVal
             <Portal>
                 <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalContainer}>                    
                     <View style={styles.dropDownRowContainer}>
-                        <DropdownComponent
+                        <CustomDropdown
                         data={props.leftUnits}
                         isModal={false}
                         value={leftUnitValue}
                         onValueChange={handleLeftUnitChange}>              
-                        </DropdownComponent>
+                        </CustomDropdown>
                         <Text style={styles.text}>/</Text>
-                        <DropdownComponent
+                        <CustomDropdown
                         data={props.rightUnits}
                         isModal={false}
                         value={rightUnitValue}
                         onValueChange={handleRightUnitChange}>              
-                        </DropdownComponent>
+                        </CustomDropdown>
                     </View>
                 </Modal>
             </Portal>

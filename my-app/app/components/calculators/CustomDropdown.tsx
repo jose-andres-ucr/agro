@@ -1,15 +1,19 @@
 import useGlobalDropdownStyles from '@/constants/GlobalDropdownStyle';
+import { DropdownItem } from '@/constants/units';
 import React, { useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Unit } from '@/constants/units';
 
 
-export const DropdownComponent = (props: { data: Unit[], isModal: boolean, value: string | null, onValueChange: (value: string) => void }) => {
+export const CustomDropdown = (props: { data: DropdownItem[], isModal: boolean, value: string | null, onValueChange: (value: string) => void, unfocusedStyle?: any, focusedStyle?: any}) => {
+
     const styles = useGlobalDropdownStyles();
     const [value, setValue] = useState<string | null>(props.value);
     const [isFocus, setIsFocus] = useState(false);
 
-    const onChange = (item: Unit) => {
+    const focusedStyle = props.focusedStyle || styles.focusedDropdown;
+    const unfocusedStyle = props.unfocusedStyle || styles.unfocusedDropdown;
+
+    const onChange = (item: DropdownItem) => {
         setValue(item.value);
         setIsFocus(false);
         props.onValueChange(item.value);
@@ -17,10 +21,10 @@ export const DropdownComponent = (props: { data: Unit[], isModal: boolean, value
 
     return (
         <Dropdown
-            style={isFocus ? styles.focusedDropdown : styles.dropdown}  
+            style={isFocus ? focusedStyle : unfocusedStyle}  
             containerStyle={styles.dropdownItem}                      
             selectedTextStyle={styles.selectedTextStyle}
-            activeColor={styles.dropdown.backgroundColor}
+            activeColor={styles.unfocusedDropdown.backgroundColor}
             itemTextStyle={styles.itemTextStyle}
             data={props.data}
             mode={props.isModal ? 'modal' : 'default'}

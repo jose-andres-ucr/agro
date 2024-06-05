@@ -11,7 +11,7 @@ import { positiveNumber } from "@/constants/schemas";
 import useUnit from "@/app/hooks/useUnit";
 import { areaUnits, convertArea, convertVolume, volumeUnits } from "@/constants/units";
 import useCompoundUnit from "@/app/hooks/useCompoundUnit";
-import { DropdownComponent } from "./UnitDropdown";
+import { CustomDropdown } from "./CustomDropdown";
 import { UnitModal } from "./UnitModal";
 
 
@@ -176,7 +176,7 @@ export default function VolumeCalculator() {
               )}
               name="initialVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
             value={"L"}
@@ -207,7 +207,7 @@ export default function VolumeCalculator() {
               )}
               name="finalVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
             value={"L"}
@@ -236,12 +236,12 @@ export default function VolumeCalculator() {
               )}
               name="knownArea"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={areaUnits}
             isModal={false}
             value={"m²"}
             onValueChange={handleKnownAreaUnitChange}>              
-            </DropdownComponent> 
+            </CustomDropdown> 
           </View>
         </View>
 

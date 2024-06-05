@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 
 const getGlobalDropdownStyles = (theme: any) => StyleSheet.create({
-    dropdown: {                
+    unfocusedDropdown: {                
         borderWidth: 1,
         borderRadius: 5,
         borderColor: theme.colors.inputBorderColor,        
