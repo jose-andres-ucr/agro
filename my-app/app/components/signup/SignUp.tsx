@@ -15,6 +15,7 @@ import CheckEmailModal from "./CheckEmailModal";
 import LoadingButton from "../LoadingButton";
 import firestore from "@react-native-firebase/firestore";
 import DropDownRole from "./DropDownRole";
+import { showToastError } from "@/constants/utils";
 
 const form = z
   .object({
@@ -43,19 +44,19 @@ const form = z
     password: z
       .string()
       .min(8, {
-        message: "La contraseña debe contener al menos 8 caracteres",
+        message: "Debe contener al menos 8 caracteres",
       })
       .max(30, {
-        message: "La contraseña no puede tener más de 30 caracteres",
+        message: "No puede tener más de 30 caracteres",
       })
       .regex(/[A-Za-z]/, {
-        message: "La contraseña debe contener al menos una letra",
+        message: "Debe contener al menos una letra",
       })
       .regex(/[0-9]/, {
-        message: "La contraseña debe contener al menos un número",
+        message: "Debe contener al menos un número",
       })
       .regex(/[\s!"#$%&'()*+,-./:;<=>?@^_`{|}~]/, {
-        message: "La contraseña debe contener al menos un caracter especial",
+        message: "Debe contener al menos un caracter especial",
       }),
 
     confirmPassword: z.string(),
@@ -109,6 +110,28 @@ export default function SignUp() {
     resolver: zodResolver(form),
   });
 
+  {errors.userRole && (
+    <Text style={styles.error}>{errors.userRole.message}</Text>
+  )}
+  {errors.firstName && (
+    <Text style={styles.error}>{errors.firstName.message}</Text>
+  )}
+  {errors.lastName && (
+    <Text style={styles.error}>{errors.lastName.message}</Text>
+  )}
+  {errors.secondLastName && (
+    <Text style={styles.error}>{errors.secondLastName.message}</Text>
+  )}
+  {errors.email && (
+    <Text style={styles.error}>{errors.email.message}</Text>
+  )}
+  {errors.password && (
+    <Text style={styles.error}>{errors.password.message}</Text>
+  )}
+  {errors.confirmPassword && (
+    <Text style={styles.error}>{errors.confirmPassword.message}</Text>
+  )}
+
   const refs = {
     firstName: React.useRef<TextInputRn>(null),
     lastName: React.useRef<TextInputRn>(null),
@@ -125,6 +148,32 @@ export default function SignUp() {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null | undefined>(
     null
   );
+
+  {invalidEmail && (
+    <Text style={styles.error}>
+      El correo ya se encuentra registrado.
+    </Text>
+  )}
+
+  useEffect(() => {
+    if (errors) {
+      if (errors.userRole) {
+        showToastError("Rol", errors.userRole.message);
+      } else if (errors.firstName) {
+        showToastError("Nombre", errors.firstName.message);
+      } else if (errors.lastName) {
+        showToastError("Primer apellido", errors.lastName.message);
+      } else if (errors.secondLastName) {
+        showToastError("Segundo apellido", errors.secondLastName.message);
+      } else if (errors.email) {
+        showToastError("Correo", errors.email.message);
+      } else if (errors.password) {
+        showToastError("Contraseña", errors.password.message);
+      } else if (errors.confirmPassword) {
+        showToastError("Contraseña", errors.confirmPassword.message);
+      }
+    }    
+  }, [errors]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [role, setRole] = useState("");
@@ -210,10 +259,7 @@ export default function SignUp() {
             control={control}
             render={() => <DropDownRole handleRole={handleRole} />}
             name="userRole"
-          />
-          {errors.userRole && (
-            <Text style={styles.error}>{errors.userRole.message}</Text>
-          )}
+          />          
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -236,10 +282,7 @@ export default function SignUp() {
               />
             )}
             name="firstName"
-          />
-          {errors.firstName && (
-            <Text style={styles.error}>{errors.firstName.message}</Text>
-          )}
+          />          
 
           <Controller
             control={control}
@@ -263,10 +306,7 @@ export default function SignUp() {
               />
             )}
             name="lastName"
-          />
-          {errors.lastName && (
-            <Text style={styles.error}>{errors.lastName.message}</Text>
-          )}
+          />          
 
           <Controller
             control={control}
@@ -291,10 +331,7 @@ export default function SignUp() {
             )}
             name="secondLastName"
           />
-          {errors.secondLastName && (
-            <Text style={styles.error}>{errors.secondLastName.message}</Text>
-          )}
-
+          
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -319,10 +356,7 @@ export default function SignUp() {
               />
             )}
             name="email"
-          />
-          {errors.email && (
-            <Text style={styles.error}>{errors.email.message}</Text>
-          )}
+          />          
 
           <Controller
             control={control}
@@ -345,10 +379,7 @@ export default function SignUp() {
               />
             )}
             name="password"
-          />
-          {errors.password && (
-            <Text style={styles.error}>{errors.password.message}</Text>
-          )}
+          />          
 
           <Controller
             control={control}
@@ -374,15 +405,7 @@ export default function SignUp() {
             )}
             name="confirmPassword"
           />
-          {errors.confirmPassword && (
-            <Text style={styles.error}>{errors.confirmPassword.message}</Text>
-          )}
-
-          {invalidEmail && (
-            <Text style={styles.error}>
-              El correo ya se encuentra registrado.
-            </Text>
-          )}
+          
           <CheckEmailModal checkEmail={checkEmail} userEmail={user?.email} />
           <View style={{ marginVertical: 20 }} />
           <LoadingButton

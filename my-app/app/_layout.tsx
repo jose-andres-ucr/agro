@@ -16,6 +16,7 @@ const toastConfig = {
       text2Style={{
         fontSize: 15,
       }}
+      text2NumberOfLines={2}
       style={{
         borderLeftColor: theme.colors.error,
       }}

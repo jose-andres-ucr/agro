@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import auth from "@react-native-firebase/auth";
 import { router } from "expo-router";
 import { z } from "zod";
@@ -15,6 +15,7 @@ import React from "react";
 import { theme } from "@/constants/theme";
 import firestore from "@react-native-firebase/firestore";
 import LoadingButton from "../LoadingButton";
+import { showToastError } from "@/constants/utils";
 
 const form = z.object({
   userName: z.string().email({ message: "El nombre de usuario no es válido" }),
@@ -45,6 +46,18 @@ export default function Login() {
 
   const [credentialError, setCredentialError] = useState<string>("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (errors || credentialError) {
+      if (errors.userName) {
+        showToastError("Usuario", errors.userName.message);
+      } else if (errors.password) {
+        showToastError("Contraseña", errors.password.message);
+      } else if (credentialError) {
+        showToastError("Inicio de sesión", credentialError);
+      }
+    }
+  }, [errors, credentialError]);
 
   const clearErrorMessages = () => {
     clearErrors();
@@ -84,8 +97,7 @@ export default function Login() {
     } catch (error: any) {
       if (error.code == "auth/invalid-credential") {
         setCredentialError("Su usuario o contraseña son incorrectos");
-      }
-      console.log(error);
+      }      
     } finally {
       setLoading(false);
     }
@@ -114,10 +126,7 @@ export default function Login() {
           />
         )}
         name="userName"
-      />
-      {errors.userName && (
-        <Text style={styles.error}>{errors.userName.message}</Text>
-      )}
+      />     
 
       <Controller
         control={control}
@@ -142,14 +151,7 @@ export default function Login() {
           />
         )}
         name="password"
-      />
-      {errors.password && (
-        <Text style={styles.error}>{errors.password.message}</Text>
-      )}
-
-      {credentialError ? (
-        <Text style={styles.error}>{credentialError}</Text>
-      ) : null}
+      />      
 
       <LoadingButton
         label="Ingresar"
