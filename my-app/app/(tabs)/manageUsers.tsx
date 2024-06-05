@@ -18,6 +18,7 @@ export default function ManageUsers() {
           <Card.Content style={{ marginTop: 20 }}>
             <Button
               style={{ marginVertical: 15, padding: 8 }}
+              labelStyle={{ fontSize: 16 }}
               mode="contained"
               onPress={() =>
                 router.push("/components/management/ApproveRegistration")

@@ -17,7 +17,11 @@ const ApproveRegistration = () => {
       >
         <Card.Title
           title="Aprobaciones de Registro Pendientes"
-          style={{ backgroundColor: theme.colors.primary }}
+          style={{
+            backgroundColor: theme.colors.primary,
+            borderTopStartRadius: 10,
+            borderTopEndRadius: 10,
+          }}
         />
 
         <UserTable />

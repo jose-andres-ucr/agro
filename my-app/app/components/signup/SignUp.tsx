@@ -71,7 +71,7 @@ const form = z
       data.userRole === "Usuario Externo",
     {
       message: "El correo debe pertenecer al dominio @ucr.ac.cr",
-      path: ["userName"],
+      path: ["email"],
     }
   )
   .refine(
