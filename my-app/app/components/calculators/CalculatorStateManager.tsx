@@ -5,14 +5,6 @@ import { CustomDropdown } from './CustomDropdown';
 import { theme } from '@/constants/theme';
 import { DropdownItem } from '@/constants/units';
 
-const profiles = [
-    "Profile 1",
-    "Profile 2",
-    "Profile 3",
-    "Profile 4",
-    "Profile 5",
-]
-
 function convertListToDropdown(arr: string[]): DropdownItem[] {
     return arr.map(str => ({ label: str, value: str }));
   }

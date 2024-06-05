@@ -15,6 +15,7 @@ import useCompoundUnit from "../../hooks/useCompoundUnit";
 import { positiveNumber } from "@/constants/schemas";
 import { Unit } from "@/constants/units";
 import { CalculatorStateManager } from "./CalculatorStateManager";
+import useUserRole from "@/app/hooks/UserRole";
 
 let DBDATA = [
   {
@@ -33,6 +34,14 @@ let DBDATA = [
     data: '[{"name":"dischargePerMinute","value":"","unit":{"label":"litros","value":"L"}},{"name":"distanceBetweenNozzles","value":"","unit":{"label":"metros","value":"m"}},{"name":"velocity","value":"","unit":{"right":{"label":"metros","value":"m"},"left":{"label":"segundos","value":"seg"}}},{"name":"result","value":"","unit":{"right":{"label":"litros","value":"L"},"left":{"label":"hectáreas","value":"ha"}}}]'
   }
 ];
+
+const profiles = [
+  "Profile 1",
+  "Profile 2",
+  "Profile 3",
+  "Profile 4",
+  "Profile 5",
+]
 
 type SavedCalculator = {
   name: string;
@@ -63,6 +72,8 @@ type FormData = z.infer<typeof schema>;
 
 export default function FixedVelocityMethod() {
   const styles = useGlobalCalculatorStyles();
+  const {userRole} = useUserRole();
+  console.log("sd");
 
   const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
 
@@ -205,7 +216,7 @@ export default function FixedVelocityMethod() {
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     > 
       <Divider></Divider>
-        <CalculatorStateManager /> 
+        <CalculatorStateManager profiles={profiles}/> 
       <Divider></Divider>
       <View style={styles.mainContainer}>
         <Text style={styles.header}>Método de velocidad fija</Text>
@@ -213,7 +224,7 @@ export default function FixedVelocityMethod() {
         </Text>
         
         <View style={styles.formContainer}>
-        <View style={styles.inputGroup}>            
+        <View style={styles.inputGroup}>
               <Controller
                 control={control}
                 render={({ field: { onChange, onBlur, value } }) => (
