@@ -1,20 +1,30 @@
+import auth from "@react-native-firebase/auth";
 import firestore, {
   FirebaseFirestoreTypes,
 } from "@react-native-firebase/firestore";
 import { useEffect, useState } from "react";
 import useAuthState from "./Authentication";
+type User = {
+  id: string;
+  FirstName: string;
+  LastName: string;
+  SecondLastName: string | null;
+  Email: string;
+  Role: string;
+  Approved: number;
+};
 
-const useFetchUserData = () => {
-  const { initializing, userAuthState } = useAuthState();
+export const useFetchUserData = () => {
+  const { user } = useAuthState();
   const [userData, setUserData] =
     useState<FirebaseFirestoreTypes.DocumentData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (userAuthState?.email) {
+      if (user?.email) {
         //TODO: handle errors
         let response = (
-          await firestore().collection("Users").doc(userAuthState.uid).get()
+          await firestore().collection("Users").doc(user.uid).get()
         ).data();
         if (response !== undefined) {
           setUserData(response);
@@ -24,15 +34,50 @@ const useFetchUserData = () => {
       }
     };
 
-    if (userAuthState) {
+    if (user?.emailVerified) {
       fetchData();
     } else {
       setUserData(null);
     }
-  }, [userAuthState]);
-  let userId = userAuthState?.uid;
+  }, [user]);
 
-  return { initializing, userId, userData };
+  return { userAuth: user, userId: user?.uid, userData };
 };
 
-export default useFetchUserData;
+export const useFetchPendingRegistration = () => {
+  const [users, setUsers] = useState<User[]>([]);
+
+  const onResult = (querySnapshot: FirebaseFirestoreTypes.QuerySnapshot) => {
+    let data: User[] = [];
+
+    querySnapshot.forEach((userInfo) => {
+      //TODO: check if user email was verified
+      if (userInfo.data().Approved === 0) {
+        let user: User = {
+          id: userInfo.id,
+          FirstName: userInfo.data().FirstName,
+          LastName: userInfo.data().LastName,
+          SecondLastName: userInfo.data().SecondLastName,
+          Email: userInfo.data().Email,
+          Role: userInfo.data().Role,
+          Approved: userInfo.data().Approved,
+        };
+        data.push(user);
+      }
+    });
+    setUsers(data);
+  };
+
+  const onError = (error: Error) => {
+    console.error(error);
+  };
+
+  useEffect(() => {
+    firestore()
+      .collection("Users")
+      .orderBy("Email", "asc")
+      .onSnapshot(onResult, onError);
+  }, []);
+
+  return users;
+};
