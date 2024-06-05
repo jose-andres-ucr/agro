@@ -84,7 +84,7 @@ const form = z
     {
       message:
         "Los usuarios externos no pueden registrarse con un correo institucional",
-      path: ["userName"],
+      path: ["email"],
     }
   );
 
@@ -110,28 +110,6 @@ export default function SignUp() {
     resolver: zodResolver(form),
   });
 
-  {errors.userRole && (
-    <Text style={styles.error}>{errors.userRole.message}</Text>
-  )}
-  {errors.firstName && (
-    <Text style={styles.error}>{errors.firstName.message}</Text>
-  )}
-  {errors.lastName && (
-    <Text style={styles.error}>{errors.lastName.message}</Text>
-  )}
-  {errors.secondLastName && (
-    <Text style={styles.error}>{errors.secondLastName.message}</Text>
-  )}
-  {errors.email && (
-    <Text style={styles.error}>{errors.email.message}</Text>
-  )}
-  {errors.password && (
-    <Text style={styles.error}>{errors.password.message}</Text>
-  )}
-  {errors.confirmPassword && (
-    <Text style={styles.error}>{errors.confirmPassword.message}</Text>
-  )}
-
   const refs = {
     firstName: React.useRef<TextInputRn>(null),
     lastName: React.useRef<TextInputRn>(null),
@@ -149,14 +127,8 @@ export default function SignUp() {
     null
   );
 
-  {invalidEmail && (
-    <Text style={styles.error}>
-      El correo ya se encuentra registrado.
-    </Text>
-  )}
-
   useEffect(() => {
-    if (errors) {
+    if (errors || invalidEmail) {
       if (errors.userRole) {
         showToastError("Rol", errors.userRole.message);
       } else if (errors.firstName) {
@@ -171,9 +143,14 @@ export default function SignUp() {
         showToastError("Contraseña", errors.password.message);
       } else if (errors.confirmPassword) {
         showToastError("Contraseña", errors.confirmPassword.message);
+      } else if (invalidEmail) {
+        showToastError(
+          "Correo Electrónico",
+          "El correo ya se encuentra registrado."
+        );
       }
-    }    
-  }, [errors]);
+    }
+  }, [errors, invalidEmail]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [role, setRole] = useState("");
@@ -259,7 +236,7 @@ export default function SignUp() {
             control={control}
             render={() => <DropDownRole handleRole={handleRole} />}
             name="userRole"
-          />          
+          />
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -282,7 +259,7 @@ export default function SignUp() {
               />
             )}
             name="firstName"
-          />          
+          />
 
           <Controller
             control={control}
@@ -306,7 +283,7 @@ export default function SignUp() {
               />
             )}
             name="lastName"
-          />          
+          />
 
           <Controller
             control={control}
@@ -331,7 +308,7 @@ export default function SignUp() {
             )}
             name="secondLastName"
           />
-          
+
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -356,7 +333,7 @@ export default function SignUp() {
               />
             )}
             name="email"
-          />          
+          />
 
           <Controller
             control={control}
@@ -379,7 +356,7 @@ export default function SignUp() {
               />
             )}
             name="password"
-          />          
+          />
 
           <Controller
             control={control}
@@ -405,7 +382,7 @@ export default function SignUp() {
             )}
             name="confirmPassword"
           />
-          
+
           <CheckEmailModal checkEmail={checkEmail} userEmail={user?.email} />
           <View style={{ marginVertical: 20 }} />
           <LoadingButton

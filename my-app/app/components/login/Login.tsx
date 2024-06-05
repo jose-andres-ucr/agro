@@ -97,7 +97,7 @@ export default function Login() {
     } catch (error: any) {
       if (error.code == "auth/invalid-credential") {
         setCredentialError("Su usuario o contraseña son incorrectos");
-      }      
+      }
     } finally {
       setLoading(false);
     }
@@ -126,7 +126,7 @@ export default function Login() {
           />
         )}
         name="userName"
-      />     
+      />
 
       <Controller
         control={control}
@@ -151,7 +151,7 @@ export default function Login() {
           />
         )}
         name="password"
-      />      
+      />
 
       <LoadingButton
         label="Ingresar"

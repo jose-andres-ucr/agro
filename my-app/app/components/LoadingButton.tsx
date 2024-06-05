@@ -18,7 +18,12 @@ const LoadingButton = ({ label, isLoading, handlePress }: propsType) => {
     }
   }, [isLoading]);
   return (
-    <Button style={styles.button} mode="contained" onPress={handlePress}>
+    <Button
+      style={styles.button}
+      mode="contained"
+      onPress={handlePress}
+      disabled={isLoading}
+    >
       <View style={[styles.container, styles.horizontal]}>
         <ActivityIndicator size="small" style={{ opacity: opacity }} />
       </View>

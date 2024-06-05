@@ -62,7 +62,7 @@ export const useFetchPendingRegistration = () => {
           Role: userInfo.data().Role,
           Approved: userInfo.data().Approved,
         };
-        if (auth().currentUser?.emailVerified) data.push(user);
+        data.push(user);
       }
     });
     setUsers(data);
@@ -75,7 +75,7 @@ export const useFetchPendingRegistration = () => {
   useEffect(() => {
     firestore()
       .collection("Users")
-      .orderBy("Email", "desc")
+      .orderBy("Email", "asc")
       .onSnapshot(onResult, onError);
   }, []);
 
