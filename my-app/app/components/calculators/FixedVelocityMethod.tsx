@@ -15,39 +15,8 @@ import useCompoundUnit from "../../hooks/useCompoundUnit";
 import { positiveNumber } from "@/constants/schemas";
 import { Unit } from "@/constants/units";
 import { CalculatorStateManager } from "./CalculatorStateManager";
-import useUserRole from "@/app/hooks/UserRole";
+import useFetchUserData from "@/app/hooks/FetchData";
 
-let DBDATA = [
-  {
-    name: 'Fixed Velocity',
-    profile: 'Profile 1',
-    data: '[{"name":"dischargePerMinute","value":"0","unit":{"label":"litros","value":"L"}},{"name":"distanceBetweenNozzles","value":"0","unit":{"label":"metros","value":"m"}},{"name":"velocity","value":"0","unit":{"right":{"label":"metros","value":"m"},"left":{"label":"segundos","value":"seg"}}},{"name":"result","value":"0","unit":{"right":{"label":"litros","value":"L"},"left":{"label":"hectáreas","value":"ha"}}}]'
-  },
-  {
-    name: 'Fixed Velocity',
-    profile: 'Profile 2',
-    data: '[{"name":"dischargePerMinute","value":"10","unit":{"label":"litros","value":"L"}},{"name":"distanceBetweenNozzles","value":"10","unit":{"label":"metros","value":"m"}},{"name":"velocity","value":"10","unit":{"right":{"label":"metros","value":"m"},"left":{"label":"segundos","value":"seg"}}},{"name":"result","value":"","unit":{"right":{"label":"litros","value":"L"},"left":{"label":"hectáreas","value":"ha"}}}]'
-  },
-  {
-    name: 'Fixed Velocity',
-    profile: 'Profile 3',
-    data: '[{"name":"dischargePerMinute","value":"","unit":{"label":"litros","value":"L"}},{"name":"distanceBetweenNozzles","value":"","unit":{"label":"metros","value":"m"}},{"name":"velocity","value":"","unit":{"right":{"label":"metros","value":"m"},"left":{"label":"segundos","value":"seg"}}},{"name":"result","value":"","unit":{"right":{"label":"litros","value":"L"},"left":{"label":"hectáreas","value":"ha"}}}]'
-  }
-];
-
-const profiles = [
-  "Profile 1",
-  "Profile 2",
-  "Profile 3",
-  "Profile 4",
-  "Profile 5",
-]
-
-type SavedCalculator = {
-  name: string;
-  profile: string;
-  data: string;
-}
 
 type Field = {
   name: string;
@@ -72,8 +41,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function FixedVelocityMethod() {
   const styles = useGlobalCalculatorStyles();
-  const {userRole} = useUserRole();
-  console.log("sd");
+  const {userId, userData} = useFetchUserData();
 
   const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
 
@@ -215,9 +183,12 @@ export default function FixedVelocityMethod() {
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     > 
-      <Divider></Divider>
-        <CalculatorStateManager profiles={profiles}/> 
-      <Divider></Divider>
+      { userData?.Role !== "Externo" && <>
+        <Divider></Divider>
+          <CalculatorStateManager calculator="FixedVelocityMethod" userId={userId || ""}/> 
+        <Divider></Divider>
+      </>
+      }
       <View style={styles.mainContainer}>
         <Text style={styles.header}>Método de velocidad fija</Text>
         <Text style={styles.body}>Determina el volumen de caldo que se aplicará en una hectárea.

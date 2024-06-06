@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { theme } from "@/constants/theme";
 import Toast, { ErrorToast } from 'react-native-toast-message';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const toastConfig = {
   error: (props: any) => (
@@ -21,36 +22,40 @@ const toastConfig = {
   ),
 };
 
+const queryClient = new QueryClient();
+
 export default function TabLayout() {
   return (
     <PaperProvider theme={theme}>
-      <Stack>
-        <Stack.Screen
-          name="components/calculators/FixedVolumeMethod"
-          options={{ headerTitle: "Herbicidas" }}
-        />
-        <Stack.Screen
-          name="components/calculators/FixedVelocityMethod"
-          options={{ headerTitle: "Herbicidas" }}
-        />
-        <Stack.Screen
-          name="components/calculators/KnownAreaMethod"
-          options={{ headerTitle: "Herbicidas" }}
-        />
-        <Stack.Screen
-          name="components/calculators/PesticidePerArea"
-          options={{ headerTitle: "Fungicidas e Insecticidas" }}
-        />
-        <Stack.Screen
-          name="components/calculators/PesticidePerPlant"
-          options={{ headerTitle: "Fungicidas e Insecticidas" }}
-        />
-        <Stack.Screen
-          name="components/login/Login"
-          options={{ headerTitle: "Iniciar Sesión" }}
-        />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      <QueryClientProvider client={queryClient}>
+        <Stack>
+          <Stack.Screen
+            name="components/calculators/FixedVolumeMethod"
+            options={{ headerTitle: "Herbicidas" }}
+          />
+          <Stack.Screen
+            name="components/calculators/FixedVelocityMethod"
+            options={{ headerTitle: "Herbicidas" }}
+          />
+          <Stack.Screen
+            name="components/calculators/KnownAreaMethod"
+            options={{ headerTitle: "Herbicidas" }}
+          />
+          <Stack.Screen
+            name="components/calculators/PesticidePerArea"
+            options={{ headerTitle: "Fungicidas e Insecticidas" }}
+          />
+          <Stack.Screen
+            name="components/calculators/PesticidePerPlant"
+            options={{ headerTitle: "Fungicidas e Insecticidas" }}
+          />
+          <Stack.Screen
+            name="components/login/Login"
+            options={{ headerTitle: "Iniciar Sesión" }}
+          />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </QueryClientProvider>      
       <Toast config={toastConfig}/>
     </PaperProvider>
   );
