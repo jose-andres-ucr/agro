@@ -12,7 +12,6 @@ type Comment = {
 
 export const CommentLog = (props: { text: string }) => {
   const [comments, setComments] = useState([] as Comment[]);
-  const [showComments, setShowComments] = useState(false);
   const { control, handleSubmit, reset } = useForm();
   
   useEffect(() => {
@@ -45,12 +44,7 @@ export const CommentLog = (props: { text: string }) => {
     >
       <View style={styles.container}>
         <View style={{alignItems: 'flex-start'}}>
-        <Button
-          title={showComments ? "Ocultar comentarios" : "Mostrar comentarios"}
-          onPress={() => setShowComments(!showComments)}
-        />
         </View>
-        {showComments && (
           <View>
             <View style={styles.separator} />
             <Text style={styles.title}>Nuevo comentario</Text>
@@ -89,21 +83,16 @@ export const CommentLog = (props: { text: string }) => {
             <Text style={styles.title}>Comentarios</Text>
             {comments.map((comment, index) => (
               <View key={index}>
-              {comment.Name && comment.DateTime && comment.Comment ? (
-                <>
                   <View style={styles.commentBox} key={index}>
                     <View style={styles.commentContainer}>
-                      <Text style={styles.commentName}>Nombre: {comment.Name}</Text>
-                      <Text style={styles.commentDateTime}>Fecha y hora: {new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
-                      <Text style={styles.commentText}>Comentario: {comment.Comment}</Text>
+                      <Text style={styles.commentName}>{comment.Name}</Text>
+                      <Text style={styles.commentDateTime}>{new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
+                      <Text style={styles.commentText}>{comment.Comment}</Text>
                     </View>
                   </View>
-                </>
-              ) : null}
               </View>
             ))}
           </View>
-        )}
       </View>
     </ScrollView>
   );
