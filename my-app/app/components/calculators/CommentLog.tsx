@@ -2,7 +2,8 @@ import { Button, Text, View, StyleSheet, ScrollView, TextInput } from "react-nat
 import React, { useEffect, useState } from 'react';
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Controller, useForm } from 'react-hook-form';
-
+import { useFetchUserData } from "../../hooks/FetchData";
+import auth from "@react-native-firebase/auth";
 
 type Comment = {
   Name: string;
@@ -13,6 +14,7 @@ type Comment = {
 export const CommentLog = (props: { text: string }) => {
   const [comments, setComments] = useState([] as Comment[]);
   const { control, handleSubmit, reset } = useForm();
+  const { userAuth, userData } = useFetchUserData();
   
   useEffect(() => {
     const subscriber = firestore().collection(props.text).onSnapshot((res) => {
@@ -39,61 +41,67 @@ export const CommentLog = (props: { text: string }) => {
 
   return (
     <ScrollView
-    contentContainerStyle={{ flexGrow: 1 }}
-    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.container}>
-        <View style={{alignItems: 'flex-start'}}>
-        </View>
-          <View>
-            <View style={styles.separator} />
-            <Text style={styles.title}>Nuevo comentario</Text>
-              <View>
-                <Controller
-                  control={control}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      placeholder="Nombre"
-                      style={styles.input}
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="default"
-                    />
+        <View style={styles.container}>
+            <View style={{ alignItems: 'flex-start' }}>
+            </View>
+            <View>
+                <View style={styles.separator} />
+                  {userAuth && userData && (
+                    <>
+                      <Text style={styles.title}>Nuevo comentario</Text>
+                      <View>
+                          <Controller
+                              control={control}
+                              render={({ field: { onChange, onBlur, value } }) => (
+                                  <TextInput
+                                      placeholder="Nombre"
+                                      style={styles.input}
+                                      onBlur={onBlur}
+                                      onChangeText={onChange}
+                                      value={auth().currentUser?.displayName || ""}
+                                      keyboardType="default"
+                                      editable={false}
+                                  />
+                              )}
+                              name="Name"
+                              defaultValue={auth().currentUser?.displayName || ""}
+                          />
+                          <Controller
+                              control={control}
+                              render={({ field: { onChange, onBlur, value } }) => (
+                                  <TextInput
+                                      placeholder="Comentario"
+                                      style={styles.inputComment}
+                                      onBlur={onBlur}
+                                      onChangeText={onChange}
+                                      value={value}
+                                      keyboardType="default"
+                                      multiline={true}
+                                  />
+                              )}
+                              name="Comment"
+                          />
+                          <Button onPress={handleSubmit(addComment)} title="Enviar" />
+                      </View>
+                    </>
                   )}
-                  name="Name"
-                />
-                <Controller
-                  control={control}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      placeholder="Comentario"
-                      style={styles.inputComment}
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="default"
-                      multiline={true}
-                    />
-                  )}
-                  name="Comment"
-                />
-                <Button onPress={handleSubmit(addComment)} title="Enviar" />
-              </View>
-            <Text style={styles.title}>Comentarios</Text>
-            {comments.map((comment, index) => (
-              <View key={index}>
-                  <View style={styles.commentBox} key={index}>
-                    <View style={styles.commentContainer}>
-                      <Text style={styles.commentName}>{comment.Name}</Text>
-                      <Text style={styles.commentDateTime}>{new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
-                      <Text style={styles.commentText}>{comment.Comment}</Text>
+                <Text style={styles.title}>Comentarios</Text>
+                {comments.map((comment, index) => (
+                    <View key={index}>
+                        <View style={styles.commentBox} key={index}>
+                            <View style={styles.commentContainer}>
+                                <Text style={styles.commentName}>{comment.Name}</Text>
+                                <Text style={styles.commentDateTime}>{new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
+                                <Text style={styles.commentText}>{comment.Comment}</Text>
+                            </View>
+                        </View>
                     </View>
-                  </View>
-              </View>
-            ))}
-          </View>
-      </View>
+                ))}
+            </View>
+        </View>
     </ScrollView>
   );
 }
