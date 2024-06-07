@@ -54,7 +54,7 @@ export function convertVolume(value: string | number, from: string, to: string):
     }    
     
     let number = Number(value);
-    if (from === to) {
+    if (from === undefined || to === undefined || from === to) {
       return number;
     }
 
@@ -67,15 +67,16 @@ export function convertVolume(value: string | number, from: string, to: string):
     }
   }
 
-export function convertDistance(value: string | number, from: string, to: string): number {    
+export function convertDistance(value: string | number, from: string, to: string): number { 
+    console.log("convertDistance", value, from, to);   
     if (value === undefined || !isNumberString(value.toString())) {
       return NaN;
     }
     
     let number = Number(value);
-    if (from === to) {
+    if (from === undefined || to === undefined || from === to) {
       return number;
-    }   
+    }  
 
     if (from === 'm' && to === 'cm') {
       return number * 100;
@@ -100,7 +101,7 @@ export function convertArea(value: string | number, from: string, to: string): n
     }
     
     let number = Number(value);
-    if (from === to) {
+    if (from === undefined || to === undefined || from === to) {
       return number;
     }
         
@@ -121,9 +122,9 @@ export function convertTime(value: string | number, from: string, to: string): n
     if (value === undefined || !isNumberString(value.toString())) {
       return NaN;
     }
-    
-    let number = Number(value);
-    if (from === to) {
+
+    let number = Number(value);    
+    if (from === undefined || to === undefined || from === to) {
       return number;
     }
 

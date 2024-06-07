@@ -10,19 +10,14 @@ export const UnitModal = (props: {leftUnits: Unit[], rightUnits: Unit[], leftVal
     const styles = useGlobalDropdownStyles();
     const [visible, setVisible] = useState(false);
 
-    const [leftUnitValue, setLeftUnitValue] = useState<string>(props.leftValue);
-    const [rightUnitValue, setRightUnitValue] = useState<string>(props.rightValue);
-
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
 
-    const handleLeftUnitChange = (value: string) => {
-        setLeftUnitValue(value);
+    const handleLeftUnitChange = (value: string) => {        
         props.onLeftUnitChange(value);
     }
 
-    const handleRightUnitChange = (value: string) => {
-        setRightUnitValue(value);
+    const handleRightUnitChange = (value: string) => {       
         props.onRightUnitChange(value);
     }
 
@@ -34,14 +29,14 @@ export const UnitModal = (props: {leftUnits: Unit[], rightUnits: Unit[], leftVal
                         <CustomDropdown
                         data={props.leftUnits}
                         isModal={false}
-                        value={leftUnitValue}
+                        value={props.leftValue}
                         onValueChange={handleLeftUnitChange}>              
                         </CustomDropdown>
                         <Text style={styles.text}>/</Text>
                         <CustomDropdown
                         data={props.rightUnits}
                         isModal={false}
-                        value={rightUnitValue}
+                        value={props.rightValue}
                         onValueChange={handleRightUnitChange}>              
                         </CustomDropdown>
                     </View>
@@ -52,7 +47,7 @@ export const UnitModal = (props: {leftUnits: Unit[], rightUnits: Unit[], leftVal
             style={styles.multiUnitButton}
             labelStyle={styles.multiUnitButtonText}
             onPress={showModal}>
-            {leftUnitValue + '/' + rightUnitValue}
+            {props.leftValue + '/' + props.rightValue}
             </Button>
         </>
     );

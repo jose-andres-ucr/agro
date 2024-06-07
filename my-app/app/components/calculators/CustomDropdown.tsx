@@ -1,20 +1,18 @@
 import useGlobalDropdownStyles from '@/constants/GlobalDropdownStyle';
 import { DropdownItem } from '@/constants/units';
-import React, { useState } from 'react';
+import React, {  useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
 
 
 export const CustomDropdown = (props: { data: DropdownItem[], isModal: boolean, value: string | null, onValueChange: (value: string) => void, unfocusedStyle?: any, focusedStyle?: any}) => {
 
-    const styles = useGlobalDropdownStyles();
-    const [value, setValue] = useState<string | null>(props.value);
+    const styles = useGlobalDropdownStyles();    
     const [isFocus, setIsFocus] = useState(false);
 
     const focusedStyle = props.focusedStyle || styles.focusedDropdown;
     const unfocusedStyle = props.unfocusedStyle || styles.unfocusedDropdown;
 
-    const onChange = (item: DropdownItem) => {
-        setValue(item.value);
+    const onChange = (item: DropdownItem) => {        
         setIsFocus(false);
         props.onValueChange(item.value);
     }
@@ -31,8 +29,8 @@ export const CustomDropdown = (props: { data: DropdownItem[], isModal: boolean, 
             maxHeight={300}            
             labelField="value"
             valueField="value"
-            placeholder={value || ''}
-            value={value}
+            placeholder={props.value || ''}
+            value={props.value}
             onFocus={() => setIsFocus(true)}
             onBlur={() => setIsFocus(false)}
             onChange={onChange}
