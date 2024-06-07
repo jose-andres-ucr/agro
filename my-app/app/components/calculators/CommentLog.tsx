@@ -13,16 +13,19 @@ type Comment = {
 
 export const CommentLog = (props: { text: string }) => {
   const [comments, setComments] = useState([] as Comment[]);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Estado para manejar el feedback de carga
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { control, handleSubmit, reset } = useForm();
   const { userAuth, userData } = useFetchUserData();
 
   useEffect(() => {
-    const subscriber = firestore().collection(props.text).onSnapshot((res) => {
-      const comments = [] as Comment[];
-      res.forEach((documentSnapshot) => comments.push(documentSnapshot.data() as Comment));
-      setComments(comments);
-    });
+    const subscriber = firestore()
+      .collection(props.text)
+      .orderBy('DateTime', 'desc')
+      .onSnapshot((res) => {
+        const comments = [] as Comment[];
+        res.forEach((documentSnapshot) => comments.push(documentSnapshot.data() as Comment));
+        setComments(comments);
+      });
 
     return () => subscriber();
   }, []);
