@@ -271,8 +271,7 @@ export default function FixedVelocityMethod() {
         <Divider></Divider>
       </>
       }
-      <View style={styles.mainContainer}>
-        <Text style={styles.header}>Método de velocidad fija</Text>
+      <View style={styles.mainContainer}>        
         <Text style={styles.body}>Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
 
