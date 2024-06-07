@@ -18,19 +18,24 @@ export const CommentLog = (props: { text: string }) => {
   const { userRole, userId: loggedUserId } = useUserRole(); //rol y el ID del usuario
   const [comments, setComments] = useState([] as Comment[]);
   const [showComments, setShowComments] = useState(false);
+  const [showResponse, setShowResponse] = useState<number | null>(null); // Estado para controlar la visibilidad de la respuesta
   const { control, handleSubmit, reset } = useForm();
   const [userId, setUserId] = useState('');
 
-    //asignar id unica a un usuario no logueado
+  // Asignar id única a un usuario no logueado
   useEffect(() => {
     const fetchUserId = async () => {
-      const id = await getUniqueUserId();
-      setUserId(id);
+      if (userRole !== 'Administrador' && userRole !== 'Docente') {
+        const id = await getUniqueUserId();
+        setUserId(id);
+      } else {
+        setUserId(''); // Asignar una cadena vacía para los administradores y docentes
+      }
     };
-
-    fetchUserId();
-  }, []);
   
+    fetchUserId();
+  }, [userRole]);
+
   useEffect(() => {
     const subscriber = firestore().collection(props.text).onSnapshot((res) => {
       const comments = [] as Comment[];
@@ -42,10 +47,11 @@ export const CommentLog = (props: { text: string }) => {
       setComments(comments);
     });
 
-  return () => subscriber();
+    return () => subscriber();
   }, []);
 
-  const addComment = async (data:any) => { //quitar any!!!!!!!!
+  
+  const addComment = async (data:any) => {
     try {
       await firestore().collection(props.text).add({
         Name: data.Name,
@@ -59,8 +65,14 @@ export const CommentLog = (props: { text: string }) => {
     }
   };
 
-  const addResponse = async (data: any, commentId: string) => { //respuesta, quitar any!!!
+  const addResponse = async (data: any, commentId: string) => {
     try {
+      console.log('Valor de la respuesta:', data.Response); // Agregar esta línea
+      if (!data.Response) {
+        console.error("La respuesta no puede estar vacía.");
+        return;
+      }
+      
       await firestore().collection(props.text).doc(commentId).update({
         Response: data.Response
       });
@@ -70,116 +82,131 @@ export const CommentLog = (props: { text: string }) => {
     }
   };
 
+    // Debugging statements to check userRole and comments
+    console.log('userRole:', userRole);
+    console.log('loggedUserId:', loggedUserId);
+
   const filteredComments = comments
   .slice()
   .sort((a, b) => b.DateTime.toMillis() - a.DateTime.toMillis())
   .filter(comment => {
-    if (userRole === 'Admin' || userRole === 'Docente') {
+    console.log('Filtering comment:', comment);
+    console.log('userRole2222:', userRole);
+    console.log('loggedUserId2222:', loggedUserId);
+    if (userRole === 'Administrador' || userRole === 'Docente') {
+      console.log('Admin can see all comments');
+        return true; // Admins pueden ver todos los comentarios
+      }
+      console.log('return solo id comments');
+      return comment.UserId === (userRole ? loggedUserId : userId);
       return true;
-    }
-    return comment.UserId === (userRole ? loggedUserId : userId);
-  });
+    });
 
-  return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
-    >
-      <View style={styles.container}>
-        <View style={{ alignItems: 'flex-start' }}>
-          <Button
-            title={showComments ? "Ocultar comentarios" : "Mostrar comentarios"}
-            onPress={() => setShowComments(!showComments)}
-          />
-        </View>
-        {showComments && (
-          <View>
-            <View style={styles.separator} />
-            <Text style={styles.title}>Nuevo comentario</Text>
-            <View>
-              <Controller
-                control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    placeholder="Nombre"
-                    style={styles.input}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    keyboardType="default"
-                  />
-                )}
-                name="Name"
-              />
-              <Controller
-                control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    placeholder="Comentario"
-                    style={styles.inputComment}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    keyboardType="default"
-                    multiline={true}
-                  />
-                )}
-                name="Comment"
-              />
-              <Button onPress={handleSubmit(addComment)} title="Enviar" />
-            </View>
-            <Text style={styles.title}>Comentarios</Text>
-            {filteredComments.map((comment, index) => (
-              <View key={comment.id}>
-                {comment.Name && comment.DateTime && comment.Comment ? (
-                  <View style={styles.commentBox} key={comment.id}>
-                    <View style={styles.commentContainer}>
-                      <Text style={styles.commentName}>Nombre: {comment.Name}</Text>
-                      <Text style={styles.commentDateTime}>Fecha y hora: {new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
-                      <Text style={styles.commentText}>Comentario: {comment.Comment}</Text>
-                    </View>
-                    {comment.Response ? (
-                      <View style={styles.commentContainer}>
-                        <Text style={styles.title}>Respuestas</Text>
-                        <Text style={styles.commentResponse}>Respuesta: {comment.Response}</Text>
-                      </View>
-                    ) : (
-                      <View style={styles.commentContainer}>
-                        <Text style={styles.title}>
-                          {userRole === 'Admin' || userRole === 'Docente'
-                            ? 'Sin respuestas todavía'
-                            : 'Respuestas brindadas'}
-                        </Text>
-                      </View>
-                    )}
-                    {(userRole === 'Admin' || userRole === 'Docente') && !comment.Response && (
-                      <View>
-                        <Controller
-                          control={control}
-                          render={({ field: { onChange, onBlur, value } }) => (
-                            <TextInput
-                              placeholder="Respuesta"
-                              style={styles.input}
-                              onBlur={onBlur}
-                              onChangeText={onChange}
-                              value={value}
-                              keyboardType="default"
-                            />
-                          )}
-                          name={`response-${index}`}
-                        />
-                        <Button onPress={handleSubmit((data) => addResponse(data, comment.id))} title="Responder" />
-                      </View>
-                    )}
-                  </View>
-                ) : null}
-              </View>
-            ))}
+
+    return (
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+      >
+        <View style={styles.container}>
+          <View style={{ alignItems: 'flex-start' }}>
+            <Button
+              title={showComments ? "Ocultar comentarios" : "Mostrar comentarios"}
+              onPress={() => setShowComments(!showComments)}
+            />
           </View>
-        )}
-      </View>
-    </ScrollView>
-  );
+          {showComments && (
+            <View>
+              <View style={styles.separator} />
+              <Text style={styles.title}>Nuevo comentario</Text>
+              <View>
+                <Controller
+                  control={control}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      placeholder="Nombre"
+                      style={styles.input}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      value={value}
+                      keyboardType="default"
+                    />
+                  )}
+                  name="Name"
+                />
+                <Controller
+                  control={control}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      placeholder="Comentario"
+                      style={styles.inputComment}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      value={value}
+                      keyboardType="default"
+                      multiline={true}
+                    />
+                  )}
+                  name="Comment"
+                />
+                <Button onPress={handleSubmit(addComment)} title="Enviar" />
+              </View>
+              <Text style={styles.title}>Comentarios</Text>
+              {filteredComments.length === 0 ? (
+                <Text style={styles.commentText}>Sin comentarios</Text>
+              ) : (
+                filteredComments.map((comment, index) => (
+                  <View key={comment.id}>
+                    {comment.Name && comment.DateTime && comment.Comment ? (
+                      <View style={styles.commentBox} key={comment.id}>
+                        <View style={styles.commentContainer}>
+                          <Text style={styles.commentName}>Nombre: {comment.Name}</Text>
+                          <Text style={styles.commentDateTime}>Fecha y hora: {new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
+                          <Text style={styles.commentText}>Comentario: {comment.Comment}</Text>
+                        </View>
+                        {comment.Response ? (
+                          <View style={styles.commentContainer}>
+                            <Text style={styles.title}>Respuestas</Text>
+                            <Text style={styles.commentResponse}>Respuesta: {comment.Response}</Text>
+                          </View>
+                        ) : (
+                          <View style={styles.commentContainer}>
+                            <Text style={styles.commentResponse}>
+                              {(userRole === 'Administrador' || userRole === 'Docente') && (
+                                <Button onPress={() => setShowResponse(index)} title="Responder" />
+                              )}
+                            </Text>
+                            {showResponse === index && (
+                              <View>
+                                <Controller
+                                  control={control}
+                                  render={({ field: { onChange, onBlur, value } }) => (
+                                    <TextInput
+                                      placeholder="Respuesta"
+                                      style={styles.input}
+                                      onBlur={onBlur}
+                                      onChangeText={onChange}
+                                      value={value}
+                                      keyboardType="default"
+                                    />
+                                  )}
+                                  name="Response"
+                                />
+                                <Button onPress={handleSubmit((data) => addResponse(data, comment.id))} title="Enviar respuesta" />
+                              </View>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    ) : null}
+                  </View>
+                ))
+              )}
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    );
 }
 
 const styles = StyleSheet.create({
