@@ -1,4 +1,4 @@
-import useGlobalDropdownStyles from '@/constants/GlobalDropdownStyle';
+import useGlobalDropdownStyles from '@/constants/styles/GlobalDropdownStyle';
 import React, { useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Unit } from '@/constants/units';

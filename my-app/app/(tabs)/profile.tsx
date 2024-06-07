@@ -2,9 +2,10 @@ import { View, Text, StyleSheet } from "react-native";
 import Logout from "../components/login/Logout";
 import { useFetchUserData } from "../hooks/FetchData";
 import { theme } from "@/constants/theme";
-
+import getProfileStyles from "@/constants/styles/ProfileStyles";
 export default function Profile() {
   const { userData } = useFetchUserData();
+  const styles = getProfileStyles();
 
   return (
     <View style={theme.screenContainer}>
@@ -22,14 +23,5 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  label: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginTop: 10,
-    marginBottom: 2,
-  },
-  text: {
-    fontSize: 20,
-    marginBottom: 10,
-  },
+  
 });

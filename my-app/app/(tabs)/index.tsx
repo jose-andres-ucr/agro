@@ -1,9 +1,12 @@
 import { theme } from "@/constants/theme";
 import { router } from "expo-router";
-import { StyleSheet, View, Text } from "react-native";
+import { View, Text } from "react-native";
 import { Button } from "react-native-paper";
+import getCalculatorMenuStyles from '@/constants/styles/CalculatorMenuStyles';
 
 export default function Herbicides() {
+  const styles = getCalculatorMenuStyles();
+  
   return (
     <View style={theme.screenContainer}>
       <View style={styles.separator} />
@@ -38,26 +41,3 @@ export default function Herbicides() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 25,
-    height: 1,
-    width: "80%",
-  },
-  button: {
-    backgroundColor: theme.colors.primary,
-    justifyContent: "center",
-    alignContent: "center",
-    borderRadius: 5,
-    marginVertical: 10,
-  },
-  buttonText: {
-    color: theme.colors.white,
-    fontSize: 18,
-  },
-});

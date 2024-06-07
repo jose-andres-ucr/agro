@@ -1,15 +1,18 @@
 import { Drawer } from "expo-router/drawer";
 import { theme } from "@/constants/theme";
 import { Image, View } from "react-native";
-import { ProfileIcon, EducationIcon, HerbicideIcon, FungicideIcon, ManageIcon } from "@/constants/DrawerIcons";
+import DrawerIcons from "@/constants/DrawerIcons";
 import LoginButton from "../components/login/LoginButton";
 import ProfileButton from "../components/ProfileButton";
 import useUserRole from "../hooks/UserRole";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
+import getDrawerStyles from '@/constants/styles/DrawerStyles';
 
 export default function TabLayout() {
   const { userRole, profile, manageRegister, manageComments, manageEducation, education  } = useUserRole();
+  const { profileIcon, herbicideIcon, educationIcon, fungicideIcon, manageMaterialIcon, manageRegisterIcon } = DrawerIcons();
+  const styles = getDrawerStyles();
 
   const HeaderButton = () => {
     if (userRole != null) {
@@ -24,7 +27,7 @@ export default function TabLayout() {
         <View>
           <Image
             source={require('../../assets/images/firmaPromocional.png')}
-            style={{width: 175, height: 75, alignSelf: "center", marginVertical: 20}}
+            style={styles.image}
           />
         </View>
         <DrawerItemList {...props}/>
@@ -42,6 +45,7 @@ export default function TabLayout() {
         headerStyle: {
           backgroundColor: theme.colors.primary,
         },
+        headerTintColor: theme.colors.white,
       }}
     >
       <Drawer.Screen
@@ -49,7 +53,7 @@ export default function TabLayout() {
         options={{
           title: "Herbicidas",
           drawerLabel: "Herbicidas",
-          drawerIcon: HerbicideIcon,
+          drawerIcon: herbicideIcon,
           headerRight: () => <HeaderButton />,
         }}
       />
@@ -58,7 +62,7 @@ export default function TabLayout() {
         options={{
           title: "Fungicidas e Insecticidas",
           drawerLabel: "Fungicidas e Insecticidas",
-          drawerIcon: FungicideIcon,
+          drawerIcon: fungicideIcon,
           headerRight: () => <HeaderButton />,
         }}
       />
@@ -68,7 +72,17 @@ export default function TabLayout() {
         options={{
           title: "Material Educativo",
           drawerLabel: "Material Educativo",
-          drawerIcon: EducationIcon,
+          drawerIcon: educationIcon,
+          headerRight: () => <HeaderButton />,
+        }}
+      />
+      <Drawer.Screen
+        name="manageEducation"
+        redirect={manageEducation === null}
+        options={{
+          title: "Administrar Material",
+          drawerLabel: "Administrar Material",
+          drawerIcon: manageMaterialIcon,
           headerRight: () => <HeaderButton />,
         }}
       />
@@ -76,9 +90,9 @@ export default function TabLayout() {
         name="manageRegistration"
         redirect={manageRegister === null}
         options={{
-          title: "Aprobación de Registros",
-          drawerLabel: "Aprobación de Registros",
-          drawerIcon: ManageIcon,
+          title: "Aprobación de Registro",
+          drawerLabel: "Aprobación de Registro",
+          drawerIcon: manageRegisterIcon,
           headerRight: () => <HeaderButton />,
         }}
       />
@@ -88,7 +102,7 @@ export default function TabLayout() {
         options={{
           title: "Perfil",
           drawerLabel: "Perfil",
-          drawerIcon: ProfileIcon
+          drawerIcon: profileIcon
         }}
       />
     </Drawer>

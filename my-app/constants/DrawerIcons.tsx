@@ -1,12 +1,20 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { FontAwesome6 } from '@expo/vector-icons';
 
-export const ProfileIcon = ({color, size}) =>
-    <FontAwesome name="user" size={size} color={color}/>
-export const HerbicideIcon = ({color, size}) =>
-    <FontAwesome name="user" size={size} color={color}/>
-export const EducationIcon = ({color, size}) =>
-    <FontAwesome name="user" size={size} color={color}/>
-export const FungicideIcon = ({color, size}) =>
-    <FontAwesome name="user" size={size} color={color}/>
-export const ManageIcon = ({color, size}) =>
-    <FontAwesome name="user" size={size} color={color}/>
+export const DrawerIcons = () => {
+  const herbicideIcon = ({color, size}) =>
+    <FontAwesome6 name="bottle-droplet" size={size} color={color} />
+  const fungicideIcon = ({color, size}) =>
+    <FontAwesome6 name="spray-can" size={size} color={color} />
+  const educationIcon = ({color, size}) =>
+    <FontAwesome6 name="book" size={size} color={color} />
+  const manageMaterialIcon = ({color, size}) =>
+    <FontAwesome6 name="book-open-reader" size={size} color={color} />
+  const manageRegisterIcon = ({color, size}) =>
+    <FontAwesome6 name="user-gear" size={size} color={color} />
+  const profileIcon = ({color, size}) =>
+    <FontAwesome6 name="user-large" size={size} color={color} />
+
+  return { profileIcon, herbicideIcon, educationIcon, fungicideIcon, manageMaterialIcon, manageRegisterIcon }
+};
+
+export default DrawerIcons;

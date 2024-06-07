@@ -1,17 +1,19 @@
-// styles.js
-
+import { useMemo } from "react";
 import { StyleSheet } from "react-native";
+import { useTheme } from "react-native-paper";
 
-const styles = StyleSheet.create({
+const getManageEducationStyles = (theme: any) => StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
     justifyContent: 'flex-start',
+    backgroundColor: theme.colors.defaultBackgroundColor,
   },
   container: {
     justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 5,
     flex: 1,
+    backgroundColor: theme.colors.defaultBackgroundColor,
   },
   postDetailscontainer: {
     alignItems: 'center',
@@ -29,7 +31,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 10,
     marginBottom: 20,
-    color: 'steelblue',
+    color: 'black',
     alignSelf: 'center',
   },
   postContainer: {
@@ -53,7 +55,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 10,
     marginBottom: 20,
-    color: 'steelblue',
+    color: 'black',
     alignSelf: 'center',
     flex: 1, 
     textAlign: 'center', 
@@ -75,7 +77,7 @@ const styles = StyleSheet.create({
   },
   pageButton: {
     fontSize: 14,
-    color: 'blue',
+    color: theme.colors.primary,
   },
   pageNumber: {
     fontSize: 16,
@@ -87,7 +89,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    backgroundColor: '#F7F7F7',
+    backgroundColor: theme.colors.defaultBackgroundColor,
   },
   searchInput: {
     flex: 1,
@@ -141,4 +143,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles;
+export default function useManageEducationStyles() {
+  const theme = useTheme();
+  return useMemo(() => getManageEducationStyles(theme), [theme]);
+}

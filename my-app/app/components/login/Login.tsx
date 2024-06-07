@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Text } from "react-native-paper";
 import {
-  StyleSheet,
   View,
   TextInput as TextInputRn,
   Keyboard,
@@ -17,6 +16,7 @@ import { theme } from "@/constants/theme";
 import firestore from "@react-native-firebase/firestore";
 import LoadingButton from "../LoadingButton";
 import { showToastError } from "@/constants/utils";
+import getLoginStyles from "@/constants/styles/LoginStyles"
 
 const form = z.object({
   userName: z.string().email({ message: "El nombre de usuario no es válido" }),
@@ -27,6 +27,7 @@ const form = z.object({
 type FormData = z.infer<typeof form>;
 
 export default function Login() {
+  const styles = getLoginStyles();
   const {
     control,
     handleSubmit,
@@ -179,34 +180,3 @@ export default function Login() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  text: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  inputField: {
-    marginVertical: 4,
-    width: "60%",
-    textAlign: "left",
-    alignSelf: "center",
-  },
-  button: {
-    alignSelf: "center",
-    marginTop: 20,
-  },
-  error: {
-    color: "red",
-    alignSelf: "center",
-  },
-  logo: {
-    width: '100%', 
-    height: 50,
-    marginBottom: 30,
-  },
-  bottomText: {
-    marginTop: 30, 
-    marginBottom: 40,
-    alignItems: "center",
-  }
-});

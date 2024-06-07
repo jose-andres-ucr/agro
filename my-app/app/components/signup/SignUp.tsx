@@ -16,7 +16,7 @@ import LoadingButton from "../LoadingButton";
 import firestore from "@react-native-firebase/firestore";
 import DropDownRole from "./DropDownRole";
 import { showToastError } from "@/constants/utils";
-
+import getSignStyles from "@/constants/styles/SignStyles"
 const form = z
   .object({
     firstName: z
@@ -91,6 +91,7 @@ const form = z
 type FormData = z.infer<typeof form>;
 
 export default function SignUp() {
+  const styles = getSignStyles();
   const {
     control,
     handleSubmit,
@@ -398,19 +399,3 @@ export default function SignUp() {
   );
 }
 
-const styles = StyleSheet.create({
-  text: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  inputField: {
-    marginVertical: 10,
-    width: "80%",
-    textAlign: "left",
-    alignSelf: "center",
-  },
-  error: {
-    color: "red",
-    alignSelf: "center",
-  },
-});

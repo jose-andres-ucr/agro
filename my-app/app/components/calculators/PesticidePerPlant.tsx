@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { showToastError } from "@/constants/utils";
-import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
+import useGlobalCalculatorStyles from "@/constants/styles/GlobalCalculatorStyle";
 import { positiveNumber } from "@/constants/schemas";
 import useUnit from "@/app/hooks/useUnit";
 import { convertVolume, volumeUnits } from "@/constants/units";

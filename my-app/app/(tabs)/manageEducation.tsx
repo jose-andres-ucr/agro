@@ -8,7 +8,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useForm } from 'react-hook-form';
 import storage from '@react-native-firebase/storage';
 import { Controller } from 'react-hook-form';
-import styles from './styles';
+import getManageEducationStyles from '@/constants/styles/ManageEducationStyles';
+import { theme } from '@/constants/theme';
 
 type Post = {
   id: string;
@@ -21,7 +22,8 @@ type Post = {
 
 const POSTS_PER_PAGE = 4;
 
-const EducationalMaterial = () => {
+const manageEducation = () => {
+  const styles = getManageEducationStyles();
   const [posts, setPosts] = useState([] as Post[]);
   const [originalPosts, setOriginalPosts] = useState([] as Post[]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -194,8 +196,8 @@ const EducationalMaterial = () => {
           <Text style={styles.postAutorDate}>Autor: {post.User}  |  Fecha: {new Date(post.Date.toDate()).toLocaleDateString()}  |  Ver más</Text>
         </View>
         <View style={styles.horizontalLine}></View>
-        <Button title="Editar" onPress={() => handleEdit(post)} />
-        <Button title="Eliminar" onPress={() => confirmDelete(post.id)} />    
+        <Button color={theme.colors.primary} title="Editar" onPress={() => handleEdit(post)} />
+        <Button color={theme.colors.primary} title="Eliminar" onPress={() => confirmDelete(post.id)} />    
       </TouchableOpacity>
     ));
   };
@@ -278,7 +280,7 @@ const EducationalMaterial = () => {
     <>
       {selectedPost ? renderPostDetails() : (
         <View style={styles.container}>
-          <Button
+          <Button color={theme.colors.primary}
           title={showNewPostForm ? "Ocultar formulario" : "Mostrar formulario"}
           onPress={() => setShowNewPostForm(!showNewPostForm)}
         />
@@ -327,14 +329,14 @@ const EducationalMaterial = () => {
                 )}
                 name="User"
               />
-              <Button title="Elegir Archivo" onPress={pickFile} />
+              <Button color={theme.colors.primary} title="Elegir Archivo" onPress={pickFile} />
               {fileUris && <Text>Archivo seleccionado: {fileUris.join(', ')}</Text>}
               {loading ? (
                 <ActivityIndicator size="large" color="#0000ff" />
               ) : (
-                <Button onPress={handleSubmit(editingPost ? editPost : addPost)} title={editingPost ? "Guardar cambios" : "Enviar"} />
+                <Button color={theme.colors.primary} onPress={handleSubmit(editingPost ? editPost : addPost)} title={editingPost ? "Guardar cambios" : "Enviar"} />
               )}
-              {editingPost && <Button onPress={() => setEditingPost(null)} title="Cancelar" />}
+              {editingPost && <Button color={theme.colors.primary} onPress={() => setEditingPost(null)} title="Cancelar" />}
             </View>
           </>
         )}
@@ -348,7 +350,7 @@ const EducationalMaterial = () => {
               onChangeText={(text) => setSearchQuery(text)}
               value={searchQuery}
             />
-            <Button title="Buscar" onPress={handleSearch} />
+            <Button color={theme.colors.primary} title="Buscar" onPress={handleSearch} />
           </View>
           <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             {renderPosts()}
@@ -375,4 +377,4 @@ const EducationalMaterial = () => {
 }
 
 
-export default EducationalMaterial;
+export default manageEducation;

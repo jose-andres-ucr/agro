@@ -9,7 +9,7 @@ export default function LoginButton() {
         <FontAwesome
           name="sign-in"
           size={25}
-          color={"black"}
+          color={"white"}
           style={{ marginRight: 20, opacity: pressed ? 0.5 : 1 }}
         />
       )}

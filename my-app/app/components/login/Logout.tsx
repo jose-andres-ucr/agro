@@ -1,9 +1,11 @@
-import { StyleSheet, View, Text } from "react-native";
+import { View, Text } from "react-native";
 import auth from "@react-native-firebase/auth";
 import { Button } from "react-native-paper";
-import { theme } from "@/constants/theme";
+import getLogoutStyles from "@/constants/styles/LogoutStyles"
 
 export default function Logout() {
+  const styles = getLogoutStyles();
+
   const handleSignOut = () => {
     auth()
       .signOut()
@@ -19,16 +21,3 @@ export default function Logout() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  text: {
-    color: theme.colors.white,
-    fontSize: 18,
-  },
-  button: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 5,
-    marginTop: 30,
-    marginBottom: 10,
-  },
-});
