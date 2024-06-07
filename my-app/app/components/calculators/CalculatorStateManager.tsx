@@ -71,11 +71,6 @@ const getSavedCalculators = async (userId: string, calculator: string): Promise<
     };
 }
 
-interface SaveCalculatorArgs {
-    state: SavedCalculator;
-    id?: string; 
-  }
-
 export const CalculatorStateManager = (props: {calculator: string, userId: string, onLoadData: (data: Field[]) => void, onSaveData: () => Field[]}) => {
     const [loadModalVisible, setLoadModalVisible] = useState(false);
     const [saveModalVisible, setSaveModalVisible] = useState(false);
@@ -163,25 +158,17 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
     }
 
     const handleSaveState = async() => {
-        if (selectedSaveProfile && selectedSaveState) {
-            console.log("States:", savedCalculators?.States);
-            let state = savedCalculators?.States[selectedSaveProfile]?.find(state => state.Name === selectedSaveState);
-            console.log("STATE FOUND: ", state);
+        if (selectedSaveProfile && selectedSaveState) {            
+            let state = savedCalculators?.States[selectedSaveProfile]?.find(state => state.Name === selectedSaveState);            
             let stateToSave: SavedCalculator | null = null;
-            if (state) {
-                console.log("Saving to state: ", state);
-                console.log("STATE: ", JSON.stringify(props.onSaveData()));
-
+            if (state) {              
                 stateToSave = {
                     Calculator: props.calculator,
                     Name: selectedSaveState,
                     Profile: selectedSaveProfile,
                     Data: JSON.stringify(props.onSaveData()),
                     UserID: props.userId,                    
-                }
-
-                console.log("STATE TO SAVE: ", stateToSave);
-                
+                }               
                 try {
                     await saveCalculator({state: stateToSave, id: state.ID});
                 } catch (error) {
@@ -194,9 +181,8 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
                     Profile: selectedSaveProfile,
                     Data: JSON.stringify(props.onSaveData()),
                     UserID: props.userId
-                }
+                }                
                 
-                console.log("STATE TO SAVE: ", stateToSave);
                 try {
                     await saveCalculator({state: stateToSave});
                 } catch (error) {
@@ -328,8 +314,7 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
                 onPress={showLoadModal}>
                 Cargar
                 </Button>
-            </View>
-                
+            </View>                
         </>
     );
 };

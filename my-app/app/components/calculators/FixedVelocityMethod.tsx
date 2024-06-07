@@ -14,7 +14,7 @@ import { UnitModal } from "./UnitModal";
 import useCompoundUnit from "../../hooks/useCompoundUnit";
 import { positiveNumber } from "@/constants/schemas";
 import { CalculatorStateManager } from "./CalculatorStateManager";
-import useFetchUserData from "@/app/hooks/FetchData";
+import { useFetchUserData } from "@/app/hooks/FetchData";
 import { Field } from "@/constants/types";
 
 const schema = z.object({
@@ -169,46 +169,46 @@ export default function FixedVelocityMethod() {
       result = result * factor;
     }
 
-    console.log("Calculator result", result);
     setDisplayResult(result);
   };
 
   const onLoadData = (data: Field[]) => {
-    console.log("onLoadData", data);
-    if (data) {
-      reset();
-      fieldNames.forEach(field => {        
-        let matchingData = data.find(d => d.name === field);
-        if (matchingData) {
-          let fieldName = matchingData.name;          
-          switch (fieldName) {
-            case "dischargePerMinute":
-              let loadedDischargePerMinuteUnit = matchingData.unit as Unit;
-              dischargePerMinuteHandler(loadedDischargePerMinuteUnit.value, 0);
-              break;
+    if (!data) {
+      return;
+    }
 
-            case "distanceBetweenNozzles":
-              let loadedDistanceBetweenNozzlesUnit = matchingData.unit as Unit;              
-              distanceBetweenNozzlesHandler(loadedDistanceBetweenNozzlesUnit.value, 0);
-              break;
+    reset();
+    let matchingData: Field | undefined = undefined;
+    fieldNames.forEach(field => {        
+      matchingData = data.find(d => d.name === field);
+      if (matchingData) {
+        let fieldName = matchingData.name;          
+        switch (fieldName) {
+          case "dischargePerMinute":
+            let loadedDischargePerMinuteUnit = matchingData.unit as Unit;
+            dischargePerMinuteHandler(loadedDischargePerMinuteUnit.value, 0);
+            break;
 
-            case "velocity":            
-              let loadedVelocityUnit = matchingData.unit as CompoundUnit;                
-              velocityDistanceHandler(loadedVelocityUnit.left?.value, 0);
-              velocityTimeHandler(loadedVelocityUnit.right?.value, 0);
-              break;
-          }          
-          setValue(field, matchingData.value);
-        }
+          case "distanceBetweenNozzles":
+            let loadedDistanceBetweenNozzlesUnit = matchingData.unit as Unit;              
+            distanceBetweenNozzlesHandler(loadedDistanceBetweenNozzlesUnit.value, 0);
+            break;
 
-        matchingData = data.find(d => d.name === "result");
-        if (matchingData) {          
-          let resultUnit = matchingData.unit as CompoundUnit;          
-          resultVolumeHandler(resultUnit.left?.value, 0);
-          resultAreaHandler(resultUnit.right?.value, 0);
-          setDisplayResult(Number(matchingData.value));
-        }
-      });
+          case "velocity":            
+            let loadedVelocityUnit = matchingData.unit as CompoundUnit;                
+            velocityDistanceHandler(loadedVelocityUnit.left?.value, 0);
+            velocityTimeHandler(loadedVelocityUnit.right?.value, 0);
+            break;
+        }          
+        setValue(field, matchingData.value);
+      }      
+    });
+    matchingData = data.find(d => d.name === "result");
+    if (matchingData) {          
+      let resultUnit = matchingData.unit as CompoundUnit;          
+      resultVolumeHandler(resultUnit.left?.value, 0);
+      resultAreaHandler(resultUnit.right?.value, 0);
+      setDisplayResult(matchingData.value);
     }
   }
 
@@ -265,9 +265,9 @@ export default function FixedVelocityMethod() {
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      { userData?.Role !== "Externo" && <>
+      { userData?.Role !== "Externo" && userId && <>
         <Divider></Divider>
-          <CalculatorStateManager calculator="FixedVelocityMethod" userId={userId || ""} onLoadData={onLoadData} onSaveData={onSaveData}/>
+          <CalculatorStateManager calculator="FixedVelocityMethod" userId={userId} onLoadData={onLoadData} onSaveData={onSaveData}/>
         <Divider></Divider>
       </>
       }
@@ -333,7 +333,7 @@ export default function FixedVelocityMethod() {
               <CustomDropdown
               data={distanceUnits}
               isModal={false}
-              value={"m"}
+              value={distanceBetweenNozzlesUnit}
               onValueChange={handleDistanceBetweenNozzlesUnitChange}>
               </CustomDropdown>
             </View>
