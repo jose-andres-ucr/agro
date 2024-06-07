@@ -190,7 +190,7 @@ export default function FixedVolumeMethod() {
       let resultUnit = matchingData.unit as CompoundUnit;
       resultDistanceHandler(resultUnit.left?.value, 0);
       resultTimeHandler(resultUnit.right?.value, 0);
-      setDisplayResult(matchingData.value);
+      setDisplayResult(Number(matchingData.value));
     }      
   }
 

@@ -166,6 +166,14 @@ export default function PesticidePerPlant() {
   const onSaveData = () : Field[] => {
     return [
       {
+        name: "plantCuantity",
+        value: getValues("plantCuantity"),
+        unit: {
+          label: "unit",
+          value: "unit",
+        }
+      },
+      {
         name: "initialVolume",
         value: getValues("initialVolume"),
         unit: {
@@ -180,6 +188,14 @@ export default function PesticidePerPlant() {
           label: finalVolumeUnit,
           value: finalVolumeUnit,
         },
+      },
+      {
+        name: "plantCuantityTotal",
+        value: getValues("plantCuantityTotal"),
+        unit: {
+          label: "unit",
+          value: "unit",
+        }
       },
       {
         name: "result",

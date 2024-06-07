@@ -4,8 +4,7 @@ export default function useUnit(startingUnit: string, startingValue: number, con
     const [unit, setUnit] = useState(startingUnit);
     const [value, setValue] = useState(startingValue);
 
-    const handleUnitChange = useCallback((newUnit: string, value: number) => { 
-        console.log("handleUnitChange", unit, "->", newUnit, value);         
+    const handleUnitChange = useCallback((newUnit: string, value: number) => {                 
         if (newUnit && newUnit !== unit) {            
             let converted = convertionFunction(value, unit, newUnit);    
             if (!isNaN(Number(converted))) {   
@@ -13,7 +12,7 @@ export default function useUnit(startingUnit: string, startingValue: number, con
             } else {
                 setValue(0);
             }         
-            setUnit(newUnit);            
+            setUnit(newUnit);
         }
     }, [unit, value]);
 

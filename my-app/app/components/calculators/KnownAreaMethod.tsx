@@ -190,7 +190,7 @@ export default function KnownAreaMethod() {
       let resultUnit = matchingData.unit as CompoundUnit;
       resultVolumeHandler(resultUnit.left.value, 0);
       resultAreaHandler(resultUnit.right.value, 0);
-      setDisplayResult(matchingData.value);      
+      setDisplayResult(Number(matchingData.value));
     }
   }
 

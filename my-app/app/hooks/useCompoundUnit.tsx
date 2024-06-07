@@ -16,8 +16,7 @@ export default function useCompoundUnit(startingLeftUnit: string, startingRightU
 
     }, [leftUnit, value]);
 
-    const handleRightUnitChange = useCallback((newUnit: string, value: number) => {
-        console.log("handleRightUnitChange", rightUnit, "->", newUnit, value);    
+    const handleRightUnitChange = useCallback((newUnit: string, value: number) => {            
         if (newUnit && newUnit !== rightUnit) {
             let factor = rightConvertionFunction(1, rightUnit, newUnit);
             if (factor > 0) {

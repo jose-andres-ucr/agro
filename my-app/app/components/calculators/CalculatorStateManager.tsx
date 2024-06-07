@@ -81,14 +81,17 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
     const showSaveModal = () => setSaveModalVisible(true);
     const hideSaveModal = () => setSaveModalVisible(false);
 
-    const {data: savedCalculators, isLoading} = useQuery({
+    const {data: savedCalculators, isLoading: isLoadLoading} = useQuery({
         queryKey: ["savedCalculators", props.userId, props.calculator],
         queryFn: () => getSavedCalculators(props.userId, props.calculator),
     });
 
+
+    const [isSaveLoading, setSaveLoading] = useState(false);
     const queryClient = useQueryClient();
     const { mutateAsync: saveCalculator } = useMutation({
         mutationFn: async ({state, id}: {state: SavedCalculator, id?: string}) => {
+            setSaveLoading(true);
             if (id) {
                 await firestore().collection("SavedCalculators").doc(id).update(state);
             } else {
@@ -96,6 +99,7 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
             }
         },
         onSuccess: () => {
+            setSaveLoading(false);
             queryClient.invalidateQueries(["savedCalculators", props.userId, props.calculator] as any);
         }
     });
@@ -238,11 +242,13 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
                         />
                         <Button
                         mode="contained"
+                        loading={isSaveLoading}
+                        disabled={isSaveLoading}
                         style={styles.buttonCenter}
                         labelStyle={styles.buttonText}
                         onPress={handleSaveState}
                         >
-                        Guardar
+                        {isSaveLoading ? 'Guardando...' : 'Guardar'}
                         </Button>
                     </View>
                 </Modal>
@@ -288,6 +294,8 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
                         />
                         <Button
                         mode="contained"
+                        loading={isLoadLoading}
+                        disabled={isLoadLoading}
                         style={styles.buttonCenter}
                         labelStyle={styles.buttonText}
                         onPress={handleLoadState}
@@ -307,13 +315,15 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
                 >
                 Guardar
                 </Button>                
-                <Button 
-                mode="contained"
-                style={styles.button}
-                labelStyle={styles.buttonText}
-                onPress={showLoadModal}>
-                Cargar
-                </Button>
+                {
+                    profiles && profiles.length > 0 && <Button 
+                    mode="contained"
+                    style={styles.button}
+                    labelStyle={styles.buttonText}
+                    onPress={showLoadModal}>
+                    Cargar
+                    </Button>
+                }
             </View>                
         </>
     );
