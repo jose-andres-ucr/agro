@@ -1,6 +1,6 @@
 import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Button, Text, Divider } from "react-native-paper";
 import { z } from "zod";
 import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
@@ -9,8 +9,11 @@ import { showToastError } from "@/constants/utils";
 import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 import { positiveNumber } from "@/constants/schemas";
 import useUnit from "@/app/hooks/useUnit";
-import { areaUnits, convertArea, convertVolume, volumeUnits } from "@/constants/units";
-import { DropdownComponent } from "./UnitDropdown";
+import { Unit, areaUnits, convertArea, convertVolume, volumeUnits } from "@/constants/units";
+import { CustomDropdown } from "./CustomDropdown";
+import { useFetchUserData } from "@/app/hooks/FetchData";
+import { CalculatorStateManager } from "./CalculatorStateManager";
+import { Field } from "@/constants/types";
 
 
 const schema = z.object({
@@ -20,10 +23,19 @@ const schema = z.object({
   cultivationArea: positiveNumber,
 });
 
+type SchemaKeys = keyof z.infer<typeof schema>;
+
+const getFieldNames = (schema: z.ZodObject<any>) => {
+  return Object.keys(schema.shape) as SchemaKeys[];
+};
+
+const fieldNames = getFieldNames(schema);
+
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerArea() {
   const styles = useGlobalCalculatorStyles();
+  const {userId, userData} = useFetchUserData();
 
   const { value: appliedArea, unit: appliedAreaUnit, handleUnitChange: appliedAreaHandler } = useUnit("m²", 0, convertArea);
 
@@ -62,6 +74,7 @@ export default function PesticidePerArea() {
     handleSubmit,
     getValues,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -140,11 +153,105 @@ export default function PesticidePerArea() {
     setDisplayResult(result);
   };
 
+  const onLoadData = (data: Field[]) => {
+    if (!data) {
+      return;
+    }
+
+    reset();
+    let matchingData: Field | undefined = undefined;
+    fieldNames.forEach(field => {
+      matchingData = data.find(d => d.name === field);
+      if (matchingData) {
+        let fieldName = matchingData.name;
+        switch (fieldName) {
+          case "appliedArea":
+            let loadedAppliedAreaUnit = matchingData.unit as Unit;
+            appliedAreaHandler(loadedAppliedAreaUnit.value, 0);
+            break;
+
+          case "initialVolume":
+            let loadedInitialVolumeUnit = matchingData.unit as Unit;
+            initialVolumeHandler(loadedInitialVolumeUnit.value, 0);
+            break;
+          
+          case "finalVolume":
+            let loadedFinalVolumeUnit = matchingData.unit as Unit;
+            finalVolumeHandler(loadedFinalVolumeUnit.value, 0);
+            break;
+          
+          case "cultivationArea":
+            let loadedCultivationAreaUnit = matchingData.unit as Unit;
+            cultivationAreaHandler(loadedCultivationAreaUnit.value, 0);
+            break;
+        }
+        setValue(field, matchingData.value);
+      }
+    });
+    matchingData = data.find(d => d.name === "result");
+    if (matchingData) {
+      let loadedResultUnit = matchingData.unit as Unit;
+      resultHandler(loadedResultUnit.value, 0);
+      setDisplayResult(matchingData.value);
+    }
+  }
+
+  const onSaveData = () : Field[] => {
+    return [
+      {
+        name: "appliedArea",
+        value: getValues("appliedArea"),
+        unit: {
+          label: appliedAreaUnit,
+          value: appliedAreaUnit,
+        }
+      },
+      {
+        name: "initialVolume",
+        value: getValues("initialVolume"),
+        unit: {
+          label: initialVolumeUnit,
+          value: initialVolumeUnit,
+        }
+      },
+      {
+        name: "finalVolume",
+        value: getValues("finalVolume"),
+        unit: {
+          label: finalVolumeUnit,
+          value: finalVolumeUnit,
+        }
+      },
+      {
+        name: "cultivationArea",
+        value: getValues("cultivationArea"),
+        unit: {
+          label: cultivationAreaUnit,
+          value: cultivationAreaUnit,    
+        }
+      },
+      {
+        name: "result",
+        value: displayResult,
+        unit: {
+          label: resultUnit,
+          value: resultUnit,
+        }
+      }
+    ]
+  }
+
   return (
     <ScrollView
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
+      { userData?.Role !== "Externo" && userId && <>
+        <Divider></Divider>
+          <CalculatorStateManager calculator="PesticidePerArea" userId={userId} onLoadData={onLoadData} onSaveData={onSaveData}/>
+        <Divider></Divider>
+      </>
+      }
       <View style={styles.mainContainer}>
         <Text style={styles.body}>Marque un área conocida y aplique allí agua a la velocidad usual.</Text>
         <View style={styles.formContainer}>
@@ -172,12 +279,12 @@ export default function PesticidePerArea() {
               )}
               name="appliedArea"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={areaUnits}
             isModal={false}
-            value={"m²"}
+            value={appliedAreaUnit}
             onValueChange={handleAppliedAreaUnitChange}>              
-            </DropdownComponent> 
+            </CustomDropdown> 
           </View>
 
           <View style={styles.inputGroup}>          
@@ -203,12 +310,12 @@ export default function PesticidePerArea() {
               )}
               name="initialVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
-            value={"L"}
+            value={initialVolumeUnit}
             onValueChange={handleInitialVolumeUnitChange}>              
-            </DropdownComponent>
+            </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>          
@@ -234,12 +341,12 @@ export default function PesticidePerArea() {
               )}
               name="finalVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
-            value={"L"}
+            value={finalVolumeUnit}
             onValueChange={handleFinalVolumeUnitChange}>              
-            </DropdownComponent>
+            </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>
@@ -263,12 +370,12 @@ export default function PesticidePerArea() {
               )}
               name="cultivationArea"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={areaUnits}
             isModal={false}
-            value={"m²"}
+            value={cultivationAreaUnit}
             onValueChange={handleCultivationAreaUnitChange}>              
-            </DropdownComponent> 
+            </CustomDropdown> 
           </View>
         </View>
 
@@ -286,12 +393,12 @@ export default function PesticidePerArea() {
             value={displayResult?.toFixed(3)}
             editable={false}
           />
-          <DropdownComponent
+          <CustomDropdown
             data={volumeUnits}
             isModal={false}
-            value={"L"}
+            value={resultUnit}
             onValueChange={handleResultUnitChange}>              
-          </DropdownComponent> 
+          </CustomDropdown> 
         </View>
       </View>
       <CommentLog text="PesticidePerAreaComments" />

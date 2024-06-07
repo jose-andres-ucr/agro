@@ -1,34 +1,36 @@
 import useGlobalDropdownStyles from '@/constants/GlobalDropdownStyle';
-import React, { useState } from 'react';
+import { DropdownItem } from '@/constants/units';
+import React, {  useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Unit } from '@/constants/units';
 
 
-export const DropdownComponent = (props: { data: Unit[], isModal: boolean, value: string | null, onValueChange: (value: string) => void }) => {
-    const styles = useGlobalDropdownStyles();
-    const [value, setValue] = useState<string | null>(props.value);
+export const CustomDropdown = (props: { data: DropdownItem[], isModal: boolean, value: string | null, onValueChange: (value: string) => void, unfocusedStyle?: any, focusedStyle?: any}) => {
+
+    const styles = useGlobalDropdownStyles();    
     const [isFocus, setIsFocus] = useState(false);
 
-    const onChange = (item: Unit) => {
-        setValue(item.value);
+    const focusedStyle = props.focusedStyle || styles.focusedDropdown;
+    const unfocusedStyle = props.unfocusedStyle || styles.unfocusedDropdown;
+
+    const onChange = (item: DropdownItem) => {        
         setIsFocus(false);
         props.onValueChange(item.value);
     }
 
     return (
         <Dropdown
-            style={isFocus ? styles.focusedDropdown : styles.dropdown}  
+            style={isFocus ? focusedStyle : unfocusedStyle}  
             containerStyle={styles.dropdownItem}                      
             selectedTextStyle={styles.selectedTextStyle}
-            activeColor={styles.dropdown.backgroundColor}
+            activeColor={styles.unfocusedDropdown.backgroundColor}
             itemTextStyle={styles.itemTextStyle}
             data={props.data}
             mode={props.isModal ? 'modal' : 'default'}
             maxHeight={300}            
             labelField="value"
             valueField="value"
-            placeholder={value || ''}
-            value={value}
+            placeholder={props.value || ''}
+            value={props.value}
             onFocus={() => setIsFocus(true)}
             onBlur={() => setIsFocus(false)}
             onChange={onChange}

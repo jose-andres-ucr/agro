@@ -1,5 +1,5 @@
 import { View, TextInput as TextInputRn, ScrollView } from "react-native";
-import { Text, TextInput, Button } from "react-native-paper";
+import { Text, TextInput, Button, Divider } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
@@ -7,12 +7,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
 import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
 import { showToastError } from "@/constants/utils";
-import { DropdownComponent } from "./UnitDropdown";
-import { volumeUnits, distanceUnits, convertVolume, convertDistance, timeUnits, convertTime, convertArea, areaUnits} from "@/constants/units";
+import { CustomDropdown } from "./CustomDropdown";
+import { volumeUnits, distanceUnits, convertVolume, convertDistance, timeUnits, convertTime, convertArea, areaUnits, CompoundUnit, Unit} from "@/constants/units";
 import useUnit from "../../hooks/useUnit";
 import { UnitModal } from "./UnitModal";
 import useCompoundUnit from "../../hooks/useCompoundUnit";
 import { positiveNumber } from "@/constants/schemas";
+import { CalculatorStateManager } from "./CalculatorStateManager";
+import { useFetchUserData } from "@/app/hooks/FetchData";
+import { Field } from "@/constants/types";
 
 const schema = z.object({
   dischargePerMinute: positiveNumber,
@@ -20,15 +23,24 @@ const schema = z.object({
   velocity: positiveNumber,
 });
 
+type SchemaKeys = keyof z.infer<typeof schema>;
+
+const getFieldNames = (schema: z.ZodObject<any>) => {
+  return Object.keys(schema.shape) as SchemaKeys[];
+};
+
+const fieldNames = getFieldNames(schema);
+
 type FormData = z.infer<typeof schema>;
 
 export default function FixedVelocityMethod() {
   const styles = useGlobalCalculatorStyles();
+  const {userId, userData} = useFetchUserData();
 
   const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
 
   const { value: distanceBetweenNozzles, unit: distanceBetweenNozzlesUnit, handleUnitChange: distanceBetweenNozzlesHandler} = useUnit("m", 0, convertDistance);
-  
+
   const {
     value: velocity,
     leftUnit: velocityDistanceUnit,
@@ -47,15 +59,15 @@ export default function FixedVelocityMethod() {
 
   const [displayResult, setDisplayResult] = useState(result);
 
-  useEffect(() => {    
+  useEffect(() => {
     setValue("dischargePerMinute", dischargePerMinute)
   }, [dischargePerMinute]);
 
-  useEffect(() => {    
+  useEffect(() => {
     setValue("distanceBetweenNozzles", distanceBetweenNozzles)
   }, [distanceBetweenNozzles]);
 
-  useEffect(() => {        
+  useEffect(() => {
     setValue("velocity", velocity);
   }, [velocity]);
 
@@ -68,6 +80,7 @@ export default function FixedVelocityMethod() {
     handleSubmit,
     getValues,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -103,7 +116,7 @@ export default function FixedVelocityMethod() {
     distanceBetweenNozzlesHandler(value, getValues("distanceBetweenNozzles"));
   };
 
-  const handleVelocityDistanceUnitChange = (value: string) => {    
+  const handleVelocityDistanceUnitChange = (value: string) => {
     velocityDistanceHandler(value, getValues("velocity"));
   }
 
@@ -111,11 +124,11 @@ export default function FixedVelocityMethod() {
     velocityTimeHandler(value, getValues("velocity"));
   }
 
-  const handleResultVolumeUnitChange = (value: string) => {    
+  const handleResultVolumeUnitChange = (value: string) => {
     resultVolumeHandler(value, displayResult);
   }
 
-  const handleResultAreaUnitChange = (value: string) => {    
+  const handleResultAreaUnitChange = (value: string) => {
     resultAreaHandler(value, displayResult);
   }
 
@@ -155,21 +168,115 @@ export default function FixedVelocityMethod() {
       }
       result = result * factor;
     }
-    
+
     setDisplayResult(result);
   };
 
+  const onLoadData = (data: Field[]) => {
+    if (!data) {
+      return;
+    }
+
+    reset();
+    let matchingData: Field | undefined = undefined;
+    fieldNames.forEach(field => {        
+      matchingData = data.find(d => d.name === field);
+      if (matchingData) {
+        let fieldName = matchingData.name;          
+        switch (fieldName) {
+          case "dischargePerMinute":
+            let loadedDischargePerMinuteUnit = matchingData.unit as Unit;
+            dischargePerMinuteHandler(loadedDischargePerMinuteUnit.value, 0);
+            break;
+
+          case "distanceBetweenNozzles":
+            let loadedDistanceBetweenNozzlesUnit = matchingData.unit as Unit;              
+            distanceBetweenNozzlesHandler(loadedDistanceBetweenNozzlesUnit.value, 0);
+            break;
+
+          case "velocity":            
+            let loadedVelocityUnit = matchingData.unit as CompoundUnit;                
+            velocityDistanceHandler(loadedVelocityUnit.left?.value, 0);
+            velocityTimeHandler(loadedVelocityUnit.right?.value, 0);
+            break;
+        }          
+        setValue(field, matchingData.value);
+      }      
+    });
+    matchingData = data.find(d => d.name === "result");
+    if (matchingData) {          
+      let resultUnit = matchingData.unit as CompoundUnit;          
+      resultVolumeHandler(resultUnit.left?.value, 0);
+      resultAreaHandler(resultUnit.right?.value, 0);
+      setDisplayResult(Number(matchingData.value));
+    }
+  }
+
+  const onSaveData = (): Field[] => {
+    return [
+      {
+        name: "dischargePerMinute",
+        value: getValues("dischargePerMinute"),
+        unit: {
+          label: dischargePerMinuteUnit,
+          value: dischargePerMinuteUnit
+        }
+      },
+      {
+        name: "distanceBetweenNozzles",
+        value: getValues("distanceBetweenNozzles"),
+        unit: {
+          label: distanceBetweenNozzlesUnit,
+          value: distanceBetweenNozzlesUnit
+        }
+      },
+      {
+        name: "velocity",
+        value: getValues("velocity"),
+        unit: {
+          left: {
+            label: velocityDistanceUnit,
+            value: velocityDistanceUnit
+          },
+          right: {
+            label: velocityTimeUnit,
+            value: velocityTimeUnit
+        }}
+      },
+      {
+        name: "result",
+        value: displayResult,
+        unit: {
+          left: {
+            label: resultVolumeUnit,
+            value: resultVolumeUnit
+          },
+          right: {
+            label: resultAreaUnit,
+            value: resultAreaUnit
+          }
+        }
+      }
+    ]
+  };
 
   return (
     <ScrollView
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
+      { userData?.Role !== "Externo" && userId && <>
+        <Divider></Divider>
+          <CalculatorStateManager calculator="FixedVelocityMethod" userId={userId} onLoadData={onLoadData} onSaveData={onSaveData}/>
+        <Divider></Divider>
+      </>
+      }
       <View style={styles.mainContainer}>        
         <Text style={styles.body}>Determina el volumen de caldo que se aplicará en una hectárea.
         </Text>
+
         <View style={styles.formContainer}>
-        <View style={styles.inputGroup}>            
+        <View style={styles.inputGroup}>
               <Controller
                 control={control}
                 render={({ field: { onChange, onBlur, value } }) => (
@@ -193,14 +300,14 @@ export default function FixedVelocityMethod() {
                 )}
                 name="dischargePerMinute"
               />
-              <DropdownComponent
+              <CustomDropdown
               data={volumeUnits}
               isModal={false}
-              value={"L"}
-              onValueChange={handleDischargePerMinuteUnitChange}>              
-              </DropdownComponent>
+              value={dischargePerMinuteUnit}
+              onValueChange={handleDischargePerMinuteUnitChange}>
+              </CustomDropdown>
             </View>
-            <View style={styles.inputGroup}>            
+            <View style={styles.inputGroup}>
               <Controller
                 control={control}
                 render={({ field: { onBlur, onChange, value} }) => (
@@ -219,18 +326,18 @@ export default function FixedVelocityMethod() {
                     refs.velocityRef.current?.focus();
                   }}
                   blurOnSubmit={false}
-                  />                
+                  />
                 )}
                 name="distanceBetweenNozzles"
               />
-              <DropdownComponent
+              <CustomDropdown
               data={distanceUnits}
               isModal={false}
-              value={"m"}
-              onValueChange={handleDistanceBetweenNozzlesUnitChange}>              
-              </DropdownComponent>                       
+              value={distanceBetweenNozzlesUnit}
+              onValueChange={handleDistanceBetweenNozzlesUnitChange}>
+              </CustomDropdown>
             </View>
-            <View style={styles.inputGroup}>            
+            <View style={styles.inputGroup}>
               <Controller
                 control={control}
                 render={({ field: { onChange, onBlur, value } }) => (
@@ -250,7 +357,7 @@ export default function FixedVelocityMethod() {
                   />
                 )}
                 name="velocity"
-              />              
+              />
               <UnitModal
               leftUnits={distanceUnits}
               rightUnits={timeUnits}
