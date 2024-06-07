@@ -1,6 +1,6 @@
 import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Button, Text, Divider } from "react-native-paper";
 import { z } from "zod";
 import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
@@ -8,11 +8,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import useGlobalCalculatorStyles from "@/constants/styles/GlobalCalculatorStyle";
 import { showToastError } from "@/constants/utils";
 import { positiveNumber } from "@/constants/schemas";
-import { convertDistance, convertTime, convertVolume, distanceUnits, timeUnits, volumeUnits } from "@/constants/units";
+import { CompoundUnit, Unit, convertDistance, convertTime, convertVolume, distanceUnits, timeUnits, volumeUnits } from "@/constants/units";
 import useUnit from "@/app/hooks/useUnit";
 import useCompoundUnit from "@/app/hooks/useCompoundUnit";
-import { DropdownComponent } from "./UnitDropdown";
+import { CustomDropdown } from "./CustomDropdown";
 import { UnitModal } from "./UnitModal";
+import { useFetchUserData } from "@/app/hooks/FetchData";
+import { Field } from "@/constants/types";
+import { CalculatorStateManager } from "./CalculatorStateManager";
 
 
 const schema = z.object({
@@ -21,10 +24,19 @@ const schema = z.object({
   volumePerHectare: positiveNumber,
 });
 
+type SchemaKeys = keyof z.infer<typeof schema>;
+
+const getFieldNames = (schema: z.ZodObject<any>) => {
+  return Object.keys(schema.shape) as SchemaKeys[];
+};
+
+const fieldNames = getFieldNames(schema);
+
 type FormData = z.infer<typeof schema>;
 
 export default function FixedVolumeMethod() {
   const styles = useGlobalCalculatorStyles();
+  const {userId, userData} = useFetchUserData();
 
   const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
 
@@ -63,6 +75,7 @@ export default function FixedVolumeMethod() {
     handleSubmit,
     getValues,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -142,11 +155,99 @@ export default function FixedVolumeMethod() {
     setDisplayResult(result);
   };
 
+  const onLoadData = (data: Field[]) => {
+    if (!data) {
+      return;
+    }
+
+    reset();
+    let matchingData: Field | undefined = undefined;
+    fieldNames.forEach(field => {
+      matchingData = data.find(d => d.name === field);
+      if (matchingData) {
+        let fieldName = matchingData.name;
+        switch (fieldName) {
+          case "dischargePerMinute":
+            let loadedDischargePerMinuteUnit = matchingData.unit as Unit;
+            dischargePerMinuteHandler(loadedDischargePerMinuteUnit.value, 0);
+            break;
+          
+          case "stripWidth":
+            let loadedStripWidthUnit = matchingData.unit as Unit;
+            stripWidthHandler(loadedStripWidthUnit.value, 0);
+            break;
+          
+          case "volumePerHectare":
+            let loadedVolumePerHectareUnit = matchingData.unit as Unit;
+            volumePerHectareHandler(loadedVolumePerHectareUnit.value, 0);
+            break;
+        }
+        setValue(field, matchingData.value);
+      }
+    });
+    matchingData = data.find(d => d.name === "result");
+    if (matchingData) {
+      let resultUnit = matchingData.unit as CompoundUnit;
+      resultDistanceHandler(resultUnit.left?.value, 0);
+      resultTimeHandler(resultUnit.right?.value, 0);
+      setDisplayResult(Number(matchingData.value));
+    }      
+  }
+
+  const onSaveData = (): Field[] => {
+    return [
+      {
+        name: "dischargePerMinute",
+        value: getValues("dischargePerMinute"),
+        unit: {
+          label: dischargePerMinuteUnit,
+          value: dischargePerMinuteUnit
+        }
+      },
+      {
+        name: "stripWidth",
+        value: getValues("stripWidth"),
+        unit: {
+          label: stripWidthUnit,
+          value: stripWidthUnit
+        }
+      },
+      {
+        name: "volumePerHectare",
+        value: getValues("volumePerHectare"),
+        unit: {
+          label: volumePerHectareUnit,
+          value: volumePerHectareUnit
+        }
+      },
+      {
+        name: "result",
+        value: displayResult,
+        unit: {
+          left: {
+            label: resultDistanceUnit,
+            value: resultDistanceUnit
+          },
+          right: {
+            label: resultTimeUnit,
+            value: resultTimeUnit
+          }
+        }
+      }
+    ]
+  }
+
   return (
     <ScrollView
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
+      { userData?.Role !== "Externo" && userId && <>
+        <Divider></Divider>
+          <CalculatorStateManager calculator="FixedVolumeMethod" userId={userId} onLoadData={onLoadData} onSaveData={onSaveData}/>
+        <Divider></Divider>
+      </>
+      }
       <View style={styles.mainContainer}>        
         <Text style={styles.body}>Determina a qué velocidad se debe avanzar para aplicar el volumen del caldo deseado</Text>
         <View style={styles.formContainer}> 
@@ -174,12 +275,12 @@ export default function FixedVolumeMethod() {
               )}
               name="dischargePerMinute"
             />
-            <DropdownComponent
+            <CustomDropdown
               data={volumeUnits}
               isModal={false}
-              value={"L"}
+              value={dischargePerMinuteUnit}
               onValueChange={handleDischargePerMinuteUnitChange}>              
-              </DropdownComponent>
+              </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>
@@ -205,12 +306,12 @@ export default function FixedVolumeMethod() {
               )}
               name="stripWidth"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={distanceUnits}
             isModal={false}
-            value={"m"}
+            value={stripWidthUnit}
             onValueChange={handleStripWidthUnitChange}>              
-            </DropdownComponent>
+            </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>
@@ -234,12 +335,12 @@ export default function FixedVolumeMethod() {
               )}
               name="volumePerHectare"
             />
-            <DropdownComponent
+            <CustomDropdown
               data={volumeUnits}
               isModal={false}
-              value={"L"}
+              value={volumePerHectareUnit}
               onValueChange={handleVolumePerHectareUnitChange}>              
-              </DropdownComponent>
+              </CustomDropdown>
           </View>
         </View>
 

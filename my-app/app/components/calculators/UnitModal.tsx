@@ -1,7 +1,7 @@
 import useGlobalDropdownStyles from '@/constants/styles/GlobalDropdownStyle';
 import { useState } from 'react';
 import { Modal, Portal, Text, Button } from 'react-native-paper';
-import { DropdownComponent } from './UnitDropdown';
+import { CustomDropdown } from './CustomDropdown';
 import { Unit } from '@/constants/units';
 import { View } from 'react-native';
 
@@ -10,19 +10,14 @@ export const UnitModal = (props: {leftUnits: Unit[], rightUnits: Unit[], leftVal
     const styles = useGlobalDropdownStyles();
     const [visible, setVisible] = useState(false);
 
-    const [leftUnitValue, setLeftUnitValue] = useState<string>(props.leftValue);
-    const [rightUnitValue, setRightUnitValue] = useState<string>(props.rightValue);
-
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
 
-    const handleLeftUnitChange = (value: string) => {
-        setLeftUnitValue(value);
+    const handleLeftUnitChange = (value: string) => {        
         props.onLeftUnitChange(value);
     }
 
-    const handleRightUnitChange = (value: string) => {
-        setRightUnitValue(value);
+    const handleRightUnitChange = (value: string) => {       
         props.onRightUnitChange(value);
     }
 
@@ -31,19 +26,19 @@ export const UnitModal = (props: {leftUnits: Unit[], rightUnits: Unit[], leftVal
             <Portal>
                 <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalContainer}>                    
                     <View style={styles.dropDownRowContainer}>
-                        <DropdownComponent
+                        <CustomDropdown
                         data={props.leftUnits}
                         isModal={false}
-                        value={leftUnitValue}
+                        value={props.leftValue}
                         onValueChange={handleLeftUnitChange}>              
-                        </DropdownComponent>
+                        </CustomDropdown>
                         <Text style={styles.text}>/</Text>
-                        <DropdownComponent
+                        <CustomDropdown
                         data={props.rightUnits}
                         isModal={false}
-                        value={rightUnitValue}
+                        value={props.rightValue}
                         onValueChange={handleRightUnitChange}>              
-                        </DropdownComponent>
+                        </CustomDropdown>
                     </View>
                 </Modal>
             </Portal>
@@ -52,7 +47,7 @@ export const UnitModal = (props: {leftUnits: Unit[], rightUnits: Unit[], leftVal
             style={styles.multiUnitButton}
             labelStyle={styles.multiUnitButtonText}
             onPress={showModal}>
-            {leftUnitValue + '/' + rightUnitValue}
+            {props.leftValue + '/' + props.rightValue}
             </Button>
         </>
     );

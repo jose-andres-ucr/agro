@@ -6,7 +6,7 @@ export default function useCompoundUnit(startingLeftUnit: string, startingRightU
     const [value, setValue] = useState(startingValue);
 
     const handleLeftUnitChange = useCallback((newUnit: string, value: number) => {             
-        if (newUnit !== leftUnit) {            
+        if (newUnit && newUnit !== leftUnit) {            
             let converted = lefConvertionFunction(value, leftUnit, newUnit);            
             if (!isNaN(Number(converted))) {
                 setValue(converted);
@@ -16,8 +16,8 @@ export default function useCompoundUnit(startingLeftUnit: string, startingRightU
 
     }, [leftUnit, value]);
 
-    const handleRightUnitChange = useCallback((newUnit: string, value: number) => {    
-        if (newUnit !== rightUnit) {
+    const handleRightUnitChange = useCallback((newUnit: string, value: number) => {            
+        if (newUnit && newUnit !== rightUnit) {
             let factor = rightConvertionFunction(1, rightUnit, newUnit);
             if (factor > 0) {
                 factor = 1 / factor;

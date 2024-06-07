@@ -1,6 +1,6 @@
 import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Button, Text, Divider } from "react-native-paper";
 import { z } from "zod";
 import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
@@ -9,10 +9,13 @@ import useGlobalCalculatorStyles from "@/constants/styles/GlobalCalculatorStyle"
 import { showToastError } from "@/constants/utils";
 import { positiveNumber } from "@/constants/schemas";
 import useUnit from "@/app/hooks/useUnit";
-import { areaUnits, convertArea, convertVolume, volumeUnits } from "@/constants/units";
+import { CompoundUnit, Unit, areaUnits, convertArea, convertVolume, volumeUnits } from "@/constants/units";
 import useCompoundUnit from "@/app/hooks/useCompoundUnit";
-import { DropdownComponent } from "./UnitDropdown";
+import { CustomDropdown } from "./CustomDropdown";
 import { UnitModal } from "./UnitModal";
+import { useFetchUserData } from "@/app/hooks/FetchData";
+import { Field } from "@/constants/types";
+import { CalculatorStateManager } from "./CalculatorStateManager";
 
 
 const schema = z.object({
@@ -21,10 +24,19 @@ const schema = z.object({
   knownArea: positiveNumber,
 });
 
+type SchemaKeys = keyof z.infer<typeof schema>;
+
+const getFieldNames = (schema: z.ZodObject<any>) => {
+  return Object.keys(schema.shape) as SchemaKeys[];
+};
+
+const fieldNames = getFieldNames(schema);
+
 type FormData = z.infer<typeof schema>;
 
 export default function KnownAreaMethod() {
   const styles = useGlobalCalculatorStyles();
+  const {userId, userData} = useFetchUserData();
 
   const { value: knownArea, unit: knownAreaUnit, handleUnitChange: knownAreaHandler} = useUnit("m²", 0, convertArea);
 
@@ -63,6 +75,7 @@ export default function KnownAreaMethod() {
     handleSubmit,
     getValues,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -142,11 +155,99 @@ export default function KnownAreaMethod() {
     setDisplayResult(result);
   };
 
+  const onLoadData = (data: Field[]) => {
+    if (!data) {
+      return;
+    }
+
+    reset();
+    let matchingData: Field | undefined = undefined;
+    fieldNames.forEach(field => {
+      matchingData = data.find(d => d.name === field);
+      if (matchingData) {
+        let fieldName = matchingData.name;
+        switch (fieldName) {
+          case "knownArea":
+            let loadedKnownAreaUnit = matchingData.unit as Unit;
+            knownAreaHandler(loadedKnownAreaUnit.value, 0);
+            break;
+
+          case "initialVolume":
+            let loadedInitialVolumeUnit = matchingData.unit as Unit;
+            initialVolumeHandler(loadedInitialVolumeUnit.value, 0);
+            break;
+
+          case "finalVolume":
+            let loadedFinalVolumeUnit = matchingData.unit as Unit;
+            finalVolumeHandler(loadedFinalVolumeUnit.value, 0);
+            break;          
+        }
+        setValue(field, matchingData.value);
+      }
+    });
+    matchingData = data.find(d => d.name === "result");
+    if (matchingData) {
+      let resultUnit = matchingData.unit as CompoundUnit;
+      resultVolumeHandler(resultUnit.left.value, 0);
+      resultAreaHandler(resultUnit.right.value, 0);
+      setDisplayResult(Number(matchingData.value));
+    }
+  }
+
+  const onSaveData = () : Field[] => {
+    return [
+      {
+        name: "knownArea",
+        value: getValues("knownArea"),
+        unit: {
+          label: knownAreaUnit,
+          value: knownAreaUnit,
+        }
+      },
+      {
+        name: "initialVolume",
+        value: getValues("initialVolume"),
+        unit: {
+          label: initialVolumeUnit,
+          value: initialVolumeUnit,
+        }
+      },
+      {
+        name: "finalVolume",
+        value: getValues("finalVolume"),
+        unit: {
+          label: finalVolumeUnit,
+          value: finalVolumeUnit,
+        }
+      },
+      {
+        name: "result",
+        value: displayResult,
+        unit: {
+          left: {
+            label: resultVolumeUnit,
+            value: resultVolumeUnit
+          },
+          right: {
+            label: resultAreaUnit,
+            value: resultAreaUnit
+          }
+        }
+      }
+    ]
+  }
+
   return (
     <ScrollView
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
+      { userData?.Role !== "Externo" && userId && <>
+        <Divider></Divider>
+          <CalculatorStateManager calculator="KnownAreaMethod" userId={userId} onLoadData={onLoadData} onSaveData={onSaveData}/>
+        <Divider></Divider>
+      </>
+      }
       <View style={styles.mainContainer}>
         <Text style={styles.body}>Determina el volumen de aplicación por hectárea. Marque un área
           conocida y aplique ahí agua a la velocidad usual</Text>
@@ -175,10 +276,10 @@ export default function KnownAreaMethod() {
               )}
               name="initialVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
-            value={"L"}
+            value={initialVolumeUnit}
             onValueChange={handleInitialVolumeUnitChange}
             />  
           </View>
@@ -206,10 +307,10 @@ export default function KnownAreaMethod() {
               )}
               name="finalVolume"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={volumeUnits}
             isModal={false}
-            value={"L"}
+            value={finalVolumeUnit}
             onValueChange={handleFinalVolumeUnitChange}
             /> 
           </View>
@@ -235,12 +336,12 @@ export default function KnownAreaMethod() {
               )}
               name="knownArea"
             />
-            <DropdownComponent
+            <CustomDropdown
             data={areaUnits}
             isModal={false}
-            value={"m²"}
+            value={knownAreaUnit}
             onValueChange={handleKnownAreaUnitChange}>              
-            </DropdownComponent> 
+            </CustomDropdown> 
           </View>
         </View>
 

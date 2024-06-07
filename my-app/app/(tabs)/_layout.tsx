@@ -41,7 +41,7 @@ export default function TabLayout() {
       screenOptions={{
         drawerActiveBackgroundColor: theme.colors.primary,
         drawerActiveTintColor: theme.colors.white,
-        drawerInactiveTintColor: '#000',
+        drawerInactiveTintColor: 'black',
         headerStyle: {
           backgroundColor: theme.colors.primary,
         },

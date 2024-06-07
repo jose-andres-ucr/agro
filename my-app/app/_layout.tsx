@@ -5,6 +5,7 @@ import { theme } from "@/constants/theme";
 import auth from "@react-native-firebase/auth";
 import { useFetchUserData } from "./hooks/FetchData";
 import Toast, { ErrorToast } from "react-native-toast-message";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const toastConfig = {
   error: (props: any) => (
@@ -23,6 +24,8 @@ const toastConfig = {
     />
   ),
 };
+
+const queryClient = new QueryClient();
 
 export default function TabLayout() {
   const currentRoute = usePathname();
@@ -54,6 +57,7 @@ export default function TabLayout() {
 
   return (
     <PaperProvider theme={theme}>
+      <QueryClientProvider client={queryClient}>
       <Stack
         screenOptions={{
           headerStyle: {
@@ -92,6 +96,7 @@ export default function TabLayout() {
         />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
+      </QueryClientProvider>      
       <Toast config={toastConfig} />
     </PaperProvider>
   );
