@@ -64,25 +64,23 @@ export default function TabLayout() {
       >
         <Stack.Screen
           name="components/calculators/FixedVolumeMethod"
-          options={{
-            headerTitle: "Herbicidas",
-          }}
+          options={{ headerTitle: "Método de Volumen Fijo" }}
         />
         <Stack.Screen
           name="components/calculators/FixedVelocityMethod"
-          options={{ headerTitle: "Herbicidas" }}
+          options={{ headerTitle: "Método de Velocidad Fija" }}
         />
         <Stack.Screen
           name="components/calculators/KnownAreaMethod"
-          options={{ headerTitle: "Herbicidas" }}
+          options={{ headerTitle: "Volumen en Área Conocida" }}
         />
         <Stack.Screen
           name="components/calculators/PesticidePerArea"
-          options={{ headerTitle: "Fungicidas e Insecticidas" }}
+          options={{ headerTitle: "Calibración por Área" }}
         />
         <Stack.Screen
           name="components/calculators/PesticidePerPlant"
-          options={{ headerTitle: "Fungicidas e Insecticidas" }}
+          options={{ headerTitle: "Calibración por Planta" }}
         />
         <Stack.Screen
           name="components/login/Login"
