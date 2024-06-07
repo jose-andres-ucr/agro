@@ -8,6 +8,9 @@ export const theme = {
     primary: "#00c0f3",
     secondary: "#008641",
     defaultBackgroundColor: "#FFFFFF",
+    inputBackgroundColor: "#6dc067",
+    inputBorderColor: "#7C757E",
+    inputColor: "black"
   }, 
   screenContainer: {
     flex: 1,

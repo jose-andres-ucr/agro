@@ -6,44 +6,50 @@ import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { showToastError } from "@/constants/utils";
-import useGlobalstyles from "@/constants/styles";
+import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
+import { positiveNumber } from "@/constants/schemas";
+import useUnit from "@/app/hooks/useUnit";
+import { convertVolume, volumeUnits } from "@/constants/units";
+import { DropdownComponent } from "./UnitDropdown";
 
 
 const schema = z.object({
-  plantCuantity: z
-    .string({required_error: "Este campo es obligatorio"})
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  initialVolume: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  finalVolume: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  plantCuantityTotal: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
+  plantCuantity: positiveNumber,
+  initialVolume: positiveNumber,
+  finalVolume: positiveNumber,
+  plantCuantityTotal: positiveNumber,
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
-  const styles = useGlobalstyles();
-  const [result, setResult] = useState<string | null>(null);
+  const styles = useGlobalCalculatorStyles();
+
+  const { value: initialVolume, unit: initialVolumeUnit, handleUnitChange: initialVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const { value: finalVolume, unit: finalVolumeUnit, handleUnitChange: finalVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const { value: result, unit: resultUnit, handleUnitChange: resultHandler } = useUnit("L", 0, convertVolume);
+
+  const [displayResult, setDisplayResult] = useState(result);  
+
+  useEffect(() => {
+    setValue("initialVolume", initialVolume);
+  }, [initialVolume]);
+
+  useEffect(() => {
+    setValue("finalVolume", finalVolume);
+  }, [finalVolume]);
+
+  useEffect(() => {
+    setDisplayResult(result);
+  }, [result]);
 
   const {
     control,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({    
     resolver: zodResolver(schema),
@@ -74,16 +80,41 @@ export default function PesticidePerPlant() {
     refs.plantCuantityRef.current?.focus();
   }, []);
 
+  const handleInitialVolumeUnitChange = (value: string) => {
+    initialVolumeHandler(value, getValues("initialVolume"));
+  };
+
+  const handleFinalVolumeUnitChange = (value: string) => {
+    finalVolumeHandler(value, getValues("finalVolume"));
+  };
+
+  const handleResultUnitChange = (value: string) => {
+    resultHandler(value, displayResult);
+  };
+
   const onSubmit = (data: FormData) => {
-    const {
+    let {
       plantCuantity,
       initialVolume,
       finalVolume,
       plantCuantityTotal,
     } = data;
 
+    if (initialVolumeUnit !== "L") {
+      initialVolume = convertVolume(initialVolume, initialVolumeUnit, "L");
+    }
+
+    if (finalVolumeUnit !== "L") {
+      finalVolume = convertVolume(finalVolume, finalVolumeUnit, "L");
+    }
+
     let result = ((initialVolume - finalVolume) * plantCuantityTotal) / plantCuantity;
-    setResult(result.toFixed(3));
+
+    if (resultUnit !== "L") {
+      result = convertVolume(result, "L", resultUnit);
+    }
+
+    setDisplayResult(result);    
   };
 
   return (
@@ -91,8 +122,7 @@ export default function PesticidePerPlant() {
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.mainContainer}>
-        <Text style={styles.header}>Calibración por planta</Text>
+      <View style={styles.mainContainer}>        
         <Text style={ styles.body }>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
         
         <View style={styles.formContainer}>
@@ -107,7 +137,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   autoFocus
@@ -133,7 +163,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -145,7 +175,12 @@ export default function PesticidePerPlant() {
               )}
               name="initialVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <DropdownComponent
+            data={volumeUnits}
+            isModal={false}
+            value={"L"}
+            onValueChange={handleInitialVolumeUnitChange}>              
+            </DropdownComponent>
           </View>
 
           <View style={styles.inputGroup}>          
@@ -159,7 +194,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -171,7 +206,12 @@ export default function PesticidePerPlant() {
               )}
               name="finalVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <DropdownComponent
+            data={volumeUnits}
+            isModal={false}
+            value={"L"}
+            onValueChange={handleFinalVolumeUnitChange}>              
+            </DropdownComponent>
           </View>
           
           <View style={styles.inputGroup}>
@@ -185,7 +225,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="send"
@@ -194,8 +234,7 @@ export default function PesticidePerPlant() {
                 />
               )}
               name="plantCuantityTotal"
-            />
-            <Text style={styles.text}>m2</Text>
+            />            
           </View>
         </View>        
 
@@ -210,10 +249,15 @@ export default function PesticidePerPlant() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={result?.toString()}
+            value={displayResult?.toFixed(3)}
             editable={false}
           />
-          <Text style={styles.text}> Litros</Text>
+          <DropdownComponent
+          data={volumeUnits}
+          isModal={false}
+          value={"L"}
+          onValueChange={handleResultUnitChange}>              
+          </DropdownComponent>
         </View>
       </View>
       <CommentLog text="PesticidePerPlantComments" />
