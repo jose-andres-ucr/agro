@@ -10,6 +10,7 @@ import {
   View,
   TextInput as TextInputRn,
   Keyboard,
+  Image,
 } from "react-native";
 import React from "react";
 import { theme } from "@/constants/theme";
@@ -78,6 +79,7 @@ export default function Login() {
       await auth().signInWithEmailAndPassword(data.userName, data.password);
       let user = auth().currentUser;
       if (user) {
+        console.log(user);
         let userData = (
           await firestore().collection("Users").doc(user.uid).get()
         ).data();
@@ -105,6 +107,9 @@ export default function Login() {
 
   return (
     <View style={theme.loginContainer}>
+      <Image
+        style={styles.logo} 
+        source={require('@/assets/images/firmaHorizontal.png')} />
       <Controller
         control={control}
         render={({ field: { onChange, onBlur, value } }) => (
@@ -160,7 +165,7 @@ export default function Login() {
           onSubmit(form);
         })}
       />
-      <View style={{ marginTop: 30, alignItems: "center" }}>
+      <View style={styles.bottomText}>
         <Text style={{ marginTop: 5 }}>
           ¿No posee una cuenta?{" "}
           <Text
@@ -194,4 +199,14 @@ const styles = StyleSheet.create({
     color: "red",
     alignSelf: "center",
   },
+  logo: {
+    width: '100%', 
+    height: 50,
+    marginBottom: 30,
+  },
+  bottomText: {
+    marginTop: 30, 
+    marginBottom: 40,
+    alignItems: "center",
+  }
 });

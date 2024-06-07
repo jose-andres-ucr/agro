@@ -15,33 +15,45 @@ const useUserRole = () => {
 
   // Show specific role functionalities (calculators are available by default)
   const [profile, setProfile] = useState<string | null>(null);
-  const [manageUsers, setManageUsers] = useState<string | null>(null);
+  const [manageRegister, setManageRegister] = useState<string | null>(null);
+  const [manageComments, setManageComments] = useState<string | null>(null);
+  const [manageEducation, setManageEducation] = useState<string | null>(null);
   const [education, setEducation] = useState<string | null>(null);
   useEffect(() => {
     if (userRole == "Administrador") {
-      setProfile("/profile");
-      setEducation(null);
-      setManageUsers("/manageUsers");
+      setProfile("true");
+      setEducation("true");
+      setManageRegister("true");
+      setManageComments("true");
+      setManageEducation("true");
     } else if (userRole == "Docente") {
-      setProfile("/profile");
-      setEducation("/education");
-      setManageUsers(null);
+      setProfile("true");
+      setEducation("true");
+      setManageRegister(null);
+      setManageComments(null);
+      setManageEducation(null);
     } else if (userRole == "Estudiante") {
       setProfile("/profile");
       setEducation("/education");
-      setManageUsers(null);
+      setManageRegister(null);
+      setManageComments(null);
+      setManageEducation(null);
     } else if (userRole == "Usuario Externo") {
       setProfile("/profile");
       setEducation(null);
-      setManageUsers(null);
+      setManageRegister(null);
+      setManageComments(null);
+      setManageEducation(null);
     } else {
       // no role
       setProfile(null);
       setEducation(null);
-      setManageUsers(null);
+      setManageRegister(null);
+      setManageComments(null);
+      setManageEducation(null);
     }
   }, [userRole]);
-  return { userRole, profile, manageUsers, education };
+  return { userRole, profile, manageRegister, manageComments, manageEducation, education };
 };
 
 export default useUserRole;

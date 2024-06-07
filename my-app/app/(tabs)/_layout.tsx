@@ -1,76 +1,97 @@
-import { Tabs } from "expo-router";
-import LoginButton from "../components/login/LoginButton";
-import useUserRole from "../hooks/UserRole";
-import TabBarIcon from "../components/TabBarIcon";
+import { Drawer } from "expo-router/drawer";
 import { theme } from "@/constants/theme";
+import { Image, View } from "react-native";
+import { ProfileIcon, EducationIcon, HerbicideIcon, FungicideIcon, ManageIcon } from "@/constants/DrawerIcons";
+import LoginButton from "../components/login/LoginButton";
+import ProfileButton from "../components/ProfileButton";
+import useUserRole from "../hooks/UserRole";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
 
 export default function TabLayout() {
-  const { profile, manageUsers, education } = useUserRole();
+  const { userRole, profile, manageRegister, manageComments, manageEducation, education  } = useUserRole();
 
+  const HeaderButton = () => {
+    if (userRole != null) {
+      return <ProfileButton/>;
+    } else {
+      return <LoginButton/>;
+    }
+  };
+  function CustomerDrawer(props: any) {
+    return (
+      <DrawerContentScrollView {...props}>
+        <View>
+          <Image
+            source={require('../../assets/images/firmaPromocional.png')}
+            style={{width: 175, height: 75, alignSelf: "center", marginVertical: 20}}
+          />
+        </View>
+        <DrawerItemList {...props}/>
+      </DrawerContentScrollView>
+    );
+  }
   return (
-    <Tabs
+    <GestureHandlerRootView style={{flex: 1}}>
+    <Drawer
+      drawerContent={CustomerDrawer}
       screenOptions={{
-        tabBarActiveTintColor: theme.colors.secondary,
+        drawerActiveBackgroundColor: theme.colors.primary,
+        drawerActiveTintColor: theme.colors.white,
+        drawerInactiveTintColor: '#000',
+        headerStyle: {
+          backgroundColor: theme.colors.primary,
+        },
       }}
     >
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Perfil",
-          href: profile,
-          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
-          tabBarLabelStyle: {
-            fontSize: 15,
-          },
-          headerRight: () => <LoginButton />,
-        }}
-      />
-      <Tabs.Screen
-        name="education"
-        options={{
-          title: "Educación",
-          href: education,
-          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
-          tabBarLabelStyle: {
-            fontSize: 15,
-          },
-          headerRight: () => <LoginButton />,
-        }}
-      />
-      <Tabs.Screen
+      <Drawer.Screen
         name="index"
         options={{
           title: "Herbicidas",
-          tabBarIcon: ({ color }) => <TabBarIcon name="leaf" color={color} />,
-          tabBarLabelStyle: {
-            fontSize: 15,
-          },
-          headerRight: () => <LoginButton />,
+          drawerLabel: "Herbicidas",
+          drawerIcon: HerbicideIcon,
+          headerRight: () => <HeaderButton />,
         }}
       />
-      <Tabs.Screen
+      <Drawer.Screen
         name="fungicides"
         options={{
           title: "Fungicidas e Insecticidas",
-          tabBarIcon: ({ color }) => <TabBarIcon name="bug" color={color} />,
-          tabBarLabelStyle: {
-            fontSize: 15,
-          },
-          headerRight: () => <LoginButton />,
+          drawerLabel: "Fungicidas e Insecticidas",
+          drawerIcon: FungicideIcon,
+          headerRight: () => <HeaderButton />,
         }}
       />
-      <Tabs.Screen
-        name="manageUsers"
+      <Drawer.Screen
+        name="education"
+        redirect={education === null}
         options={{
-          title: "Usuarios",
-          href: manageUsers,
-          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
-          tabBarLabelStyle: {
-            fontSize: 15,
-          },
-          headerRight: () => <LoginButton />,
+          title: "Material Educativo",
+          drawerLabel: "Material Educativo",
+          drawerIcon: EducationIcon,
+          headerRight: () => <HeaderButton />,
         }}
       />
-    </Tabs>
+      <Drawer.Screen
+        name="manageRegistration"
+        redirect={manageRegister === null}
+        options={{
+          title: "Aprobación de Registros",
+          drawerLabel: "Aprobación de Registros",
+          drawerIcon: ManageIcon,
+          headerRight: () => <HeaderButton />,
+        }}
+      />
+      <Drawer.Screen
+        name="profile"
+        redirect={profile === null}
+        options={{
+          title: "Perfil",
+          drawerLabel: "Perfil",
+          drawerIcon: ProfileIcon
+        }}
+      />
+    </Drawer>
+    </GestureHandlerRootView>
   );
 }

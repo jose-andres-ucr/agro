@@ -33,8 +33,7 @@ export default function TabLayout() {
       if (currentRoute === "/components/login/Login") {
         if (userAuth.emailVerified && userData.Approved === 1) {
           console.log("Welcome User!");
-          router.back();
-          router.replace("/(tabs)/");
+          router.replace("/");
         } else {
           // Block login of users with unverified email or unapproved registration
           console.log("Unverified user email or unapproved registration");
@@ -48,14 +47,21 @@ export default function TabLayout() {
     } else {
       if (currentRoute === "/profile") {
         console.log("User signed out");
-        router.replace("/(tabs)/");
+        router.replace("/");
       }
     }
   }, [userData]);
 
   return (
     <PaperProvider theme={theme}>
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: theme.colors.primary,
+          },
+          headerTintColor: theme.colors.white,
+        }}
+      >
         <Stack.Screen
           name="components/calculators/FixedVolumeMethod"
           options={{
@@ -77,10 +83,6 @@ export default function TabLayout() {
         <Stack.Screen
           name="components/calculators/PesticidePerPlant"
           options={{ headerTitle: "Fungicidas e Insecticidas" }}
-        />
-        <Stack.Screen
-          name="components/management/ApproveRegistration"
-          options={{ headerTitle: "Aprobaciones de Registro" }}
         />
         <Stack.Screen
           name="components/login/Login"
