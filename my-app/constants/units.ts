@@ -68,7 +68,6 @@ export function convertVolume(value: string | number, from: string, to: string):
   }
 
 export function convertDistance(value: string | number, from: string, to: string): number { 
-    console.log("convertDistance", value, from, to);   
     if (value === undefined || !isNumberString(value.toString())) {
       return NaN;
     }

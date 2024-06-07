@@ -14,7 +14,7 @@ export default function useCompoundUnit(startingLeftUnit: string, startingRightU
             setLeftUnit(newUnit);
         }
 
-    }, [leftUnit, value]);
+    }, [leftUnit]);
 
     const handleRightUnitChange = useCallback((newUnit: string, value: number) => {            
         if (newUnit && newUnit !== rightUnit) {
@@ -29,7 +29,7 @@ export default function useCompoundUnit(startingLeftUnit: string, startingRightU
             setRightUnit(newUnit);
         }
 
-    }, [rightUnit, value]);
+    }, [rightUnit]);
 
     return { value, leftUnit, rightUnit, handleLeftUnitChange, handleRightUnitChange };
 }   
