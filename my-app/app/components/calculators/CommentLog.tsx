@@ -1,7 +1,7 @@
 import { Button, Text, View, StyleSheet, ScrollView, TextInput } from "react-native";
 import React, { useEffect, useState } from 'react';
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import useUserRole from '../../hooks/UserRole'; // Importa el hook para obtener el rol del usuario
 import { getUniqueUserId } from '../../hooks/UserUtils'; // Ruta al archivo UserUtils.js
 
@@ -14,12 +14,19 @@ type Comment = {
   Response?: string; // Agrega el campo de respuesta
 }
 
+type CommentFormData = {
+  Name: string;
+  Comment: string;
+  Response?: string;
+}
+
 export const CommentLog = (props: { text: string }) => {
   const { userRole, userId: loggedUserId } = useUserRole(); //rol y el ID del usuario
   const [comments, setComments] = useState([] as Comment[]);
   const [showComments, setShowComments] = useState(false);
   const [showResponse, setShowResponse] = useState<number | null>(null); // Estado para controlar la visibilidad de la respuesta
-  const { control, handleSubmit, reset } = useForm();
+  const [commentPosted, setCommentPosted] = useState(false); // Estado para controlar la visibilidad del mensaje
+  const { control, handleSubmit, reset } = useForm<CommentFormData>();
   const [userId, setUserId] = useState('');
 
   // Asignar id única a un usuario no logueado
@@ -50,8 +57,7 @@ export const CommentLog = (props: { text: string }) => {
     return () => subscriber();
   }, []);
 
-  
-  const addComment = async (data:any) => {
+  const addComment: SubmitHandler<CommentFormData> = async (data) => {
     try {
       await firestore().collection(props.text).add({
         Name: data.Name,
@@ -60,14 +66,15 @@ export const CommentLog = (props: { text: string }) => {
         UserId: userRole ? loggedUserId : userId  // Agrega el ID del usuario al comentario
       });
       reset();
+      setCommentPosted(true);
+      setTimeout(() => setCommentPosted(false), 3000); // Ocultar el mensaje después de 3 segundos
     } catch (error) {
       console.error("Error agregando el comentario: ", error);
     }
   };
 
-  const addResponse = async (data: any, commentId: string) => {
+  const addResponse = async (data: { Response: string }, commentId: string) => {
     try {
-      console.log('Valor de la respuesta:', data.Response); // Agregar esta línea
       if (!data.Response) {
         console.error("La respuesta no puede estar vacía.");
         return;
@@ -82,131 +89,127 @@ export const CommentLog = (props: { text: string }) => {
     }
   };
 
-    // Debugging statements to check userRole and comments
-    console.log('userRole:', userRole);
-    console.log('loggedUserId:', loggedUserId);
-
   const filteredComments = comments
   .slice()
   .sort((a, b) => b.DateTime.toMillis() - a.DateTime.toMillis())
   .filter(comment => {
-    console.log('Filtering comment:', comment);
-    console.log('userRole2222:', userRole);
-    console.log('loggedUserId2222:', loggedUserId);
     if (userRole === 'Administrador' || userRole === 'Docente') {
-      console.log('Admin can see all comments');
-        return true; // Admins pueden ver todos los comentarios
-      }
-      console.log('return solo id comments');
-      return comment.UserId === (userRole ? loggedUserId : userId);
-      return true;
-    });
+      return true; // Admins pueden ver todos los comentarios
+    }
+    return comment.UserId === (userRole ? loggedUserId : userId);
+  });
 
-
-    return (
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
-      >
-        <View style={styles.container}>
-          <View style={{ alignItems: 'flex-start' }}>
-            <Button
-              title={showComments ? "Ocultar comentarios" : "Mostrar comentarios"}
-              onPress={() => setShowComments(!showComments)}
-            />
-          </View>
-          {showComments && (
-            <View>
-              <View style={styles.separator} />
-              <Text style={styles.title}>Nuevo comentario</Text>
-              <View>
-                <Controller
-                  control={control}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      placeholder="Nombre"
-                      style={styles.input}
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="default"
-                    />
-                  )}
-                  name="Name"
-                />
-                <Controller
-                  control={control}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      placeholder="Comentario"
-                      style={styles.inputComment}
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="default"
-                      multiline={true}
-                    />
-                  )}
-                  name="Comment"
-                />
-                <Button onPress={handleSubmit(addComment)} title="Enviar" />
-              </View>
-              <Text style={styles.title}>Comentarios</Text>
-              {filteredComments.length === 0 ? (
-                <Text style={styles.commentText}>Sin comentarios</Text>
-              ) : (
-                filteredComments.map((comment, index) => (
-                  <View key={comment.id}>
-                    {comment.Name && comment.DateTime && comment.Comment ? (
-                      <View style={styles.commentBox} key={comment.id}>
-                        <View style={styles.commentContainer}>
-                          <Text style={styles.commentName}>Nombre: {comment.Name}</Text>
-                          <Text style={styles.commentDateTime}>Fecha y hora: {new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
-                          <Text style={styles.commentText}>Comentario: {comment.Comment}</Text>
-                        </View>
-                        {comment.Response ? (
-                          <View style={styles.commentContainer}>
-                            <Text style={styles.title}>Respuestas</Text>
-                            <Text style={styles.commentResponse}>Respuesta: {comment.Response}</Text>
-                          </View>
-                        ) : (
-                          <View style={styles.commentContainer}>
-                            <Text style={styles.commentResponse}>
-                              {(userRole === 'Administrador' || userRole === 'Docente') && (
-                                <Button onPress={() => setShowResponse(index)} title="Responder" />
-                              )}
-                            </Text>
-                            {showResponse === index && (
-                              <View>
-                                <Controller
-                                  control={control}
-                                  render={({ field: { onChange, onBlur, value } }) => (
-                                    <TextInput
-                                      placeholder="Respuesta"
-                                      style={styles.input}
-                                      onBlur={onBlur}
-                                      onChangeText={onChange}
-                                      value={value}
-                                      keyboardType="default"
-                                    />
-                                  )}
-                                  name="Response"
-                                />
-                                <Button onPress={handleSubmit((data) => addResponse(data, comment.id))} title="Enviar respuesta" />
-                              </View>
-                            )}
-                          </View>
-                        )}
-                      </View>
-                    ) : null}
-                  </View>
-                ))
-              )}
-            </View>
-          )}
+  return (
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
+      ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
+    >
+      <View style={styles.container}>
+        <View style={{ alignItems: 'flex-start' }}>
+          <Button
+            title={showComments ? "Ocultar comentarios" : "Mostrar comentarios"}
+            onPress={() => setShowComments(!showComments)}
+          />
         </View>
-      </ScrollView>
-    );
+        {showComments && (
+          <View>
+            <View style={styles.separator} />
+            <Text style={styles.title}>Nuevo comentario</Text>
+            <View>
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Nombre"
+                    style={styles.input}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    keyboardType="default"
+                  />
+                )}
+                name="Name"
+              />
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Comentario"
+                    style={styles.inputComment}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    keyboardType="default"
+                    multiline={true}
+                  />
+                )}
+                name="Comment"
+              />
+              <Button onPress={handleSubmit(addComment)} title="Enviar" />
+              {commentPosted && <Text style={styles.successMessage}>Comentario publicado</Text>}
+            </View>
+            <Text style={styles.title}>Comentarios</Text>
+            {filteredComments.length === 0 ? (
+              <Text style={styles.commentText}>Sin comentarios</Text>
+            ) : (
+              filteredComments.map((comment, index) => (
+                <View key={comment.id}>
+                  {comment.Name && comment.DateTime && comment.Comment ? (
+                    <View style={styles.commentBox} key={comment.id}>
+                      <View style={styles.commentContainer}>
+                        <Text style={styles.commentName}>Nombre: {comment.Name}</Text>
+                        <Text style={styles.commentDateTime}>Fecha y hora: {new Date(comment.DateTime.toDate()).toLocaleString()}</Text>
+                        <Text style={styles.commentText}>Comentario: {comment.Comment}</Text>
+                      </View>
+                      {comment.Response ? (
+                        <View style={styles.commentContainer}>
+                          <Text style={styles.title}>Respuestas</Text>
+                          <Text style={styles.commentResponse}>Respuesta: {comment.Response}</Text>
+                        </View>
+                      ) : (
+                        <View style={styles.commentContainer}>
+                          <Text style={styles.commentResponse}>
+                            {(userRole === 'Administrador' || userRole === 'Docente') && (
+                              <Button onPress={() => setShowResponse(index)} title="Responder" />
+                            )}
+                          </Text>
+                          {showResponse === index && (
+                            <View>
+                              <Controller
+                                control={control}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                  <TextInput
+                                    placeholder="Respuesta"
+                                    style={styles.input}
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    keyboardType="default"
+                                  />
+                                )}
+                                name="Response"
+                              />
+                              <Button onPress={handleSubmit((data) => {
+                                if (data.Response) {
+                                  addResponse({ Response: data.Response }, comment.id)
+                                } else {
+                                  console.error("El valor de Response está indefinido.");
+                                }
+                              })} title="Enviar respuesta" />
+                            </View>
+                          )}
+                        </View>
+                      )}
+                    </View>
+                  ) : null}
+                </View>
+              ))
+            )}
+          </View>
+        )}
+      </View>
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -243,36 +246,39 @@ const styles = StyleSheet.create({
   },
   commentDateTime: {
     fontStyle: 'italic',
-    marginBottom: 5,
-    color: 'gray',
   },
   commentText: {
-    lineHeight: 20,
+    marginBottom: 10,
   },
   commentResponse: {
     marginTop: 10,
-    fontStyle: 'italic',
-    color: 'green',
+    color: 'green', // Agregar estilo para el color verde
   },
   input: {
-    width: '100%',
     height: 40,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: '#ccc',
+    marginBottom: 10,
+    paddingLeft: 10,
     borderRadius: 5,
   },
   inputComment: {
-    width: '100%',
-    height: 200,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
+    height: 80,
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: '#ccc',
+    marginBottom: 10,
+    paddingLeft: 10,
     borderRadius: 5,
-    textAlignVertical: "top"
+  },
+  successMessage: {
+    color: 'green',
+    marginTop: 10,
   },
 });
+
+
+
+
+
+
+
