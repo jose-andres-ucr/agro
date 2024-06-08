@@ -91,6 +91,10 @@ export default function TabLayout() {
               name="components/login/Login"
               options={{ headerTitle: "Iniciar Sesión" }}
             />
+        <Stack.Screen
+            name="components/management/ManageComments"
+            options={{ headerTitle: "Administración de comentarios" }}
+        />
           <Stack.Screen
             name="components/signup/SignUp"
             options={{ headerTitle: "Registro", headerTitleAlign: "center" }}
