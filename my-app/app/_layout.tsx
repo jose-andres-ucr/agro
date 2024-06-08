@@ -1,11 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from 'react';
+import { UserContext } from './hooks/context/UserContext';
 import { Stack, router, usePathname } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { theme } from "@/constants/theme";
 import auth from "@react-native-firebase/auth";
-import { useFetchUserData } from "./hooks/FetchData";
 import Toast, { ErrorToast } from "react-native-toast-message";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import UserProvider from './hooks/context/UserProvider';
+
 
 const toastConfig = {
   error: (props: any) => (
@@ -29,7 +31,7 @@ const queryClient = new QueryClient();
 
 export default function TabLayout() {
   const currentRoute = usePathname();
-  const { userAuth, userData } = useFetchUserData();
+  const { userAuth, userData } = useContext(UserContext);
 
   useEffect(() => {
     if (userAuth && userData) {
@@ -57,49 +59,51 @@ export default function TabLayout() {
   }, [userData]);
 
   return (
-    <PaperProvider theme={theme}>
-      <QueryClientProvider client={queryClient}>
-        <Stack>
-          <Stack.Screen
-            name="components/calculators/FixedVolumeMethod"
-            options={{ headerTitle: "Método de Volumen Fijo" }}
+    <UserProvider>
+      <PaperProvider theme={theme}>
+        <QueryClientProvider client={queryClient}>
+          <Stack>
+            <Stack.Screen
+              name="components/calculators/FixedVolumeMethod"
+              options={{ headerTitle: "Método de Volumen Fijo" }}
+            />
+            <Stack.Screen
+              name="components/calculators/FixedVelocityMethod"
+              options={{ headerTitle: "Método de Velocidad Fija" }}
+            />
+            <Stack.Screen
+              name="components/calculators/KnownAreaMethod"
+              options={{ headerTitle: "Volumen en Área Conocida" }}
+            />
+            <Stack.Screen
+              name="components/calculators/PesticidePerArea"
+              options={{ headerTitle: "Calibración por Área" }}
+            />
+            <Stack.Screen
+              name="components/calculators/PesticidePerPlant"
+              options={{ headerTitle: "Calibración por Planta" }}
           />
           <Stack.Screen
-            name="components/calculators/FixedVelocityMethod"
-            options={{ headerTitle: "Método de Velocidad Fija" }}
-          />
-          <Stack.Screen
-            name="components/calculators/KnownAreaMethod"
-            options={{ headerTitle: "Volumen en Área Conocida" }}
-          />
-          <Stack.Screen
-            name="components/calculators/PesticidePerArea"
-            options={{ headerTitle: "Calibración por Área" }}
-          />
-          <Stack.Screen
-            name="components/calculators/PesticidePerPlant"
-            options={{ headerTitle: "Calibración por Planta" }}
-        />
+            name="components/management/ApproveRegistration"
+            options={{ headerTitle: "Aprobaciones de Registro" }}
+            />
+            <Stack.Screen
+              name="components/login/Login"
+              options={{ headerTitle: "Iniciar Sesión" }}
+            />
         <Stack.Screen
             name="components/management/ManageComments"
             options={{ headerTitle: "Administración de comentarios" }}
         />
-        <Stack.Screen
-          name="components/management/ApproveRegistration"
-          options={{ headerTitle: "Aprobaciones de Registro" }}
-          />
           <Stack.Screen
-            name="components/login/Login"
-            options={{ headerTitle: "Iniciar Sesión" }}
+            name="components/signup/SignUp"
+            options={{ headerTitle: "Registro", headerTitleAlign: "center" }}
           />
-        <Stack.Screen
-          name="components/signup/SignUp"
-          options={{ headerTitle: "Registro", headerTitleAlign: "center" }}
-        />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-      </QueryClientProvider>      
-      <Toast config={toastConfig} />
-    </PaperProvider>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </QueryClientProvider>      
+        <Toast config={toastConfig} />
+      </PaperProvider>
+    </UserProvider>
   );
 }

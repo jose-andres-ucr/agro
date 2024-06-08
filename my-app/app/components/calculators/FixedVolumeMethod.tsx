@@ -2,7 +2,7 @@ import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Button, Text, Divider } from "react-native-paper";
 import { z } from "zod";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
@@ -13,7 +13,7 @@ import useUnit from "@/app/hooks/useUnit";
 import useCompoundUnit from "@/app/hooks/useCompoundUnit";
 import { CustomDropdown } from "./CustomDropdown";
 import { UnitModal } from "./UnitModal";
-import { useFetchUserData } from "@/app/hooks/FetchData";
+import { UserContext } from "@/app/hooks/context/UserContext";
 import { Field } from "@/constants/types";
 import { CalculatorStateManager } from "./CalculatorStateManager";
 
@@ -36,7 +36,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function FixedVolumeMethod() {
   const styles = useGlobalCalculatorStyles();
-  const {userId, userData} = useFetchUserData();
+  const {userId, userData} = useContext(UserContext);
 
   const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
 
@@ -368,7 +368,9 @@ export default function FixedVolumeMethod() {
           />
         </View>
       </View>
-      <CommentLog text="VolumeComments" />
+      { userData?.Role !== "Externo" && userId && 
+        <CommentLog text="VolumeComments" userId={userId} />
+      }
     </ScrollView>
   );
 }

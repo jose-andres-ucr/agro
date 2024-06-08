@@ -1,10 +1,11 @@
 import { View, Text } from "react-native";
+import { useContext } from "react";
+import { UserContext } from "@/app/hooks/context/UserContext";
 import Logout from "../components/login/Logout";
-import { useFetchUserData } from "../hooks/FetchData";
 import { theme } from "@/constants/theme";
 
 export default function Profile() {
-  const { userData } = useFetchUserData();
+  const { userData } = useContext(UserContext);
 
   return (
     <View style={theme.screenContainer}>

@@ -1,7 +1,7 @@
 import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { Text, TextInput, Button, Divider } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
@@ -14,8 +14,8 @@ import { UnitModal } from "./UnitModal";
 import useCompoundUnit from "../../hooks/useCompoundUnit";
 import { positiveNumber } from "@/constants/schemas";
 import { CalculatorStateManager } from "./CalculatorStateManager";
-import { useFetchUserData } from "@/app/hooks/FetchData";
 import { Field } from "@/constants/types";
+import { UserContext } from "@/app/hooks/context/UserContext";
 
 const schema = z.object({
   dischargePerMinute: positiveNumber,
@@ -35,7 +35,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function FixedVelocityMethod() {
   const styles = useGlobalCalculatorStyles();
-  const {userId, userData} = useFetchUserData();
+  const {userId, userData} = useContext(UserContext);
 
   const { value: dischargePerMinute, unit: dischargePerMinuteUnit, handleUnitChange: dischargePerMinuteHandler} = useUnit("L", 0, convertVolume);
 
@@ -394,7 +394,10 @@ export default function FixedVelocityMethod() {
             />
         </View>
       </View>
-      <CommentLog text="VelocityComments" />
+      { userData?.Role !== "Externo" && userId && 
+        <CommentLog text="VelocityComments" userId={userId} />
+      }
+      
     </ScrollView>
   );
 }

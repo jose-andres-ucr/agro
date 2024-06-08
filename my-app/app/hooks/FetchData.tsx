@@ -12,6 +12,7 @@ type User = {
   Email: string;
   Role: string;
   Approved: number;
+  Verified: number;
 };
 
 export const useFetchUserData = () => {
@@ -52,7 +53,7 @@ export const useFetchPendingRegistration = () => {
 
     querySnapshot.forEach((userInfo) => {
       //TODO: check if user email was verified
-      if (userInfo.data().Approved === 0) {
+      if (userInfo.data().Approved === 0 && userInfo.data().Verified === 1) {
         let user: User = {
           id: userInfo.id,
           FirstName: userInfo.data().FirstName,
@@ -61,6 +62,7 @@ export const useFetchPendingRegistration = () => {
           Email: userInfo.data().Email,
           Role: userInfo.data().Role,
           Approved: userInfo.data().Approved,
+          Verified: userInfo.data().Verified,
         };
         data.push(user);
       }

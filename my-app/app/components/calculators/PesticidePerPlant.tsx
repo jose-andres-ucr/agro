@@ -2,7 +2,7 @@ import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Button, Text, Divider} from "react-native-paper";
 import { z } from "zod";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { showToastError } from "@/constants/utils";
@@ -11,7 +11,7 @@ import { positiveNumber } from "@/constants/schemas";
 import useUnit from "@/app/hooks/useUnit";
 import { Unit, convertVolume, volumeUnits } from "@/constants/units";
 import { CustomDropdown } from "./CustomDropdown";
-import { useFetchUserData } from "@/app/hooks/FetchData";
+import { UserContext } from "@/app/hooks/context/UserContext";
 import { CalculatorStateManager } from "./CalculatorStateManager";
 import { Field } from "@/constants/types";
 
@@ -35,7 +35,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
   const styles = useGlobalCalculatorStyles();
-  const {userId, userData} = useFetchUserData();
+  const {userId, userData} = useContext(UserContext);
 
   const { value: initialVolume, unit: initialVolumeUnit, handleUnitChange: initialVolumeHandler } = useUnit("L", 0, convertVolume);
 
@@ -357,7 +357,9 @@ export default function PesticidePerPlant() {
           </CustomDropdown>
         </View>
       </View>
-      <CommentLog text="PesticidePerPlantComments" />
+      { userData?.Role !== "Externo" && userId && 
+        <CommentLog text="PesticidePerPlantComments" userId={userId} />
+      }
     </ScrollView>
   );
 }
