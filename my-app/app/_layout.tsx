@@ -81,6 +81,10 @@ export default function TabLayout() {
             options={{ headerTitle: "Calibración por Planta" }}
         />
         <Stack.Screen
+            name="components/management/ManageComments"
+            options={{ headerTitle: "Administración de comentarios" }}
+        />
+        <Stack.Screen
           name="components/management/ApproveRegistration"
           options={{ headerTitle: "Aprobaciones de Registro" }}
           />

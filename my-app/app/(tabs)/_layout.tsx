@@ -71,6 +71,17 @@ export default function TabLayout() {
           headerRight: () => <LoginButton />,
         }}
       />
+      <Tabs.Screen
+        name="manageCalculatorsComments"
+        options={{
+          title: "comments",
+          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
+          tabBarLabelStyle: {
+            fontSize: 15,
+          },
+          headerRight: () => <LoginButton />,
+        }}
+      />
     </Tabs>
   );
 }
