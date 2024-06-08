@@ -120,7 +120,7 @@ const ApproveModal = ({ showModal, handleOnDismiss, user }: propsType) => {
           <Divider style={{ marginVertical: 10 }} />
           <Button
             style={{ width: "40%", alignSelf: "center" }}
-            labelStyle={{ fontSize: 22, fontWeight: "bold" }}
+            labelStyle={{ fontSize: 22, fontWeight: "bold", paddingTop: 5 }}
             onPress={handleOnDismiss}
           >
             Cerrar
