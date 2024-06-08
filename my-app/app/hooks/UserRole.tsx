@@ -1,31 +1,31 @@
-import { useContext, useEffect, useState } from "react";
-import { UserContext } from "./context/UserContext";
+import { useEffect, useState } from "react";
+import useFetchUserData from "./FetchData";
 
 const useUserRole = () => {
-  const {userData, userId } = useContext(UserContext);
+  const { initializing, userData } = useFetchUserData();
   //Get User Roll
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRole, setuserRole] = useState<string | null>(null);
   useEffect(() => {
     if (userData) {
-      setUserRole(userData.Role);
+      setuserRole(userData.Role);
     } else {
-      setUserRole(null);
+      setuserRole(null);
     }
   }, [userData]);
 
-  // Show specific role functionalities (calculators are available by default)
+  // Show specific roll functionalities (calculators are available by default)
   const [profile, setProfile] = useState<string | null>(null);
   const [manageUsers, setManageUsers] = useState<string | null>(null);
   const [education, setEducation] = useState<string | null>(null);
   useEffect(() => {
-    if (userRole == "Administrador") {
+    if (userRole == "Admin") {
       setProfile("/profile");
       setEducation(null);
       setManageUsers("/manageUsers");
     } else if (userRole == "Docente") {
       setProfile("/profile");
       setEducation("/education");
-      setManageUsers(null);
+      setManageUsers("/manageUsers");
     } else if (userRole == "Estudiante") {
       setProfile("/profile");
       setEducation("/education");
@@ -35,13 +35,13 @@ const useUserRole = () => {
       setEducation(null);
       setManageUsers(null);
     } else {
-      // no role
+      // no roll
       setProfile(null);
       setEducation(null);
       setManageUsers(null);
     }
   }, [userRole]);
-  return { userRole, userId, profile, manageUsers, education };
+  return { userRole, initializing, profile, manageUsers, education };
 };
 
 export default useUserRole;
