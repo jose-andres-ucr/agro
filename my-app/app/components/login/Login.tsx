@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import auth from "@react-native-firebase/auth";
 import { router } from "expo-router";
+import Spinner from "../Spinner";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Text } from "react-native-paper";
+import { TextInput, Button, Text } from "react-native-paper";
 import {
   StyleSheet,
   View,
@@ -13,9 +14,6 @@ import {
 } from "react-native";
 import React from "react";
 import { theme } from "@/constants/theme";
-import firestore from "@react-native-firebase/firestore";
-import LoadingButton from "../LoadingButton";
-import { showToastError } from "@/constants/utils";
 
 const form = z.object({
   userName: z.string().email({ message: "El nombre de usuario no es válido" }),
@@ -29,7 +27,6 @@ export default function Login() {
   const {
     control,
     handleSubmit,
-    clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -44,134 +41,109 @@ export default function Login() {
     password: React.useRef<TextInputRn>(null),
   } as const;
 
-  const [credentialError, setCredentialError] = useState<string>("");
+  const [invalidCredential, setInvalidCredencial] = useState<boolean | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (errors || credentialError) {
-      if (errors.userName) {
-        showToastError("Usuario", errors.userName.message);
-      } else if (errors.password) {
-        showToastError("Contraseña", errors.password.message);
-      } else if (credentialError) {
-        showToastError("Inicio de sesión", credentialError);
-      }
-    }
-  }, [errors, credentialError]);
-
-  const clearErrorMessages = () => {
-    clearErrors();
-    setCredentialError("");
-  };
-
-  const handleSignUp = () => {
-    router.push("/components/signup/SignUp");
-    clearErrorMessages();
-  };
-
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = (data: FormData) => {
     Keyboard.dismiss();
-    clearErrorMessages();
     setLoading(true);
-    let previousUser = auth().currentUser;
-    try {
-      await auth().signInWithEmailAndPassword(data.userName, data.password);
-      let user = auth().currentUser;
-      if (user) {
-        let userData = (
-          await firestore().collection("Users").doc(user.uid).get()
-        ).data();
-        // Block login of users with unverified email or unapproved registration
-        if (!user?.emailVerified) {
-          setCredentialError("No ha verificado su correo electrónico");
-        } else if (userData?.Approved === 0) {
-          setCredentialError(
-            "Se está validando su registro. Intentelo más tarde."
-          );
-        } else if (userData?.Approved === -1) {
-          setCredentialError("Su registro no fue aprobado.");
-        } else if (previousUser?.email === user?.email) {
-          setCredentialError("Su sesión ya se encuentra activa");
+    auth()
+      .signInWithEmailAndPassword(data.userName, data.password)
+      .then(() => {
+        console.log("User login!");
+        setTimeout(() => {
+          setLoading(false);
+          router.back();
+          router.replace("/(tabs)/profile");
+        }, 2000);
+      })
+      .catch((error) => {
+        if (error.code == "auth/invalid-credential") {
+          console.log("rfryfgyrgf");
+          setInvalidCredencial(true);
         }
-      }
-    } catch (error: any) {
-      if (error.code == "auth/invalid-credential") {
-        setCredentialError("Su usuario o contraseña son incorrectos");
-      }
-    } finally {
-      setLoading(false);
-    }
+        console.log(error);
+        setLoading(false);
+      });
   };
 
   return (
-    <View style={theme.loginContainer}>
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            mode="outlined"
-            style={styles.inputField}
-            label="Usuario"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            returnKeyType="next"
-            onSubmitEditing={() => {
-              refs.password.current?.focus();
-            }}
-            blurOnSubmit={false}
+    <>
+      {loading === false ? (
+        <View style={theme.loginContainer}>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                mode="outlined"
+                style={styles.inputField}
+                label="Usuario"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  refs.password.current?.focus();
+                }}
+                blurOnSubmit={false}
+              />
+            )}
+            name="userName"
           />
-        )}
-        name="userName"
-      />
+          {errors.userName && (
+            <Text style={styles.error}>{errors.userName.message}</Text>
+          )}
 
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            ref={refs.password}
-            mode="outlined"
-            style={styles.inputField}
-            label="Contraseña"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            secureTextEntry
-            keyboardType="default"
-            autoCapitalize="none"
-            autoComplete="password"
-            returnKeyType="send"
-            onSubmitEditing={handleSubmit((form) => {
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                ref={refs.password}
+                mode="outlined"
+                style={styles.inputField}
+                label="Contraseña"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                secureTextEntry
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="password"
+                returnKeyType="send"
+                blurOnSubmit={false}
+              />
+            )}
+            name="password"
+          />
+          {errors.password && (
+            <Text style={styles.error}>{errors.password.message}</Text>
+          )}
+
+          {invalidCredential ? (
+            <Text style={styles.error}>
+              Su usuario o contraseña son incorrectos
+            </Text>
+          ) : null}
+
+          <Button
+            style={styles.button}
+            mode="contained"
+            onPress={handleSubmit((form) => {
               onSubmit(form);
             })}
-            blurOnSubmit={false}
-          />
-        )}
-        name="password"
-      />
-
-      <LoadingButton
-        label="Ingresar"
-        isLoading={loading}
-        handlePress={handleSubmit((form) => {
-          onSubmit(form);
-        })}
-      />
-      <View style={{ marginTop: 30, alignItems: "center" }}>
-        <Text style={{ marginTop: 5 }}>
-          ¿No posee una cuenta?{" "}
-          <Text
-            onPress={handleSignUp}
-            style={{ color: theme.colors.primary, fontWeight: "bold" }}
           >
-            regístrese aquí.
-          </Text>
-        </Text>
-      </View>
-    </View>
+            Ingresar
+          </Button>
+        </View>
+      ) : (
+        <Spinner />
+      )}
+    </>
   );
 }
 

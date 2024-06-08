@@ -1,17 +1,9 @@
 import { Pressable, View, Text } from "react-native";
-import auth from "@react-native-firebase/auth";
 
-export default function Logout() {
-  const handleSignOut = () => {
-    auth()
-      .signOut()
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+export default function Logout(props: { handler: () => void }) {
   return (
     <View>
-      <Pressable onPress={handleSignOut}>
+      <Pressable onPress={() => props.handler()}>
         <Text>Cerrar Sesión</Text>
       </Pressable>
     </View>
