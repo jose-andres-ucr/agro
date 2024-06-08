@@ -2,13 +2,12 @@ import { Button, Text, View, StyleSheet, ScrollView, TextInput, ActivityIndicato
 import React, { useEffect, useMemo, useState } from 'react';
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
-import useUserRole from '../../hooks/UserRole'; // Importa el hook para obtener el rol del usuario
 import { useFetchUserData } from "../../hooks/FetchData";
 import auth from "@react-native-firebase/auth";
 import * as DocumentPicker  from 'expo-document-picker';
 import storage from '@react-native-firebase/storage';
 import { Image } from 'react-native';
-import Video, {VideoRef} from 'react-native-video';
+import Video from 'react-native-video';
 import styles from '../styles';
 import Sound from 'react-native-sound';
 
