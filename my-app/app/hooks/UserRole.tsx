@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useFetchUserData } from "./FetchData";
 
 const useUserRole = () => {
-  const { userData } = useFetchUserData();
+  const {userData, userId } = useFetchUserData();
   //Get User Roll
   const [userRole, setUserRole] = useState<string | null>(null);
   useEffect(() => {
@@ -41,7 +41,7 @@ const useUserRole = () => {
       setManageUsers(null);
     }
   }, [userRole]);
-  return { userRole, profile, manageUsers, education };
+  return { userRole, userId, profile, manageUsers, education };
 };
 
 export default useUserRole;
