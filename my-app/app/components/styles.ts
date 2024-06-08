@@ -134,11 +134,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     textAlignVertical: "top",
   },
-  videoControls: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
 });
 
 export default styles;

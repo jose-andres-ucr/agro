@@ -395,7 +395,7 @@ export default function FixedVelocityMethod() {
         </View>
       </View>
       { userData?.Role !== "Externo" && userId && 
-        <CommentLog text="VelocityComments" userId={userId} />
+        <CommentLog text="VelocityComments" userId={userId} role={userData?.Role} />
       }
       
     </ScrollView>
