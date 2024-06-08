@@ -8,11 +8,42 @@ import useUserRole from "../hooks/UserRole";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
 import getDrawerStyles from '@/constants/styles/DrawerStyles';
+import { router, usePathname } from "expo-router";
+import { UserContext } from "../hooks/context/UserContext";
+import { useContext, useEffect } from "react";
+import auth from "@react-native-firebase/auth";
 
 export default function TabLayout() {
   const { userRole, profile, manageRegister, manageComments, manageEducation, education  } = useUserRole();
   const { profileIcon, herbicideIcon, educationIcon, fungicideIcon, manageMaterialIcon, manageCommentsIcon, manageRegisterIcon } = DrawerIcons();
   const styles = getDrawerStyles();
+  const currentRoute = usePathname();
+  const { userAuth, userData } = useContext(UserContext);
+
+  useEffect(() => {
+    console.log(userData)
+    if (userAuth && userData) {
+      if (currentRoute === "/components/login/Login") {
+        if (userAuth.emailVerified && userData.Approved === 1) {
+          console.log("Welcome User!");
+          router.replace("/");
+        } else {
+          // Block login of users with unverified email or unapproved registration
+          console.log("Unverified user email or unapproved registration");
+          auth()
+            .signOut()
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+      }
+    } else {
+      if (currentRoute === "/profile") {
+        console.log("User signed out");
+        router.replace("/");
+      }
+    }
+  }, [userData]);
 
   const HeaderButton = () => {
     if (userRole != null) {
