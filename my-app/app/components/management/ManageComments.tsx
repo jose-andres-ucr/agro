@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Dialog, Divider, Portal, Button } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
-import getCommentsStyles from "@/constants/CommentsStyles"
+import getManageCommentsStyles from "@/constants/ManageCommentsStyles"
 
 type Comment = {
   id: string; // Agrega la propiedad id
@@ -18,7 +18,9 @@ type Comment = {
 export default function ManageComments() {
   const { collection, calculator } = useLocalSearchParams();
   const [comments, setComments] = useState([] as Comment[]);
-  const styles = getCommentsStyles();
+  const [visible, setVisible] = useState(false);
+  const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
+  const styles = getManageCommentsStyles();
 
   useEffect(() => {
     const subscriber = firestore().collection(collection.toString()).onSnapshot((res) => {
@@ -45,6 +47,7 @@ export default function ManageComments() {
     } catch (error) {
       console.error("Error eliminando el comentario: ", error);
     }
+    hideDialog();
   };
 
   const hideComment = async (comment: Comment) => {
@@ -75,6 +78,16 @@ export default function ManageComments() {
     } catch (error) {
       console.error('Error actualizando el valor Hide: ', error);
     }
+  };
+
+  const showDeleteDialog = (comment: Comment) => {
+    setSelectedComment(comment);
+    setVisible(true);
+  };
+
+  const hideDialog = () => {
+    setVisible(false);
+    setSelectedComment(null);
   };
 
   return (
@@ -118,7 +131,7 @@ export default function ManageComments() {
                           <Text style={styles.buttonText}>Ocultar</Text>
                         </Button>
                       )}
-                      <Button style={styles.deleteButton} onPress={() => deleteComment(comment)}>
+                      <Button style={styles.deleteButton} onPress={() => showDeleteDialog(comment)}>
                         <Text style={styles.buttonText}>Eliminar</Text>
                       </Button>
                     </View>
@@ -129,6 +142,28 @@ export default function ManageComments() {
           )}
         </View>
       </View>
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <Dialog.Title>Eliminar Comentario</Dialog.Title>
+          <Dialog.Content>
+            <Text>¿Estás seguro de que deseas eliminar este comentario?</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button style={styles.button} onPress={hideDialog}>
+            <Text style={styles.buttonText}>Cancelar</Text>
+            </Button>
+            <Button style={styles.deleteButton}
+              onPress={() => {
+                if (selectedComment) {
+                  deleteComment(selectedComment);
+                }
+              }}
+            >
+              <Text style={styles.buttonText}>Eliminar</Text>
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </ScrollView>
   );
 }

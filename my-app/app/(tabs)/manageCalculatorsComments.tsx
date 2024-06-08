@@ -17,7 +17,7 @@ export default function ManageCalculatorsComments() {
                 })
             }
         >
-            <Text style={styles.title}>Calculadora por Área</Text>
+          <Text style={styles.title}>Calculadora por Área</Text>
         </Pressable>
     </View>
   );

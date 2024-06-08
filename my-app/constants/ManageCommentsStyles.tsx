@@ -3,7 +3,7 @@ import { useTheme } from "react-native-paper";
 import { useMemo } from "react";
 
 
-const getCommentsStyles = (theme: any) => StyleSheet.create({
+const getManageCommentsStyles = (theme: any) => StyleSheet.create({
   container: {
     justifyContent: 'center',
     paddingHorizontal: 10,
@@ -15,12 +15,6 @@ const getCommentsStyles = (theme: any) => StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: "center",
-  },
-  separator: {
-    marginVertical: 10,
-    height: 1,
-    width: '100%',
-    backgroundColor: 'steelblue',
   },
   commentBox: {
     marginBottom: 10,
@@ -48,27 +42,6 @@ const getCommentsStyles = (theme: any) => StyleSheet.create({
     marginTop: 10,
     fontStyle: 'italic',
     color: 'green',
-  },
-  input: {
-    width: '100%',
-    height: 40,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-  },
-  inputComment: {
-    width: '100%',
-    height: 200,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    textAlignVertical: "top"
   },
   response: {
     fontSize: 18,
@@ -108,7 +81,7 @@ const getCommentsStyles = (theme: any) => StyleSheet.create({
   }, 
 });
 
-export default function useCommentsStyles() {
+export default function useManageCommentsStyles() {
     const theme = useTheme();
-    return useMemo(() => getCommentsStyles(theme), [theme]);
+    return useMemo(() => getManageCommentsStyles(theme), [theme]);
 }
