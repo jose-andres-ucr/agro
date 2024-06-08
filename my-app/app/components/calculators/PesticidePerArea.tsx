@@ -401,7 +401,9 @@ export default function PesticidePerArea() {
           </CustomDropdown> 
         </View>
       </View>
-      <CommentLog text="PesticidePerAreaComments" />
+      { userData?.Role !== "Externo" && userId && 
+        <CommentLog text="PesticidePerAreaComments" userId={userId} />
+      }
     </ScrollView>
   );
 }
