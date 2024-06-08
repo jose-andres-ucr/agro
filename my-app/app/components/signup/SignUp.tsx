@@ -186,6 +186,7 @@ export default function SignUp() {
             SecondLastName: data.secondLastName,
             Role: data.userRole,
             Approved: data.userRole === "Estudiante" ? 1 : 0,
+            Verified: 0,
           });
         console.log("Data was stored successfully");
 
