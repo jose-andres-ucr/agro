@@ -1,304 +1,363 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput as TextInputRn } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
+import { TextInput, Button, Text, Divider} from "react-native-paper";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { showToastError } from "@/constants/utils";
+import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
+import { positiveNumber } from "@/constants/schemas";
+import useUnit from "@/app/hooks/useUnit";
+import { Unit, convertVolume, volumeUnits } from "@/constants/units";
+import { CustomDropdown } from "./CustomDropdown";
+import { useFetchUserData } from "@/app/hooks/FetchData";
+import { CalculatorStateManager } from "./CalculatorStateManager";
+import { Field } from "@/constants/types";
 
 
-const form = z.object({
-  cantidadPlantas: z.number(),
-  volumenInicial: z.number(),
-  volumenFinal: z.number(),
-  cantidadPlantasTotal: z.number(),
+const schema = z.object({
+  plantCuantity: positiveNumber,
+  initialVolume: positiveNumber,
+  finalVolume: positiveNumber,
+  plantCuantityTotal: positiveNumber,
 });
 
-type FormData = z.infer<typeof form>;
+type SchemaKeys = keyof z.infer<typeof schema>;
+
+const getFieldNames = (schema: z.ZodObject<any>) => {
+  return Object.keys(schema.shape) as SchemaKeys[];
+};
+
+const fieldNames = getFieldNames(schema);
+
+type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
+  const styles = useGlobalCalculatorStyles();
+  const {userId, userData} = useFetchUserData();
+
+  const { value: initialVolume, unit: initialVolumeUnit, handleUnitChange: initialVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const { value: finalVolume, unit: finalVolumeUnit, handleUnitChange: finalVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const { value: result, unit: resultUnit, handleUnitChange: resultHandler } = useUnit("L", 0, convertVolume);
+
+  const [displayResult, setDisplayResult] = useState(result);  
+
+  useEffect(() => {
+    setValue("initialVolume", initialVolume);
+  }, [initialVolume]);
+
+  useEffect(() => {
+    setValue("finalVolume", finalVolume);
+  }, [finalVolume]);
+
+  useEffect(() => {
+    setDisplayResult(result);
+  }, [result]);
+
   const {
     control,
     handleSubmit,
+    getValues,
+    setValue,
+    reset,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(form),
+  } = useForm<FormData>({    
+    resolver: zodResolver(schema),
   });
 
-  const [resultado, setResultado] = useState<number | null>(null);
+  useEffect(() => {
+    if (errors) {
+      if (errors.plantCuantity) {
+        showToastError("Cantidad de plantas aplicadas", errors.plantCuantity.message);
+      } else if (errors.initialVolume) {
+        showToastError("Volumen inicial", errors.initialVolume.message);
+      } else if (errors.finalVolume) {
+        showToastError("Volumen final", errors.finalVolume.message);
+      } else if (errors.plantCuantityTotal) {
+        showToastError("Plantas por aplicar", errors.plantCuantityTotal.message);
+      }
+    }
+  }, [errors]);
 
   const refs = {
-    cantidadPlantasRef: React.useRef<TextInputRn>(null),
-    volumenInicialRef: React.useRef<TextInputRn>(null),
-    volumenFinalRef: React.useRef<TextInputRn>(null),
-    cantidadTotal: React.useRef<TextInputRn>(null),
+    plantCuantityRef: React.useRef<TextInputRn>(null),
+    initialVolumeRef: React.useRef<TextInputRn>(null),
+    finalVolumeRef: React.useRef<TextInputRn>(null),
+    cuantityTotal: React.useRef<TextInputRn>(null),
   } as const;
 
   useEffect(() => {
-    refs.cantidadPlantasRef.current?.focus();
+    refs.plantCuantityRef.current?.focus();
   }, []);
 
-  const onSubmit = (data: FormData) => {
-    const {
-      cantidadPlantas,
-      volumenInicial,
-      volumenFinal,
-      cantidadPlantasTotal,
-    } = data;
-    const result =
-    ((volumenInicial - volumenFinal) * cantidadPlantasTotal) /
-    cantidadPlantas;
-    const resultadoRedondeado = result.toFixed(3);
-    setResultado(parseFloat(resultadoRedondeado));
-  
+  const handleInitialVolumeUnitChange = (value: string) => {
+    initialVolumeHandler(value, getValues("initialVolume"));
   };
+
+  const handleFinalVolumeUnitChange = (value: string) => {
+    finalVolumeHandler(value, getValues("finalVolume"));
+  };
+
+  const handleResultUnitChange = (value: string) => {
+    resultHandler(value, displayResult);
+  };
+
+  const onSubmit = (data: FormData) => {
+    let {
+      plantCuantity,
+      initialVolume,
+      finalVolume,
+      plantCuantityTotal,
+    } = data;
+
+    if (initialVolumeUnit !== "L") {
+      initialVolume = convertVolume(initialVolume, initialVolumeUnit, "L");
+    }
+
+    if (finalVolumeUnit !== "L") {
+      finalVolume = convertVolume(finalVolume, finalVolumeUnit, "L");
+    }
+
+    let result = ((initialVolume - finalVolume) * plantCuantityTotal) / plantCuantity;
+
+    if (resultUnit !== "L") {
+      result = convertVolume(result, "L", resultUnit);
+    }
+
+    setDisplayResult(result);    
+  };
+
+  const onLoadData = (data: Field[]) => {
+    if (!data) {
+      return;
+    }
+
+    reset();
+    let matchingData: Field | undefined = undefined;
+    fieldNames.forEach(field => {
+      matchingData = data.find(d => d.name === field);
+      if (matchingData) {
+        let fieldName = matchingData.name;
+        switch (fieldName) {
+          case "initialVolume":
+            let loadedInitialVolumeUnit = matchingData.unit as Unit;
+            initialVolumeHandler(loadedInitialVolumeUnit.value, 0);
+            break;
+
+          case "finalVolume":
+            let loadedFinalVolumeUnit = matchingData.unit as Unit;
+            finalVolumeHandler(loadedFinalVolumeUnit.value, 0);
+            break;          
+        }
+        setValue(field, matchingData.value);
+      }      
+    });
+    matchingData = data.find(d => d.name === "result");
+    if (matchingData) {
+      let loadedResultUnit = matchingData.unit as Unit;
+      resultHandler(loadedResultUnit.value, 0);
+      setDisplayResult(matchingData.value);
+    }
+  }
+
+  const onSaveData = () : Field[] => {
+    return [
+      {
+        name: "plantCuantity",
+        value: getValues("plantCuantity"),
+        unit: {
+          label: "unit",
+          value: "unit",
+        }
+      },
+      {
+        name: "initialVolume",
+        value: getValues("initialVolume"),
+        unit: {
+          label: initialVolumeUnit,
+          value: initialVolumeUnit,
+        },
+      },
+      {
+        name: "finalVolume",
+        value: getValues("finalVolume"),
+        unit: {
+          label: finalVolumeUnit,
+          value: finalVolumeUnit,
+        },
+      },
+      {
+        name: "plantCuantityTotal",
+        value: getValues("plantCuantityTotal"),
+        unit: {
+          label: "unit",
+          value: "unit",
+        }
+      },
+      {
+        name: "result",
+        value: displayResult,
+        unit: {
+          label: resultUnit,
+          value: resultUnit,
+        },
+      },
+    ];
+  }
 
   return (
     <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      ref={(scrollView) => {
-        scrollView?.scrollToEnd({ animated: true });
-      }}
+    contentContainerStyle={styles.scrollView}
+    ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.container}>
-        <Text style={styles.text}>
-          Cuente un número de plantas y aplique allí agua a la velocidad usual.{" "}
-        </Text>
-        <View style={styles.inputGroup}>
-          <Text>Cantidad de plantas {"\n"}aplicadas:</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.cantidadPlantasRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                autoFocus
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.volumenInicialRef.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="cantidadPlantas"
-          />
-        </View>
+      { userData?.Role !== "Externo" && userId && <>
+        <Divider></Divider>
+          <CalculatorStateManager calculator="PesticidePerPlant" userId={userId} onLoadData={onLoadData} onSaveData={onSaveData}/>
+        <Divider></Divider>
+      </>
+      }
+      <View style={styles.mainContainer}>        
+        <Text style={ styles.body }>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
+        
+        <View style={styles.formContainer}>
+          <View style={styles.inputGroup}>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.plantCuantityRef}
+                  label="Cantidad de plantas aplicadas"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value ? value.toString() : ""}                  
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  autoFocus
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.initialVolumeRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="plantCuantity"
+            />
+          </View>
 
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.cantidadPlantas && errors.cantidadPlantas.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.cantidadPlantas && errors.cantidadPlantas.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.cantidadPlantas && errors.cantidadPlantas.message}
-          </Text>
-        </View>
+          <View style={styles.inputGroup}>          
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.initialVolumeRef}
+                  label="Volumen inicial"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value ? value.toString() : ""}                  
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.finalVolumeRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="initialVolume"
+            />
+            <CustomDropdown
+            data={volumeUnits}
+            isModal={false}
+            value={initialVolumeUnit}
+            onValueChange={handleInitialVolumeUnitChange}>              
+            </CustomDropdown>
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text>Volumen inicial (litros):</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.volumenInicialRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.volumenFinalRef.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="volumenInicial"
-          />
-        </View>
-
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.volumenInicial && errors.volumenInicial.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.volumenInicial && errors.volumenInicial.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.volumenInicial && errors.volumenInicial.message}
-          </Text>
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text>Volumen final (litros):</Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.volumenFinalRef}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
-                value={value?.toString()}
-                keyboardType="numeric"
-                autoCapitalize="none"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  refs.cantidadTotal.current?.focus();
-                }}
-                blurOnSubmit={false}
-              />
-            )}
-            name="volumenFinal"
-          />
-        </View>
-
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.volumenFinal && errors.volumenFinal.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.volumenFinal && errors.volumenFinal.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.volumenFinal && errors.volumenFinal.message}
-          </Text>
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text>
-            Cantidad de plantas totales{"\n"}en la parcela por aplicar:
-          </Text>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                ref={refs.cantidadTotal}
-                mode="outlined"
-                style={styles.inputField}
-                onBlur={onBlur}
-                onChangeText={(text) => {
-                  if (text !== "" && !isNaN(parseInt(text))) {
-                    onChange(parseInt(text));
-                  } else {
-                    onChange(null);
-                  }
-                }}
-                value={value?.toString()}
-                returnKeyType="next"
-                keyboardType="numeric"
-                onSubmitEditing={handleSubmit((form) => {
-                  onSubmit(form);
-                })}
-                blurOnSubmit={false}
-              />
-            )}
-            name="cantidadPlantasTotal"
-          />
-        </View>
-
-        <View style={styles.containerError}>
-          <Text style={styles.error}>
-            {errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message === "Required"
-              ? "Este campo es obligatorio"
-              : errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message === "Expected number, received null"
-              ? "El valor debe ser un número"
-              : errors.cantidadPlantasTotal && errors.cantidadPlantasTotal.message}
-          </Text>
-        </View>
+          <View style={styles.inputGroup}>          
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.finalVolumeRef}
+                  label="Volumen final"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value ? value.toString() : ""}                  
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    refs.cuantityTotal.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="finalVolume"
+            />
+            <CustomDropdown
+            data={volumeUnits}
+            isModal={false}
+            value={finalVolumeUnit}
+            onValueChange={handleFinalVolumeUnitChange}>              
+            </CustomDropdown>
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  ref={refs.cuantityTotal}
+                  label="Cantidad de plantas por aplicar"
+                  mode="outlined"
+                  style={styles.inputField}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value ? value.toString() : ""}
+                  keyboardType="numeric"
+                  autoCapitalize="none"
+                  returnKeyType="send"
+                  onSubmitEditing={handleSubmit(onSubmit)}
+                  blurOnSubmit={false}
+                />
+              )}
+              name="plantCuantityTotal"
+            />            
+          </View>
+        </View>        
 
         <Button
           style={styles.button}
           mode="contained"
-          onPress={handleSubmit((form) => {
-            onSubmit(form);
-          })}
+          onPress={handleSubmit(onSubmit)}
         >
           Calcular
         </Button>
 
         <View style={styles.resultGroup}>
-          <Text style={styles.text}>Resultado: </Text>
           <TextInput
             style={styles.resultField}
-            value={resultado?.toString()}
+            value={displayResult?.toFixed(3)}
             editable={false}
           />
-          <Text style={styles.text}> litros.</Text>
+          <CustomDropdown
+          data={volumeUnits}
+          isModal={false}
+          value={resultUnit}
+          onValueChange={handleResultUnitChange}>              
+          </CustomDropdown>
         </View>
       </View>
       <CommentLog text="PesticidePerPlantComments" />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "flex-start",
-    alignContent: "center",
-    padding: 28,
-  },
-  text: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  inputField: {
-    marginVertical: 4,
-    width: "30%",
-    textAlign: "center",
-  },
-  inputGroup: {
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  button: {
-    marginVertical: 8,
-    alignSelf: "flex-end",
-  },
-  resultGroup: {
-    justifyContent: "flex-end",
-    alignItems: "center",
-    padding: 8,
-    flexDirection: "row",
-  },
-  resultField: {
-    width: "50%",
-    textAlign: "center",
-  },
-  containerError: {
-    flex: 1,
-    justifyContent: "flex-end",
-    flexDirection: "row",
-    padding: 8,   
-  },
-  error: {
-    color: "red",
-  },
-
-});

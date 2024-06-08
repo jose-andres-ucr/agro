@@ -1,8 +1,17 @@
 import { ViewStyle } from "react-native";
-import { MD2LightTheme } from "react-native-paper";
+import { MD3LightTheme } from "react-native-paper";
 
 export const theme = {
-  ...MD2LightTheme,
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: "#00c0f3",
+    secondary: "#008641",
+    defaultBackgroundColor: "#FFFFFF",
+    inputBackgroundColor: "#6dc067",
+    inputBorderColor: "#7C757E",
+    inputColor: "black"
+  }, 
   screenContainer: {
     flex: 1,
     justifyContent: "flex-start",
@@ -17,10 +26,4 @@ export const theme = {
     padding: 28,
     backgroundColor: "#FFF",
   } as ViewStyle,
-  colors: {
-    ...MD2LightTheme.colors,
-    primary: "#00c0f3",
-    secondary: "#008641",
-    complementaryGreen: "#DD8641",
-  },
 };
