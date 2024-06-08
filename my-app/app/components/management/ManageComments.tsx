@@ -1,12 +1,18 @@
-import { Text, View, ScrollView } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity, Linking  } from "react-native";
 import React, { useEffect, useState } from 'react';
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Dialog, Divider, Portal, Button } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
+import Sound from 'react-native-sound';
+import * as DocumentPicker  from 'expo-document-picker';
+import storage from '@react-native-firebase/storage';
+import { Image } from 'react-native';
+import Video from 'react-native-video';
 import getManageCommentsStyles from "@/constants/ManageCommentsStyles"
 
 type Comment = {
-  id: string; // Agrega la propiedad id
+  id?: string; // Agrega la propiedad id
+  Attachment: string[];
   Name: string;
   DateTime: FirebaseFirestoreTypes.Timestamp;
   Comment: string;
@@ -20,6 +26,10 @@ export default function ManageComments() {
   const [comments, setComments] = useState([] as Comment[]);
   const [visible, setVisible] = useState(false);
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
+  const [isPaused] = useState(true);
+  const [audio, setAudio] = useState<Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [fileUris, setFileUris] = useState<string[]>([]);
   const styles = getManageCommentsStyles();
 
   useEffect(() => {
@@ -90,6 +100,37 @@ export default function ManageComments() {
     setSelectedComment(null);
   };
 
+  const playAudio = (uri: string) => {
+    if (audio) {
+      audio.stop(() => {
+        audio.release();
+      });
+    }
+  
+    const sound = new Sound(uri, Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('error al cargar sonido', error);
+        return;
+      }
+      setAudio(sound);
+      sound.play(() => {
+        sound.release();
+        setIsPlaying(false);
+      });
+    });
+    setIsPlaying(true);
+  };
+  
+  const stopAudio = () => {
+    if (audio) {
+      audio.stop(() => {
+        audio.release();
+        setAudio(null);
+      });
+      setIsPlaying(false);
+    }
+  };
+
   return (
     <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
@@ -114,6 +155,54 @@ export default function ManageComments() {
                         <Text style={styles.commentText}>Oculto para usuarios: no</Text>
                       )}
                     </View>
+
+                      {Array.isArray(comment.Attachment) && comment.Attachment.map((attachment, attachmentIndex) => (
+                        <View key={attachmentIndex} style={{ maxWidth: '100%', marginBottom: 10 }}>
+                          {typeof attachment === 'string' && attachment.startsWith('http') ? (
+                            attachment.includes('.jpg') ? (
+                              <Image 
+                                source={{ uri: attachment }} 
+                                style={{ width: '100%', aspectRatio: 1, marginBottom: 10 }} 
+                                resizeMode="contain"
+                              />
+                            ) : attachment.includes('.mp4') ? (
+                              <View style={{ maxWidth: '100%' }}>
+                                <Video 
+                                  source={{ uri: attachment }} 
+                                  style={{ width: '100%', aspectRatio: 16/9, marginBottom: 10 }} 
+                                  paused={isPaused}
+                                  controls={true} 
+                                />
+                                <View style={styles.videoControls}></View>
+                              </View>
+                            ) : attachment.includes('.mp3') || attachment.includes('.wav') ? (
+                              <View>
+                                {isPlaying ? (
+                                  <TouchableOpacity onPress={stopAudio} style={{ backgroundColor: 'red', padding: 10, borderRadius: 5 }}>
+                                    <Text style={{ color: 'white', textAlign: 'center' }}>Stop</Text>
+                                  </TouchableOpacity>
+                                ) : (
+                                  <TouchableOpacity onPress={() => playAudio(attachment)} style={{ backgroundColor: 'blue', padding: 10, borderRadius: 5 }}>
+                                    <Text style={{ color: 'white', textAlign: 'center', textDecorationLine: 'underline' }}>Play</Text>
+                                  </TouchableOpacity>
+                                )}
+                              </View>
+
+                            ) : attachment.includes('.pdf') ? (
+                              <TouchableOpacity onPress={() => Linking.openURL(attachment)}>
+                                <View style={styles.horizontalLine}></View>
+                                <Text style={styles.selectedPostDescription}> Adjuntos:</Text>
+                                <Text style={[styles.postAttachment, { color: 'blue', textDecorationLine: 'underline' }]}>{attachment}</Text>
+                              </TouchableOpacity>
+                            ) : (
+                              <Text style={styles.postAttachment}>Attachment: {attachment}</Text>
+                            )
+                          ) : (
+                            <Text style={styles.postAttachment}>Attachment: {attachment}</Text>
+                          )}
+                        </View>                 
+                      ))}
+
                     {comment.Response ? (
                       <View style={styles.commentContainer}>
                         <Text style={styles.response}>Respuestas</Text>

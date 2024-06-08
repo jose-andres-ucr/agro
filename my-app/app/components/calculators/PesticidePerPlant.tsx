@@ -358,7 +358,7 @@ export default function PesticidePerPlant() {
         </View>
       </View>
       { userData?.Role !== "Externo" && userId && 
-        <CommentLog text="PesticidePerPlantComments" userId={userId} />
+        <CommentLog text="PesticidePerPlantComments" userId={userId}  role={userData?.Role}/>
       }
     </ScrollView>
   );

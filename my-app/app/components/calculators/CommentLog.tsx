@@ -1,15 +1,16 @@
-import { Button, Text, View, StyleSheet, ScrollView, TextInput, ActivityIndicator, TouchableOpacity, Linking } from "react-native";
-import React, { useEffect, useMemo, useState } from 'react';
+import { Text, View, ScrollView, TextInput, ActivityIndicator, TouchableOpacity, Linking } from "react-native";
+import { Button } from "react-native-paper";
+import React, { useEffect, useState } from 'react';
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
-import { useFetchUserData } from "../../hooks/FetchData";
 import auth from "@react-native-firebase/auth";
 import * as DocumentPicker  from 'expo-document-picker';
 import storage from '@react-native-firebase/storage';
 import { Image } from 'react-native';
 import Video from 'react-native-video';
-import styles from '../styles';
 import Sound from 'react-native-sound';
+import getCommentLogStyles from '@/constants/CommentLogStyles' ;
+import { useFetchUserData } from "@/app/hooks/FetchData";
 
 
 type Comment = {
@@ -20,9 +21,11 @@ type Comment = {
   Comment: string;
   UserId: string; // incluir el UserId en el tipo Comment
   Response?: string; // Agrega el campo de respuesta
+  Hide?: boolean;
 }
 
-export const CommentLog = (props: { text: string, userId: string }) => {
+export const CommentLog = (props: {  text: string, userId: string, role: string}) => {
+  const stylesLocal = getCommentLogStyles();
   const [comments, setComments] = useState([] as Comment[]);
   const [showResponse, setShowResponse] = useState<number | null>(null); // Estado para controlar la visibilidad de la respuesta
   const [commentPosted, setCommentPosted] = useState(false); // Estado para controlar la visibilidad del mensaje
@@ -36,20 +39,40 @@ export const CommentLog = (props: { text: string, userId: string }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   
   useEffect(() => {
-    const subscriber = firestore()
-      .collection(props.text)
-      .orderBy('DateTime', 'desc')
-      .onSnapshot((res) => {
-        const comments = [] as Comment[];
-        res.forEach((documentSnapshot) => {
-          const data = documentSnapshot.data() as Comment;
-          const id = documentSnapshot.id;
-          comments.push({...data, id});
+    const commentsTemp = [] as Comment[];
+    if(props.role === "Estudiante") {
+      const subscriber = firestore()
+        .collection(props.text)
+        .where('UserId', "==" , props.userId)
+        .where('Hide', "==" , false)
+        .orderBy('DateTime', 'desc')
+        .onSnapshot((res) => {
+          res?.forEach((documentSnapshot) => {
+            console.log("document: ",documentSnapshot)
+            const data = documentSnapshot.data() as Comment;
+            const id = documentSnapshot.id;
+            commentsTemp.push({...data, id});
+          });
         });
-        setComments(comments);
-      });
-
-    return () => subscriber();
+      setComments(commentsTemp);
+      console.log(commentsTemp)
+      return () => subscriber();
+    
+    } else {
+      const subscriber = firestore()
+        .collection(props.text)
+        .orderBy('DateTime', 'desc')
+        .onSnapshot((res) => {
+          res?.forEach((documentSnapshot) => {
+            const data = documentSnapshot.data() as Comment;
+            const id = documentSnapshot.id;
+            comments.push({...data, id});
+          });
+          setComments(comments);
+        });
+      
+      return () => subscriber();
+    }    
   }, []);
 
   const pickFile = async () => {
@@ -92,11 +115,15 @@ export const CommentLog = (props: { text: string, userId: string }) => {
     setIsSubmitting(true);
     try {
       const comment: Comment = {
+        id: "",
         Attachment: [],
         Name: data.Name,
         DateTime: firestore.Timestamp.fromDate(new Date()),
         Comment: data.Comment,
-        UserId: props.userId }
+        UserId: props.userId, 
+        Response: "",
+        Hide: false,
+      }
 
       const postRef = await firestore().collection(props.text).add(comment);
       reset();
@@ -166,30 +193,26 @@ export const CommentLog = (props: { text: string, userId: string }) => {
     }
   };
 
-  const filteredComments = useMemo(() => (comments
-    .slice()
-    .sort((a, b) => b.DateTime.toMillis() - a.DateTime.toMillis())), [comments]);
-
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
       ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.container}>
+      <View style={stylesLocal.container}>
         <View style={{ alignItems: 'flex-start' }}>
         </View>
         <View>
-          <View style={styles.separator} />
+          <View style={stylesLocal.separator} />
           {userAuth && userData && (
             <>
-              <Text style={styles.title}>Nuevo comentario</Text>
+              <Text style={stylesLocal.title}>Nuevo comentario</Text>
               <View>
                 <Controller
                   control={control}
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
                       placeholder="Nombre"
-                      style={styles.input}
+                      style={stylesLocal.input}
                       onBlur={onBlur}
                       onChangeText={onChange}
                       value={auth().currentUser?.displayName || ""}
@@ -205,7 +228,7 @@ export const CommentLog = (props: { text: string, userId: string }) => {
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
                       placeholder="Comentario"
-                      style={styles.inputComment}
+                      style={stylesLocal.inputComment}
                       onBlur={onBlur}
                       onChangeText={onChange}
                       value={value}
@@ -215,22 +238,26 @@ export const CommentLog = (props: { text: string, userId: string }) => {
                   )}
                   name="Comment"
                 />
-                <Button title="Elegir Archivo" onPress={pickFile} />
+                <Button style={stylesLocal.button} onPress={pickFile}>
+                  <Text style={stylesLocal.buttonText}>Elegir Archivo</Text>
+                </Button>
                 {fileUris && <Text>Archivo seleccionado: {fileUris.join(', ')}</Text>}
                 {loading ? (
                   <ActivityIndicator size="large" color="#0000ff" />
                 ) : (
-                  <Button onPress={handleSubmit(addComment)} title="Enviar" />
+                  <Button style={stylesLocal.button} onPress={handleSubmit(addComment)}>
+                    <Text style={stylesLocal.buttonText}>Enviar</Text>
+                  </Button>
                 )}
                 {isSubmitting && <ActivityIndicator size="large" color="steelblue" />}
               </View>
             </>
           )}
-          <Text style={styles.title}>Comentarios</Text>
-          {filteredComments.length === 0 ? (
+          <Text style={stylesLocal.title}>Comentarios</Text>
+          {comments.length === 0 ? (
             <Text style={stylesLocal.commentText}>Sin comentarios</Text>
           ) : (
-            filteredComments.map((comment, index) => (
+            comments.map((comment, index) => (
               <View id ={comment.id}>
                 {comment.Name && comment.DateTime && comment.Comment ? (
                   <View style={stylesLocal.commentBox} id={comment.id}>
@@ -255,7 +282,7 @@ export const CommentLog = (props: { text: string, userId: string }) => {
                                   paused={isPaused}
                                   controls={true} 
                                 />
-                                <View style={styles.videoControls}></View>
+                                <View style={stylesLocal.videoControls}></View>
                               </View>
                             ) : attachment.includes('.mp3') || attachment.includes('.wav') ? (
                               <View>
@@ -269,31 +296,32 @@ export const CommentLog = (props: { text: string, userId: string }) => {
                                   </TouchableOpacity>
                                 )}
                               </View>
-
                             ) : attachment.includes('.pdf') ? (
                               <TouchableOpacity onPress={() => Linking.openURL(attachment)}>
-                                <View style={styles.horizontalLine}></View>
-                                <Text style={styles.selectedPostDescription}> Adjuntos:</Text>
-                                <Text style={[styles.postAttachment, { color: 'blue', textDecorationLine: 'underline' }]}>{attachment}</Text>
+                                <View style={stylesLocal.horizontalLine}></View>
+                                <Text style={stylesLocal.selectedPostDescription}> Adjuntos:</Text>
+                                <Text style={[stylesLocal.postAttachment, { color: 'blue', textDecorationLine: 'underline' }]}>{attachment}</Text>
                               </TouchableOpacity>
                             ) : (
-                              <Text style={styles.postAttachment}>Attachment: {attachment}</Text>
+                              <Text style={stylesLocal.postAttachment}>Attachment: {attachment}</Text>
                             )
                           ) : (
-                            <Text style={styles.postAttachment}>Attachment: {attachment}</Text>
+                            <Text style={stylesLocal.postAttachment}>Attachment: {attachment}</Text>
                           )}
                         </View>                 
                       ))}
                     </View>
                     {comment.Response ? (
                       <View style={stylesLocal.commentContainer}>
-                        <Text style={stylesLocal.title}>Respuestas</Text>
+                        <Text style={stylesLocal.response}>Respuesta</Text>
                         <Text style={stylesLocal.commentResponse}>Respuesta: {comment.Response}</Text>
                       </View>
                     ) : (
                       <View style={stylesLocal.commentContainer}>
                         <Text style={stylesLocal.commentResponse}>
-                          <Button onPress={() => setShowResponse(index)} title="Responder" />
+                        <Button style={stylesLocal.button} onPress={() => setShowResponse(index)}>
+                          <Text style={stylesLocal.buttonText}>Responder</Text>
+                        </Button>
                         </Text>
                         {showResponse === index && (
                           <View>
@@ -302,7 +330,7 @@ export const CommentLog = (props: { text: string, userId: string }) => {
                               render={({ field: { onChange, onBlur, value } }) => (
                                 <TextInput
                                   placeholder="Respuesta"
-                                  style={styles.input}
+                                  style={stylesLocal.input}
                                   onBlur={onBlur}
                                   onChangeText={onChange}
                                   value={value}
@@ -311,13 +339,15 @@ export const CommentLog = (props: { text: string, userId: string }) => {
                               )}
                               name="Response"
                             />
-                            <Button onPress={handleSubmit((data) => {
+                            <Button style={stylesLocal.button} onPress={handleSubmit((data) => {
                               if (data.Response) {
                                 addResponse({ Response: data.Response }, comment?.id)
                               } else {
                                 console.error("El valor de Response está indefinido.");
                               }
-                            })} title="Enviar respuesta" />
+                            })}>
+                              <Text style={stylesLocal.buttonText}>Enviar respuesta</Text>
+                            </Button>
                           </View>
                         )}
                       </View>
@@ -332,67 +362,3 @@ export const CommentLog = (props: { text: string, userId: string }) => {
     </ScrollView>
   );
 }
-
-const stylesLocal = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: 'steelblue',
-  },
-  separator: {
-    marginVertical: 10,
-    height: 1,
-    width: '100%',
-    backgroundColor: 'steelblue',
-  },
-  commentBox: {
-    marginBottom: 10,
-    borderWidth: 3,
-    borderRadius: 15,
-    borderColor: 'lightsteelblue',
-    alignSelf: 'stretch',
-  },
-  commentContainer: {
-    padding: 10,
-  },
-  commentName: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  commentDateTime: {
-    fontStyle: 'italic',
-  },
-  commentText: {
-    marginBottom: 10,
-  },
-  commentResponse: {
-    marginTop: 10,
-    color: 'green', // Agregar estilo para el color verde
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingLeft: 10,
-    borderRadius: 5,
-  },
-  inputComment: {
-    height: 80,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingLeft: 10,
-    borderRadius: 5,
-  },
-  successMessage: {
-    color: 'green',
-    marginTop: 10,
-  },
-});

@@ -370,7 +370,7 @@ export default function KnownAreaMethod() {
         </View>
       </View>
       { userData?.Role !== "Externo" && userId && 
-        <CommentLog text="KnownAreaComments" userId={userId} />
+        <CommentLog text="KnownAreaComments" userId={userId} role={userData?.Role} />
       }
     </ScrollView>
   );

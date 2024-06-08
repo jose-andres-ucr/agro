@@ -402,7 +402,7 @@ export default function PesticidePerArea() {
         </View>
       </View>
       { userData?.Role !== "Externo" && userId && 
-        <CommentLog text="PesticidePerAreaComments" userId={userId} />
+        <CommentLog text="PesticidePerAreaComments" userId={userId}  role={userData?.Role}/>
       }
     </ScrollView>
   );
