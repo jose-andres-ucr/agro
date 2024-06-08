@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Modal, Portal, Button, Text} from 'react-native-paper';
-import { StyleSheet, View } from 'react-native';
-import { theme } from '@/constants/theme';
+import { View } from 'react-native';
+import getCalculatorsStateStyles from '@/constants/styles/CalculatorStateStyles';
 import { DropdownItem } from '@/constants/units';
 import firestore from "@react-native-firebase/firestore";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -72,6 +72,7 @@ const getSavedCalculators = async (userId: string, calculator: string): Promise<
 }
 
 export const CalculatorStateManager = (props: {calculator: string, userId: string, onLoadData: (data: Field[]) => void, onSaveData: () => Field[]}) => {
+    const styles = getCalculatorsStateStyles();
     const [loadModalVisible, setLoadModalVisible] = useState(false);
     const [saveModalVisible, setSaveModalVisible] = useState(false);
 
@@ -328,72 +329,3 @@ export const CalculatorStateManager = (props: {calculator: string, userId: strin
         </>
     );
 };
-
-
-const styles = StyleSheet.create({
-    modalContainer: {
-        backgroundColor: theme.colors.defaultBackgroundColor,
-        margin: 20,        
-    },
-    loadContainer: {
-        backgroundColor: theme.colors.defaultBackgroundColor,
-        margin: 20,        
-    },
-    saveContrainer: {
-        backgroundColor: theme.colors.defaultBackgroundColor,
-        margin: 20,        
-    },
-    topContainer: {        
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        margin: 10,
-    },
-    button: {
-        alignSelf: "flex-start",
-        borderRadius: 5,
-    },
-    buttonCenter: {
-        alignSelf: "center",
-        borderRadius: 5,
-    },    
-    buttonText: {
-        fontSize: 16,
-        fontWeight: "bold",  
-    },
-    text: {
-        fontSize: 20,
-        fontWeight: "bold",  
-    },
-    unfocusedDropdown: {                
-        borderWidth: 1,
-        borderRadius: 5,
-        borderColor: theme.colors.inputBorderColor,        
-        backgroundColor: theme.colors.inputBackgroundColor,
-        marginVertical: 10,                                     
-    },
-    focusedDropdown: {
-        borderColor: theme.colors.inputBackgroundColor,
-        borderWidth: 1,
-        borderRadius: 5,        
-        backgroundColor: theme.colors.inputBackgroundColor,        
-        marginVertical: 10,
-    },
-    dropdownItem: {
-        backgroundColor: theme.colors.defaultBackgroundColor,
-        borderColor: "black",
-        borderRadius: 5,
-        borderWidth: 1
-    },
-    selectedTextStyle: {
-        fontSize: 16,
-        fontWeight: "bold",        
-        color: theme.colors.inputColor,
-        marginLeft: 20        
-    },
-    itemTextStyle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: theme.colors.inputColor,
-    },
-});

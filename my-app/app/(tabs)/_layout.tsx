@@ -11,7 +11,7 @@ import getDrawerStyles from '@/constants/styles/DrawerStyles';
 
 export default function TabLayout() {
   const { userRole, profile, manageRegister, manageComments, manageEducation, education  } = useUserRole();
-  const { profileIcon, herbicideIcon, educationIcon, fungicideIcon, manageMaterialIcon, manageRegisterIcon } = DrawerIcons();
+  const { profileIcon, herbicideIcon, educationIcon, fungicideIcon, manageMaterialIcon, manageCommentsIcon, manageRegisterIcon } = DrawerIcons();
   const styles = getDrawerStyles();
 
   const HeaderButton = () => {
@@ -93,6 +93,16 @@ export default function TabLayout() {
           title: "Aprobación de Registro",
           drawerLabel: "Aprobación de Registro",
           drawerIcon: manageRegisterIcon,
+          headerRight: () => <HeaderButton />,
+        }}
+      />
+      <Drawer.Screen
+        name="manageCalculatorsComments"
+        redirect={manageRegister === null}
+        options={{
+          title: "Aprobación de Registro",
+          drawerLabel: "Administrar Comentarios",
+          drawerIcon: manageCommentsIcon,
           headerRight: () => <HeaderButton />,
         }}
       />

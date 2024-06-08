@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Text, View, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, Linking, Alert, ActivityIndicator, Pressable } from "react-native";
+import { Button, Text, View, ScrollView, TextInput, TouchableOpacity, Image, Linking, Alert, ActivityIndicator } from "react-native";
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Keyboard } from 'react-native';
 import * as DocumentPicker  from 'expo-document-picker';

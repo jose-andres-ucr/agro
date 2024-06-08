@@ -14,7 +14,7 @@ export default function useUnit(startingUnit: string, startingValue: number, con
             }         
             setUnit(newUnit);
         }
-    }, [unit, value]);
+    }, [unit]);
 
     return { value, unit, handleUnitChange };
 }   
