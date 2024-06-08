@@ -84,14 +84,21 @@ export default function Login() {
         // Block login of users with unverified email or unapproved registration
         if (!user?.emailVerified) {
           setCredentialError("No ha verificado su correo electrónico");
-        } else if (userData?.Approved === 0) {
-          setCredentialError(
-            "Se está validando su registro. Intentelo más tarde."
-          );
-        } else if (userData?.Approved === -1) {
-          setCredentialError("Su registro no fue aprobado.");
-        } else if (previousUser?.email === user?.email) {
-          setCredentialError("Su sesión ya se encuentra activa");
+        } else {
+          if (userData?.Verified !== 1) {
+            await firestore().collection("Users").doc(user?.uid).update({
+              Verified: 1,
+            });
+          }
+          if (userData?.Approved === 0) {
+            setCredentialError(
+              "Se está validando su registro. Inténtelo más tarde."
+            );
+          } else if (userData?.Approved === -1) {
+            setCredentialError("Su registro no fue aprobado.");
+          } else if (previousUser?.email === user?.email) {
+            setCredentialError("Su sesión ya se encuentra activa");
+          }
         }
       }
     } catch (error: any) {
