@@ -394,7 +394,10 @@ export default function FixedVelocityMethod() {
             />
         </View>
       </View>
-      <CommentLog text="VelocityComments" />
+      { userData?.Role !== "Externo" && userId && 
+        <CommentLog text="VelocityComments" userId={userId} />
+      }
+      
     </ScrollView>
   );
 }
