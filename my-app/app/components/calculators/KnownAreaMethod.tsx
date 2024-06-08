@@ -2,7 +2,7 @@ import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Button, Text, Divider } from "react-native-paper";
 import { z } from "zod";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useGlobalCalculatorStyles from "@/constants/styles/GlobalCalculatorStyle";
@@ -13,7 +13,7 @@ import { CompoundUnit, Unit, areaUnits, convertArea, convertVolume, volumeUnits 
 import useCompoundUnit from "@/app/hooks/useCompoundUnit";
 import { CustomDropdown } from "./CustomDropdown";
 import { UnitModal } from "./UnitModal";
-import { useFetchUserData } from "@/app/hooks/FetchData";
+import { UserContext } from "@/app/hooks/context/UserContext";
 import { Field } from "@/constants/types";
 import { CalculatorStateManager } from "./CalculatorStateManager";
 
@@ -36,7 +36,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function KnownAreaMethod() {
   const styles = useGlobalCalculatorStyles();
-  const {userId, userData} = useFetchUserData();
+  const {userId, userData} = useContext(UserContext);
 
   const { value: knownArea, unit: knownAreaUnit, handleUnitChange: knownAreaHandler} = useUnit("m²", 0, convertArea);
 

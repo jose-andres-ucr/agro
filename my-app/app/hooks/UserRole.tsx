@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { useFetchUserData } from "./FetchData";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "./context/UserContext";
 
 const useUserRole = () => {
-  const {userData, userId } = useFetchUserData();
+  const {userData, userId } = useContext(UserContext);
   //Get User Roll
   const [userRole, setUserRole] = useState<string | null>(null);
   useEffect(() => {

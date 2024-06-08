@@ -27,9 +27,6 @@ export default function Fungicides() {
         <Text style={styles.buttonText}>Por Planta</Text>
       </Button>
       <View style={styles.separator} />
-      <Button style={styles.button}>
-        <Text style={styles.buttonText}>Ayuda</Text>
-      </Button>
     </View>
   );
 }

@@ -35,9 +35,6 @@ export default function Herbicides() {
         </Text>
       </Button>
       <View style={styles.separator} />
-      <Button style={styles.button}>
-        <Text style={styles.buttonText}>Ayuda</Text>
-      </Button>
     </View>
   );
 }
