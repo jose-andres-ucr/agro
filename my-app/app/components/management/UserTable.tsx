@@ -37,7 +37,17 @@ const UserTable = () => {
     if (allUsers) {
       setUsersToShow(allUsers.slice(from, to));
     }
-  }, [allUsers, to]);
+  }, [allUsers, from, to]);
+
+  useEffect(() => {
+    if (usersToShow?.length === 0 && to > 0 && page > 0) {
+      setPage(page - 1);
+    }
+  }, [usersToShow]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [numberOfUsersPerPage]);
 
   return (
     <View>
@@ -70,7 +80,11 @@ const UserTable = () => {
           page={page}
           numberOfPages={Math.ceil(allUsers.length / numberOfUsersPerPage)}
           onPageChange={(page) => setPage(page)}
-          label={`${from + 1}-${to} de ${allUsers.length}`}
+          label={
+            allUsers.length > 0
+              ? `${from + 1}-${to} de ${allUsers.length}`
+              : "0-0 de 0"
+          }
           showFastPaginationControls
           numberOfItemsPerPageList={numberOfUsersPerPageList}
           numberOfItemsPerPage={numberOfUsersPerPage}
