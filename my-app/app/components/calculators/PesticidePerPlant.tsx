@@ -357,7 +357,9 @@ export default function PesticidePerPlant() {
           </CustomDropdown>
         </View>
       </View>
-      <CommentLog text="PesticidePerPlantComments" />
+      { userData?.Role !== "Externo" && userId && 
+        <CommentLog text="PesticidePerPlantComments" userId={userId}  role={userData?.Role}/>
+      }
     </ScrollView>
   );
 }

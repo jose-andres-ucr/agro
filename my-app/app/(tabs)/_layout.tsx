@@ -131,7 +131,7 @@ export default function TabLayout() {
         name="manageCalculatorsComments"
         redirect={manageRegister === null}
         options={{
-          title: "Aprobación de Registro",
+          title: "Administrar Comentarios",
           drawerLabel: "Administrar Comentarios",
           drawerIcon: manageCommentsIcon,
           headerRight: () => <HeaderButton />,

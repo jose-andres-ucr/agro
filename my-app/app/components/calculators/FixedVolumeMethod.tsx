@@ -368,7 +368,9 @@ export default function FixedVolumeMethod() {
           />
         </View>
       </View>
-      <CommentLog text="VolumeComments" />
+      { userData?.Role !== "Externo" && userId && 
+        <CommentLog text="VolumeComments" userId={userId}  role={userData?.Role} />
+      }
     </ScrollView>
   );
 }

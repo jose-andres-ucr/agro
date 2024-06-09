@@ -58,15 +58,19 @@ export default function TabLayout() {
             <Stack.Screen
               name="components/calculators/PesticidePerPlant"
               options={{ headerTitle: "Calibración por Planta" }}
-          />
+            />
             <Stack.Screen
               name="components/login/Login"
               options={{ headerTitle: "Iniciar Sesión" }}
             />
-          <Stack.Screen
-            name="components/signup/SignUp"
-            options={{ headerTitle: "Registro", headerTitleAlign: "center" }}
-          />
+            <Stack.Screen
+                name="components/management/ManageComments"
+                options={{ headerTitle: "Administración de comentarios" }}
+            />
+            <Stack.Screen
+              name="components/signup/SignUp"
+              options={{ headerTitle: "Registro", headerTitleAlign: "center" }}
+            />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
         </QueryClientProvider>      

@@ -6,6 +6,7 @@ const getCalculatorMenuStyles = (theme: any) => StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
+    textAlign: "center",
   },
   separator: {
     marginVertical: 25,
