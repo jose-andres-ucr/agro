@@ -2,7 +2,6 @@ import { StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useMemo } from "react";
 
-    
 const getGlobalCalculatorStyles = (theme: any) => StyleSheet.create({
     scrollView: {
         flexGrow: 1,
@@ -28,34 +27,34 @@ const getGlobalCalculatorStyles = (theme: any) => StyleSheet.create({
         marginLeft: 10
     },
     formContainer: {
-        marginTop: 20,
-        marginBottom: 20,
+        marginVertical: 20,
     },  
-    inputField: {
-        width: "70%",
-        marginTop: 5
-    },
     inputGroup: {
-        flexDirection: "row"
-    },
-    button: {
-        alignSelf: "flex-end",
-    },
-    resultGroup: {
-        justifyContent: "flex-end",
-        alignItems: "center",
-        padding: 8,
+        marginVertical: 5,
         flexDirection: "row",
     },
-    resultField: {
-        width: "50%",
-        textAlign: "center",
+    inputField: {        
+        marginTop: -5,
+        width: "70%",
+    },
+    button: {
+        alignSelf: "flex-start",
+        borderRadius: 5,
+    },    
+    buttonText: {
+        fontSize: 16,
+        fontWeight: "bold",  
+    },
+    resultGroup: {
+        marginVertical: 5,                      
+        flexDirection: "row",
+    },
+    resultField: {       
+        width: "70%",
     },
 });
 
 export default function useGlobalCalculatorStyles() {
   const theme = useTheme();
-  const styles = useMemo(() => getGlobalCalculatorStyles(theme), [theme]);
-
-  return styles;
+  return useMemo(() => getGlobalCalculatorStyles(theme), [theme]);
 }

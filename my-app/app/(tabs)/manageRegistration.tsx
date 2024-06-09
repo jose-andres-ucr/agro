@@ -1,9 +1,9 @@
 import { View } from "react-native";
 import { Card } from "react-native-paper";
-import UserTable from "./UserTable";
+import UserTable from "../components/management/UserTable";
 import { theme } from "@/constants/theme";
 
-const ApproveRegistration = () => {
+export default function manageRegistration() {
   return (
     <View style={{ flex: 1, backgroundColor: "#FFF" }}>
       <Card
@@ -16,7 +16,7 @@ const ApproveRegistration = () => {
         }}
       >
         <Card.Title
-          title="Aprobaciones de Registro Pendientes"
+          title="Pendientes de revisión"
           style={{
             backgroundColor: theme.colors.primary,
             borderTopStartRadius: 10,
@@ -29,5 +29,3 @@ const ApproveRegistration = () => {
     </View>
   );
 };
-
-export default ApproveRegistration;

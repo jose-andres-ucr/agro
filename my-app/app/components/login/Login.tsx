@@ -6,16 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Text } from "react-native-paper";
 import {
-  StyleSheet,
   View,
   TextInput as TextInputRn,
   Keyboard,
+  Image,
 } from "react-native";
 import React from "react";
 import { theme } from "@/constants/theme";
 import firestore from "@react-native-firebase/firestore";
 import LoadingButton from "../LoadingButton";
 import { showToastError } from "@/constants/utils";
+import getLoginStyles from "@/constants/styles/LoginStyles"
 
 const form = z.object({
   userName: z.string().email({ message: "El nombre de usuario no es válido" }),
@@ -26,6 +27,7 @@ const form = z.object({
 type FormData = z.infer<typeof form>;
 
 export default function Login() {
+  const styles = getLoginStyles();
   const {
     control,
     handleSubmit,
@@ -78,6 +80,7 @@ export default function Login() {
       await auth().signInWithEmailAndPassword(data.userName, data.password);
       let user = auth().currentUser;
       if (user) {
+        console.log(user);
         let userData = (
           await firestore().collection("Users").doc(user.uid).get()
         ).data();
@@ -112,6 +115,9 @@ export default function Login() {
 
   return (
     <View style={theme.loginContainer}>
+      <Image
+        style={styles.logo} 
+        source={require('@/assets/images/firmaHorizontal.png')} />
       <Controller
         control={control}
         render={({ field: { onChange, onBlur, value } }) => (
@@ -167,7 +173,7 @@ export default function Login() {
           onSubmit(form);
         })}
       />
-      <View style={{ marginTop: 30, alignItems: "center" }}>
+      <View style={styles.bottomText}>
         <Text style={{ marginTop: 5 }}>
           ¿No posee una cuenta?{" "}
           <Text
@@ -181,24 +187,3 @@ export default function Login() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  text: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  inputField: {
-    marginVertical: 4,
-    width: "60%",
-    textAlign: "left",
-    alignSelf: "center",
-  },
-  button: {
-    alignSelf: "center",
-    marginTop: 20,
-  },
-  error: {
-    color: "red",
-    alignSelf: "center",
-  },
-});

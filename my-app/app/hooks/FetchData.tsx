@@ -27,7 +27,7 @@ export const useFetchUserData = () => {
         let response = (
           await firestore().collection("Users").doc(user.uid).get()
         ).data();
-        if (response !== undefined) {
+        if (response !== undefined && response.Approved === 1) {
           setUserData(response);
         } else {
           setUserData(null);

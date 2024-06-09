@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Text, View, ScrollView, TextInput, TouchableOpacity, Image, Linking } from "react-native";
+import { Button, Text, View, ScrollView, TextInput, TouchableOpacity, Image, Linking, Alert, ActivityIndicator } from "react-native";
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Keyboard } from 'react-native';
-import Video from 'react-native-video';
+import * as DocumentPicker  from 'expo-document-picker';
+import Video, {VideoRef} from 'react-native-video';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useForm } from 'react-hook-form';
+import storage from '@react-native-firebase/storage';
+import { Controller } from 'react-hook-form';
+import getManageEducationStyles from '@/constants/styles/ManageEducationStyles';
 import { theme } from '@/constants/theme';
-import getEducationStyles from "@/constants/styles/EducationStyles"
 
 type Post = {
   id: string;
@@ -18,14 +22,19 @@ type Post = {
 
 const POSTS_PER_PAGE = 4;
 
-const EducationalMaterial = () => {
-  const styles = getEducationStyles();
+const manageEducation = () => {
+  const styles = getManageEducationStyles();
   const [posts, setPosts] = useState([] as Post[]);
   const [originalPosts, setOriginalPosts] = useState([] as Post[]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [showNewPostForm, setShowNewPostForm] = useState(false);
+  const [fileUris, setFileUris] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { control, handleSubmit, reset, setValue } = useForm();
   const [isPaused] = useState(true);
 
   useEffect(() => {
@@ -46,17 +55,139 @@ const EducationalMaterial = () => {
     return () => subscriber();
   }, []);
 
-  // Mostrar todos los posts
+    const pickFile = async () => {
+      try {
+        const documentResult = await DocumentPicker.getDocumentAsync();
+        const urifile = documentResult.assets![0];
+
+
+          const fileUri = urifile.uri;
+          const fileName = urifile.name;
+          setFileUris(prevFileUris => [...prevFileUris, fileUri]);
+
+
+      } catch (err) {
+        console.error("Error picking file: ", err);
+      }
+    };
+
+    const uploadFiles = async (uris: string[], postId: string) => {
+      try {
+        const uploadTasks = uris.map(async (uri) => {
+          const filename = uri.substring(uri.lastIndexOf('/') + 1);
+          const uploadUri = uri.replace('file://', '');
+          const task = storage().ref(filename).putFile(uploadUri);
+          console.log(uploadUri);
+          await task;
+          return storage().ref(filename).getDownloadURL();
+        });
+  
+        const urls = await Promise.all(uploadTasks);
+  
+        await firestore().collection('EducationalMaterial').doc(postId).update({
+          Attachment: urls,
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+  
+    const addPost = async (data: any) => {
+      setLoading(true); // Start loading
+      try {
+        const postRef = await firestore().collection('EducationalMaterial').add({
+          Attachment: [],
+          Date: firestore.Timestamp.fromDate(new Date()),
+          Description: data.Description,
+          Title: data.Title,
+          User: data.User,
+        });
+  
+        if (fileUris.length > 0) {
+          await uploadFiles(fileUris, postRef.id);
+          setFileUris([]);
+        }
+  
+        reset();
+      } catch (error) {
+        console.error("Error agregando el post: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    const editPost = async (data: any) => {
+      if (!editingPost) return;
+      setLoading(true); // Start loading
+      try {
+        await firestore().collection('EducationalMaterial').doc(editingPost.id).update({
+          Description: data.Description,
+          Title: data.Title,
+          User: data.User
+        });
+  
+        if (fileUris.length > 0) {
+          await uploadFiles(fileUris, editingPost.id);
+          setFileUris([]);
+        }
+  
+        reset();
+        setEditingPost(null);
+      } catch (error) {
+        console.error("Error editando el post: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    const deletePost = async (postId: string) => {
+      try {
+        await firestore().collection('EducationalMaterial').doc(postId).delete();
+      } catch (error) {
+        console.error("Error deleting the post: ", error);
+      }
+    };
+  
+    const confirmDelete = (postId: string) => {
+      Alert.alert(
+        "Borrar publicación",
+        "¿Está seguro de que quiere eliminar esta publicación?",
+        [
+          {
+            text: "Cancelar",
+            style: "cancel"
+          },
+          {
+            text: "Eliminar",
+            onPress: () => deletePost(postId)
+          }
+        ],
+        { cancelable: false }
+      );
+    };
+  
+    const handleEdit = (post: Post) => {
+      setShowNewPostForm(true);
+      setEditingPost(post);
+      setFileUris([]);
+      setValue('Title', post.Title);
+      setValue('Description', post.Description);
+      setValue('User', post.User);
+      setValue('Attachment', post.Attachment);
+    };
+
+
   const renderPosts = () => {
     const start = (currentPage - 1) * POSTS_PER_PAGE;
     const end = start + POSTS_PER_PAGE;
-
+  
     const truncateDescription = (description: string) => {
       if (description.length > 100) {
         return description.substring(0, 100) + '...';
       }
       return description;
     };
+  
     return posts.slice(start, end).map((post, index) => (
       <TouchableOpacity key={index} onPress={() => setSelectedPost(post)}>
         <View style={styles.postContainer}>
@@ -65,20 +196,23 @@ const EducationalMaterial = () => {
           <Text style={styles.postAutorDate}>Autor: {post.User}  |  Fecha: {new Date(post.Date.toDate()).toLocaleDateString()}  |  Ver más</Text>
         </View>
         <View style={styles.horizontalLine}></View>
+        <Button color={theme.colors.primary} title="Editar" onPress={() => handleEdit(post)} />
+        <Button color={theme.colors.primary} title="Eliminar" onPress={() => confirmDelete(post.id)} />    
       </TouchableOpacity>
     ));
   };
 
-  // Mostrar los detalles de un post
   const renderPostDetails = () => {
     if (selectedPost) {
       return (
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.postDetailscontainer}>
             <View style={styles.titleAndButtonContainer}>
+              {/* Botón "Volver" como ícono de flecha */}
               <TouchableOpacity onPress={() => setSelectedPost(null)}>
                 <MaterialIcons name="arrow-back" size={24} color="black" />
               </TouchableOpacity>
+              {/* Título centrado horizontalmente */}
               <Text style={styles.selectedPostTitle}>{selectedPost.Title}</Text>
             </View>
             <Text style={styles.selectedPostDescription}>{selectedPost.Description}</Text>
@@ -124,12 +258,10 @@ const EducationalMaterial = () => {
     }
     return null;
   };
-  
-  // Manejar la barra de busqueda
+
   const handleSearch = () => {
     let filteredPosts;
     if (searchQuery && searchQuery.trim() !== '') {
-      //  Si la búsqueda no está vacía, mostrar todas las publicaciones filtradas
       filteredPosts = originalPosts.filter(post => {
         return post.Title.toLowerCase().includes(searchQuery.toLowerCase());
       });
@@ -138,6 +270,7 @@ const EducationalMaterial = () => {
       filteredPosts = originalPosts;
     }
     Keyboard.dismiss();
+
     // Actualizar los posts mostrados y la cantidad total de páginas según los posts filtrados
     setPosts(filteredPosts);
     setTotalPages(Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
@@ -147,6 +280,68 @@ const EducationalMaterial = () => {
     <>
       {selectedPost ? renderPostDetails() : (
         <View style={styles.container}>
+          <Button color={theme.colors.primary}
+          title={showNewPostForm ? "Ocultar formulario" : "Mostrar formulario"}
+          onPress={() => setShowNewPostForm(!showNewPostForm)}
+        />
+        {showNewPostForm && (
+          <>
+            <View style={styles.separator} />
+            <Text style={styles.title}>{editingPost ? "Editar Post" : "Nuevo Post"}</Text>
+            <View>
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Título"
+                    style={styles.input}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                )}
+                name="Title"
+              />
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Descripción"
+                    style={styles.inputComment}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    multiline={true}
+                  />
+                )}
+                name="Description"
+              />
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Usuario"
+                    style={styles.input}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                )}
+                name="User"
+              />
+              <Button color={theme.colors.primary} title="Elegir Archivo" onPress={pickFile} />
+              {fileUris && <Text>Archivo seleccionado: {fileUris.join(', ')}</Text>}
+              {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+              ) : (
+                <Button color={theme.colors.primary} onPress={handleSubmit(editingPost ? editPost : addPost)} title={editingPost ? "Guardar cambios" : "Enviar"} />
+              )}
+              {editingPost && <Button color={theme.colors.primary} onPress={() => setEditingPost(null)} title="Cancelar" />}
+            </View>
+          </>
+        )}
+
+
           <Text style={styles.title}>Últimas entradas</Text>
           <View style={styles.searchBar}>
             <TextInput
@@ -181,4 +376,5 @@ const EducationalMaterial = () => {
   );
 }
 
-export default EducationalMaterial;
+
+export default manageEducation;

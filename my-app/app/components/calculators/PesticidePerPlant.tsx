@@ -1,49 +1,68 @@
 import { View, TextInput as TextInputRn, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Button, Text} from "react-native-paper";
+import { TextInput, Button, Text, Divider} from "react-native-paper";
 import { z } from "zod";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { CommentLog } from "./CommentLog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { showToastError } from "@/constants/utils";
-import useGlobalstyles from "@/constants/styles";
+import useGlobalCalculatorStyles from "@/constants/styles/GlobalCalculatorStyle";
+import { positiveNumber } from "@/constants/schemas";
+import useUnit from "@/app/hooks/useUnit";
+import { Unit, convertVolume, volumeUnits } from "@/constants/units";
+import { CustomDropdown } from "./CustomDropdown";
+import { UserContext } from "@/app/hooks/context/UserContext";
+import { CalculatorStateManager } from "./CalculatorStateManager";
+import { Field } from "@/constants/types";
 
 
 const schema = z.object({
-  plantCuantity: z
-    .string({required_error: "Este campo es obligatorio"})
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  initialVolume: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  finalVolume: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
-
-  plantCuantityTotal: z
-    .string({required_error: "Este campo es obligatorio"})    
-    .refine((val) => !isNaN(Number(val)), { message: "Debe ser un valor numérico" })
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, { message: "Debe ser un número positivo" })
-    .transform((val) => Number(val)),
+  plantCuantity: positiveNumber,
+  initialVolume: positiveNumber,
+  finalVolume: positiveNumber,
+  plantCuantityTotal: positiveNumber,
 });
+
+type SchemaKeys = keyof z.infer<typeof schema>;
+
+const getFieldNames = (schema: z.ZodObject<any>) => {
+  return Object.keys(schema.shape) as SchemaKeys[];
+};
+
+const fieldNames = getFieldNames(schema);
 
 type FormData = z.infer<typeof schema>;
 
 export default function PesticidePerPlant() {
-  const styles = useGlobalstyles();
-  const [result, setResult] = useState<string | null>(null);
+  const styles = useGlobalCalculatorStyles();
+  const {userId, userData} = useContext(UserContext);
+
+  const { value: initialVolume, unit: initialVolumeUnit, handleUnitChange: initialVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const { value: finalVolume, unit: finalVolumeUnit, handleUnitChange: finalVolumeHandler } = useUnit("L", 0, convertVolume);
+
+  const { value: result, unit: resultUnit, handleUnitChange: resultHandler } = useUnit("L", 0, convertVolume);
+
+  const [displayResult, setDisplayResult] = useState(result);  
+
+  useEffect(() => {
+    setValue("initialVolume", initialVolume);
+  }, [initialVolume]);
+
+  useEffect(() => {
+    setValue("finalVolume", finalVolume);
+  }, [finalVolume]);
+
+  useEffect(() => {
+    setDisplayResult(result);
+  }, [result]);
 
   const {
     control,
     handleSubmit,
+    getValues,
+    setValue,
+    reset,
     formState: { errors },
   } = useForm<FormData>({    
     resolver: zodResolver(schema),
@@ -74,25 +93,133 @@ export default function PesticidePerPlant() {
     refs.plantCuantityRef.current?.focus();
   }, []);
 
+  const handleInitialVolumeUnitChange = (value: string) => {
+    initialVolumeHandler(value, getValues("initialVolume"));
+  };
+
+  const handleFinalVolumeUnitChange = (value: string) => {
+    finalVolumeHandler(value, getValues("finalVolume"));
+  };
+
+  const handleResultUnitChange = (value: string) => {
+    resultHandler(value, displayResult);
+  };
+
   const onSubmit = (data: FormData) => {
-    const {
+    let {
       plantCuantity,
       initialVolume,
       finalVolume,
       plantCuantityTotal,
     } = data;
 
+    if (initialVolumeUnit !== "L") {
+      initialVolume = convertVolume(initialVolume, initialVolumeUnit, "L");
+    }
+
+    if (finalVolumeUnit !== "L") {
+      finalVolume = convertVolume(finalVolume, finalVolumeUnit, "L");
+    }
+
     let result = ((initialVolume - finalVolume) * plantCuantityTotal) / plantCuantity;
-    setResult(result.toFixed(3));
+
+    if (resultUnit !== "L") {
+      result = convertVolume(result, "L", resultUnit);
+    }
+
+    setDisplayResult(result);    
   };
+
+  const onLoadData = (data: Field[]) => {
+    if (!data) {
+      return;
+    }
+
+    reset();
+    let matchingData: Field | undefined = undefined;
+    fieldNames.forEach(field => {
+      matchingData = data.find(d => d.name === field);
+      if (matchingData) {
+        let fieldName = matchingData.name;
+        switch (fieldName) {
+          case "initialVolume":
+            let loadedInitialVolumeUnit = matchingData.unit as Unit;
+            initialVolumeHandler(loadedInitialVolumeUnit.value, 0);
+            break;
+
+          case "finalVolume":
+            let loadedFinalVolumeUnit = matchingData.unit as Unit;
+            finalVolumeHandler(loadedFinalVolumeUnit.value, 0);
+            break;          
+        }
+        setValue(field, matchingData.value);
+      }      
+    });
+    matchingData = data.find(d => d.name === "result");
+    if (matchingData) {
+      let loadedResultUnit = matchingData.unit as Unit;
+      resultHandler(loadedResultUnit.value, 0);
+      setDisplayResult(matchingData.value);
+    }
+  }
+
+  const onSaveData = () : Field[] => {
+    return [
+      {
+        name: "plantCuantity",
+        value: getValues("plantCuantity"),
+        unit: {
+          label: "unit",
+          value: "unit",
+        }
+      },
+      {
+        name: "initialVolume",
+        value: getValues("initialVolume"),
+        unit: {
+          label: initialVolumeUnit,
+          value: initialVolumeUnit,
+        },
+      },
+      {
+        name: "finalVolume",
+        value: getValues("finalVolume"),
+        unit: {
+          label: finalVolumeUnit,
+          value: finalVolumeUnit,
+        },
+      },
+      {
+        name: "plantCuantityTotal",
+        value: getValues("plantCuantityTotal"),
+        unit: {
+          label: "unit",
+          value: "unit",
+        }
+      },
+      {
+        name: "result",
+        value: displayResult,
+        unit: {
+          label: resultUnit,
+          value: resultUnit,
+        },
+      },
+    ];
+  }
 
   return (
     <ScrollView
     contentContainerStyle={styles.scrollView}
     ref={(scrollView) => { scrollView?.scrollToEnd({ animated: true }); }}
     >
-      <View style={styles.mainContainer}>
-        <Text style={styles.header}>Calibración por planta</Text>
+      { userData?.Role !== "Externo" && userId && <>
+        <Divider></Divider>
+          <CalculatorStateManager calculator="PesticidePerPlant" userId={userId} onLoadData={onLoadData} onSaveData={onSaveData}/>
+        <Divider></Divider>
+      </>
+      }
+      <View style={styles.mainContainer}>        
         <Text style={ styles.body }>Cuente un número de plantas y aplique allí agua a la velocidad usual.</Text>
         
         <View style={styles.formContainer}>
@@ -107,7 +234,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   autoFocus
@@ -133,7 +260,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -145,7 +272,12 @@ export default function PesticidePerPlant() {
               )}
               name="initialVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <CustomDropdown
+            data={volumeUnits}
+            isModal={false}
+            value={initialVolumeUnit}
+            onValueChange={handleInitialVolumeUnitChange}>              
+            </CustomDropdown>
           </View>
 
           <View style={styles.inputGroup}>          
@@ -159,7 +291,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}                  
+                  value={value ? value.toString() : ""}                  
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="next"
@@ -171,7 +303,12 @@ export default function PesticidePerPlant() {
               )}
               name="finalVolume"
             />
-            <Text style={styles.text}>Litros</Text>
+            <CustomDropdown
+            data={volumeUnits}
+            isModal={false}
+            value={finalVolumeUnit}
+            onValueChange={handleFinalVolumeUnitChange}>              
+            </CustomDropdown>
           </View>
           
           <View style={styles.inputGroup}>
@@ -185,7 +322,7 @@ export default function PesticidePerPlant() {
                   style={styles.inputField}
                   onBlur={onBlur}
                   onChangeText={onChange}
-                  value={value?.toString()}
+                  value={value ? value.toString() : ""}
                   keyboardType="numeric"
                   autoCapitalize="none"
                   returnKeyType="send"
@@ -194,8 +331,7 @@ export default function PesticidePerPlant() {
                 />
               )}
               name="plantCuantityTotal"
-            />
-            <Text style={styles.text}>m2</Text>
+            />            
           </View>
         </View>        
 
@@ -210,13 +346,20 @@ export default function PesticidePerPlant() {
         <View style={styles.resultGroup}>
           <TextInput
             style={styles.resultField}
-            value={result?.toString()}
+            value={displayResult?.toFixed(3)}
             editable={false}
           />
-          <Text style={styles.text}> Litros</Text>
+          <CustomDropdown
+          data={volumeUnits}
+          isModal={false}
+          value={resultUnit}
+          onValueChange={handleResultUnitChange}>              
+          </CustomDropdown>
         </View>
       </View>
-      <CommentLog text="PesticidePerPlantComments" />
+      { userData?.Role !== "Externo" && userId && 
+        <CommentLog text="PesticidePerPlantComments" userId={userId}  role={userData?.Role}/>
+      }
     </ScrollView>
   );
 }
