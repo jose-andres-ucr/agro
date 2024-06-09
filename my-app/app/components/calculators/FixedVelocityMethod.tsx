@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CommentLog } from "./CommentLog";
-import useGlobalCalculatorStyles from "@/constants/GlobalCalculatorStyle";
+import useGlobalCalculatorStyles from "@/constants/styles/GlobalCalculatorStyle";
 import { showToastError } from "@/constants/utils";
 import { CustomDropdown } from "./CustomDropdown";
 import { volumeUnits, distanceUnits, convertVolume, convertDistance, timeUnits, convertTime, convertArea, areaUnits, CompoundUnit, Unit} from "@/constants/units";

@@ -1,42 +1,62 @@
 import { theme } from "@/constants/theme";
-import { Link, router } from "expo-router";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { router } from "expo-router";
+import { View, Text } from "react-native";
+import getCalculatorMenuStyles from '@/constants/styles/CalculatorMenuStyles';
+import { Button } from "react-native-paper";
 
 export default function ManageCalculatorsComments() {
+  const styles = getCalculatorMenuStyles();
+
   return (
     <View style={theme.screenContainer}>
-      <Text style={styles.title}>Seleccione una calculadora para administrar sus comentarios:</Text>
-
       <View style={styles.separator} />
-      
-        <Pressable
-            onPress={() =>
-                router.push({ 
-                    pathname: "../components/management/ManageComments", 
-                    params: { collection: "PesticidePerAreaComments", calculator: "Pesticida por área" }
-                })
-            }
-        >
-          <Text style={styles.title}>Calculadora por Área</Text>
-        </Pressable>
-    </View>
+      <Text style={styles.title}>Seleccione una calculadora para administrar sus comentarios:</Text>
+      <View style={styles.separator} />
+
+      <Button style={styles.button}
+        onPress={() =>
+          router.push({ 
+            pathname: "../components/management/ManageComments", 
+            params: { collection: "VolumeComments", calculator: "calculadora Volumen Fijo" }
+      })}>
+        <Text style={styles.buttonText}>Calculadora Volumen Fijo</Text>
+      </Button>
+      <Button style={styles.button}
+        onPress={() =>
+          router.push({ 
+            pathname: "../components/management/ManageComments", 
+            params: { collection: "VelocityComments", calculator: "calculadora Velocidad Fija" }
+      })}>
+        <Text style={styles.buttonText}>Calculadora Velocidad Fija</Text>
+      </Button>
+      <Button style={styles.button}
+        onPress={() => router.push({ 
+          pathname: "../components/management/ManageComments", 
+          params: { collection: "KnownAreaComments", calculator: "calculadora Volumen Aplicado a Área Conocida" }
+      })}>
+        <Text style={styles.buttonText}>
+          Volumen Aplicado a Área Conocida
+        </Text>
+      </Button>
+      <Button style={styles.button}
+        onPress={() => router.push({ 
+          pathname: "../components/management/ManageComments", 
+          params: { collection: "PesticidePerAreaComments", calculator: "calculadora Pesticida por Área" }
+      })}>
+        <Text style={styles.buttonText}>
+          Calculadora Pesticida por Área
+        </Text>
+      </Button>
+      <Button style={styles.button}
+        onPress={() => router.push({ 
+          pathname: "../components/management/ManageComments", 
+          params: { collection: "PesticidePerPlantComments", calculator: "calculadora Pesticida por Planta" }
+      })}>
+        <Text style={styles.buttonText}>
+          Calculadora Pesticida por Planta
+        </Text>
+      </Button>
+      <View style={styles.separator} />
+  </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    width: 250,
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-});

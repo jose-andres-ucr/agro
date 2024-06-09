@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
 import { Button } from "react-native-paper";
-
+import getLoadingButtonStyles from "@/constants/styles/LoadingButtonStyles";
 type propsType = {
   label: string;
   isLoading: boolean;
@@ -9,6 +9,7 @@ type propsType = {
 };
 
 const LoadingButton = ({ label, isLoading, handlePress }: propsType) => {
+  const styles = getLoadingButtonStyles();
   const [opacity, setOpacity] = useState<number>(0);
   useEffect(() => {
     if (isLoading) {
@@ -31,26 +32,5 @@ const LoadingButton = ({ label, isLoading, handlePress }: propsType) => {
     </Button>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  horizontal: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-  },
-  button: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "center",
-    marginTop: 15,
-    paddingRight: 20,
-    width: "auto",
-    height: "auto",
-  },
-});
 
 export default LoadingButton;

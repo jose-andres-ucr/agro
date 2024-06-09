@@ -1,4 +1,4 @@
-import useGlobalDropdownStyles from '@/constants/GlobalDropdownStyle';
+import useGlobalDropdownStyles from '@/constants/styles/GlobalDropdownStyle';
 import { useState } from 'react';
 import { Modal, Portal, Text, Button } from 'react-native-paper';
 import { CustomDropdown } from './CustomDropdown';

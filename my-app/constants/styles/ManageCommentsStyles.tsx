@@ -11,7 +11,7 @@ const getManageCommentsStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.defaultBackgroundColor,
   },
   title: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: "center",

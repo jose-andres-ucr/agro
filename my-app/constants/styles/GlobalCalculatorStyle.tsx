@@ -2,7 +2,6 @@ import { StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useMemo } from "react";
 
-    
 const getGlobalCalculatorStyles = (theme: any) => StyleSheet.create({
     scrollView: {
         flexGrow: 1,

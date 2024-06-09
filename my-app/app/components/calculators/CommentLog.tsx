@@ -9,7 +9,7 @@ import storage from '@react-native-firebase/storage';
 import { Image } from 'react-native';
 import Video from 'react-native-video';
 import Sound from 'react-native-sound';
-import getCommentLogStyles from '@/constants/CommentLogStyles' ;
+import getCommentLogStyles from '@/constants/styles/CommentLogStyles' ;
 import { useFetchUserData } from "@/app/hooks/FetchData";
 
 

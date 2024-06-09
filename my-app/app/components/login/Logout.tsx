@@ -1,7 +1,11 @@
-import { Pressable, View, Text } from "react-native";
+import { View, Text } from "react-native";
 import auth from "@react-native-firebase/auth";
+import { Button } from "react-native-paper";
+import getLogoutStyles from "@/constants/styles/LogoutStyles"
 
 export default function Logout() {
+  const styles = getLogoutStyles();
+
   const handleSignOut = () => {
     auth()
       .signOut()
@@ -11,9 +15,9 @@ export default function Logout() {
   };
   return (
     <View>
-      <Pressable onPress={handleSignOut}>
-        <Text>Cerrar Sesión</Text>
-      </Pressable>
+      <Button style={styles.button} onPress={handleSignOut}>
+        <Text style={styles.text}>Cerrar Sesión</Text>
+      </Button>
     </View>
   );
 }

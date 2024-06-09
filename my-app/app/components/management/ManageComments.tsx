@@ -8,7 +8,7 @@ import * as DocumentPicker  from 'expo-document-picker';
 import storage from '@react-native-firebase/storage';
 import { Image } from 'react-native';
 import Video from 'react-native-video';
-import getManageCommentsStyles from "@/constants/ManageCommentsStyles"
+import getManageCommentsStyles from "@/constants/styles/ManageCommentsStyles"
 
 type Comment = {
   id?: string; // Agrega la propiedad id
