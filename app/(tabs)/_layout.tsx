@@ -24,6 +24,7 @@ export default function TabLayout() {
     manageComments,
     manageEducation,
     education,
+    informativeSection,
   } = useUserRole();
   const {
     profileIcon,
@@ -31,6 +32,7 @@ export default function TabLayout() {
     educationIcon,
     fungicideIcon,
     manageMaterialIcon,
+    informationIcon,
     manageCommentsIcon,
     manageRegisterIcon,
   } = DrawerIcons();
@@ -117,16 +119,16 @@ export default function TabLayout() {
         />
         <Drawer.Screen
           name="education"
-          redirect={education === null}
+          redirect={informativeSection === null}
           options={{
-            title: "Material Educativo",
-            drawerLabel: "Material Educativo",
-            drawerIcon: educationIcon,
+            title: "Sección Informativa",
+            drawerLabel: "Sección Informativa",
+            drawerIcon: informationIcon,
             headerRight: () => <HeaderButton />,
           }}
         />
         <Drawer.Screen
-          name={userRole === "Estudiante" ? "manageGroups" : "manageGroups"}
+          name="manageGroups"
           redirect={education === null}
           options={{
             title: "Entorno Educativo",

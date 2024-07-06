@@ -72,6 +72,22 @@ export default function TabLayout() {
               options={{ headerTitle: "Crear Nuevo Grupo" }}
             />
             <Stack.Screen
+              name="components/groupInformation/[id]"
+              options={{ headerTitle: "Entorno Educativo" }}
+            />
+            <Stack.Screen
+              name="components/management/manageEducationalMaterial/[id]"
+              options={{ headerTitle: "Material Educativo" }}
+            />
+            <Stack.Screen
+              name="components/management/manageGroupStudents/[id]"
+              options={{ headerTitle: "Administración de Estudiantes" }}
+            />
+            <Stack.Screen
+              name="components/management/deleteGroup/[id]"
+              options={{ headerTitle: "Eliminar el Grupo" }}
+            />
+            <Stack.Screen
               name="components/signup/SignUp"
               options={{ headerTitle: "Registro", headerTitleAlign: "center" }}
             />

@@ -1,9 +1,9 @@
 import { theme } from "@/constants/theme";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 import { FlatList, Pressable, ScrollView, View } from "react-native";
 import { Button, Card } from "react-native-paper";
 import { useFetchGroups } from "../hooks/useFetchData";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { UserContext } from "../hooks/context/UserContext";
 
 const images = [
@@ -50,7 +50,11 @@ export default function ManageGroups() {
               keyExtractor={(teacher) => teacher.id}
               scrollEnabled={false}
               renderItem={(item) => (
-                <Pressable>
+                <Pressable
+                  onPress={() =>
+                    router.push(`/components/groupInformation/${item.item.id}`)
+                  }
+                >
                   <Card
                     style={{
                       padding: 10,
