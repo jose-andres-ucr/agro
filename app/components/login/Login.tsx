@@ -5,18 +5,13 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { TextInput, Text } from "react-native-paper";
-import {
-  View,
-  TextInput as TextInputRn,
-  Keyboard,
-  Image,
-} from "react-native";
+import { View, TextInput as TextInputRn, Keyboard, Image } from "react-native";
 import React from "react";
 import { theme } from "@/constants/theme";
 import firestore from "@react-native-firebase/firestore";
 import LoadingButton from "../LoadingButton";
 import { showToastError } from "@/constants/utils";
-import getLoginStyles from "@/constants/styles/LoginStyles"
+import getLoginStyles from "@/constants/styles/LoginStyles";
 
 const form = z.object({
   userName: z.string().email({ message: "El nombre de usuario no es válido" }),
@@ -46,34 +41,26 @@ export default function Login() {
     password: React.useRef<TextInputRn>(null),
   } as const;
 
-  const [credentialError, setCredentialError] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (errors || credentialError) {
+    if (errors) {
       if (errors.userName) {
         showToastError("Usuario", errors.userName.message);
       } else if (errors.password) {
         showToastError("Contraseña", errors.password.message);
-      } else if (credentialError) {
-        showToastError("Inicio de sesión", credentialError);
       }
     }
-  }, [errors, credentialError]);
-
-  const clearErrorMessages = () => {
-    clearErrors();
-    setCredentialError("");
-  };
+  }, [errors]);
 
   const handleSignUp = () => {
     router.push("/components/signup/SignUp");
-    clearErrorMessages();
+    clearErrors();
   };
 
   const onSubmit = async (data: FormData) => {
     Keyboard.dismiss();
-    clearErrorMessages();
+    clearErrors();
     setLoading(true);
     let previousUser = auth().currentUser;
     try {
@@ -86,7 +73,7 @@ export default function Login() {
         ).data();
         // Block login of users with unverified email or unapproved registration
         if (!user?.emailVerified) {
-          setCredentialError("No ha verificado su correo electrónico");
+          showToastError("Registro", "No ha verificado su correo electrónico");
         } else {
           if (userData?.Verified !== 1) {
             await firestore().collection("Users").doc(user?.uid).update({
@@ -94,19 +81,23 @@ export default function Login() {
             });
           }
           if (userData?.Approved === 0) {
-            setCredentialError(
-              "Se está validando su registro. Inténtelo más tarde."
+            showToastError(
+              "Registro",
+              "Se está validando su registro. Inténtelo más tarde"
             );
           } else if (userData?.Approved === -1) {
-            setCredentialError("Su registro no fue aprobado.");
+            showToastError("Registro", "Su registro no fue aprobado");
           } else if (previousUser?.email === user?.email) {
-            setCredentialError("Su sesión ya se encuentra activa");
+            showToastError("Sesión", "Su sesión ya se encuentra activa");
           }
         }
       }
     } catch (error: any) {
       if (error.code == "auth/invalid-credential") {
-        setCredentialError("Su usuario o contraseña son incorrectos");
+        showToastError(
+          "Inicio de Sesión",
+          "Su usuario o contraseña son incorrectos"
+        );
       }
     } finally {
       setLoading(false);
@@ -116,8 +107,9 @@ export default function Login() {
   return (
     <View style={theme.loginContainer}>
       <Image
-        style={styles.logo} 
-        source={require('@/assets/images/firmaHorizontal.png')} />
+        style={styles.logo}
+        source={require("@/assets/images/firmaHorizontal.png")}
+      />
       <Controller
         control={control}
         render={({ field: { onChange, onBlur, value } }) => (

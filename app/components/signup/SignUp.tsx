@@ -128,15 +128,13 @@ export default function SignUp() {
     confirmPassword: React.useRef<TextInputRn>(null),
   } as const;
 
-  const [invalidEmail, setInvalidEmail] = useState<boolean | null>(null);
-
   const [checkEmail, setCheckEmail] = useState<boolean>(false);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null | undefined>(
     null
   );
 
   useEffect(() => {
-    if (errors || invalidEmail) {
+    if (errors) {
       if (errors.userRole) {
         showToastError("Rol", errors.userRole.message);
       } else if (errors.firstName) {
@@ -151,32 +149,22 @@ export default function SignUp() {
         showToastError("Contraseña", errors.password.message);
       } else if (errors.confirmPassword) {
         showToastError("Contraseña", errors.confirmPassword.message);
-      } else if (invalidEmail) {
-        showToastError(
-          "Correo Electrónico",
-          "El correo ya se encuentra registrado."
-        );
       }
     }
-  }, [errors, invalidEmail]);
+  }, [errors]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [role, setRole] = useState<Role>();
   const handleRole = (role: Role) => {
     setValue("userRole", role);
     setRole(role);
-    clearErrorMessages();
-    refs.firstName.current?.focus();
-  };
-
-  const clearErrorMessages = () => {
     clearErrors();
-    setInvalidEmail(false);
+    refs.firstName.current?.focus();
   };
 
   const onSubmit = async (data: FormData) => {
     Keyboard.dismiss();
-    clearErrorMessages();
+    clearErrors();
     setIsLoading(true);
     try {
       await auth().createUserWithEmailAndPassword(data.email, data.password);
@@ -211,7 +199,10 @@ export default function SignUp() {
       console.log(error);
       if (error.code == "auth/email-already-in-use") {
         console.log("The email address is already in use.");
-        setInvalidEmail(true);
+        showToastError(
+          "Correo Electrónico",
+          "El correo ya se encuentra registrado."
+        );
       } else {
         console.log("An unknown Firebase error occurred:", error.message);
       }

@@ -14,7 +14,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TextInput as TextInputRn } from "react-native";
 import { showToastError } from "@/constants/utils";
 import { UserContext } from "../../hooks/context/UserContext";
-import { ScrollView } from "react-native-gesture-handler";
 
 const form = z.object({
   GroupNumber: z
@@ -25,15 +24,7 @@ const form = z.object({
     .number({ message: "Se esperaba un valor numérico" })
     .positive({ message: "El año debe ser un valor positivo" })
     .int({ message: "El año debe ser un valor entero" }),
-  TeacherEmail: z
-    .string()
-    .email({ message: "Este campo es requerido" })
-    .endsWith("@ucr.ac.cr", {
-      message: "El correo electrónico no pertenece a un docente",
-    })
-    .max(50, {
-      message: "El correo no puede exceder los 50 caracteres",
-    }),
+  TeacherEmail: z.string({ message: "Este campo es requerido" }),
 });
 type FormData = z.infer<typeof form>;
 
@@ -74,8 +65,6 @@ export default function CreateGroup() {
   const [showMatches, setShowMatches] = useState(true);
   const [chosenCover, setChosenCover] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [groupError, setGroupError] = useState("");
-  const [teacherEmailError, setTeacherEmailError] = useState("");
 
   const {
     control,
@@ -93,7 +82,7 @@ export default function CreateGroup() {
   });
 
   useEffect(() => {
-    if (errors || groupError || teacherEmailError) {
+    if (errors) {
       if (errors.GroupNumber) {
         showToastError("Número de grupo", errors.GroupNumber.message);
       } else if (errors.TeacherEmail) {
@@ -101,14 +90,8 @@ export default function CreateGroup() {
       } else if (errors.Year) {
         showToastError("Año", errors.Year.message);
       }
-    } else {
-      if (groupError) {
-        showToastError("Número de grupo", groupError);
-      } else if (teacherEmailError) {
-        showToastError("Correo del docente", teacherEmailError);
-      }
     }
-  }, [errors, groupError, teacherEmailError]);
+  }, [errors]);
 
   const refs = {
     GroupNumber: React.useRef<TextInputRn>(null),
@@ -168,12 +151,15 @@ export default function CreateGroup() {
           g.Semester === newGroup.Semester
       );
       if (groupExists) {
-        setGroupError("El grupo ya existe");
+        showToastError("Número de grupo", "El grupo ya existe");
         throw new Error("El grupo ya existe");
       }
       let emailExists = teachers.find((t) => t.Email === newGroup.TeacherEmail);
       if (!emailExists) {
-        setTeacherEmailError("El correo electrónico no pertenece a un docente");
+        showToastError(
+          "Correo del docente",
+          "El correo electrónico no pertenece a un docente"
+        );
         throw new Error("El correo electrónico no pertenece a un docente");
       }
 
