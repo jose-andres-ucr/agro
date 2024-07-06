@@ -1,8 +1,7 @@
-import auth from "@react-native-firebase/auth";
 import firestore, {
   FirebaseFirestoreTypes,
 } from "@react-native-firebase/firestore";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useAuthState from "./useAuthentication";
 
 type User = {
@@ -19,7 +18,7 @@ type User = {
 type Group = {
   id: string;
   GroupNumber: number;
-  Semester: number;
+  Semester: string;
   Year: number;
   TeacherEmail: string;
   Cover: number;
@@ -132,9 +131,7 @@ export const useFetchTeachers = () => {
   return teachers;
 };
 
-export const useFetchGroups = (
-  userData: FirebaseFirestoreTypes.DocumentData | null
-) => {
+export const useFetchGroups = (userRole: string, userEmail: string) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const onResult = (querySnapshot: FirebaseFirestoreTypes.QuerySnapshot) => {
     let data: Group[] = [];
@@ -158,16 +155,16 @@ export const useFetchGroups = (
   };
 
   useEffect(() => {
-    if (userData?.Role === "Administrador") {
-      console.log("hello");
+    console.log(userRole, userEmail);
+    if (userRole === "Administrador") {
       firestore()
         .collection("Groups")
         .orderBy("GroupNumber", "asc")
         .onSnapshot(onResult, onError);
-    } else if (userData?.Role === "Docente") {
+    } else if (userRole === "Docente" && userEmail !== undefined) {
       firestore()
         .collection("Groups")
-        .where("TeacherEmail", "==", userData.Email)
+        .where("TeacherEmail", "==", userEmail)
         .orderBy("GroupNumber", "asc")
         .onSnapshot(onResult, onError);
     }

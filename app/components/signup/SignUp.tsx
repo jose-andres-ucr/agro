@@ -1,12 +1,11 @@
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { Controller, useForm } from "react-hook-form";
-import { TextInput, Text, Card } from "react-native-paper";
-import { z } from "zod";
+import { TextInput, Card } from "react-native-paper";
+import { z, ZodType } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
 import {
   TextInput as TextInputRn,
-  StyleSheet,
   ScrollView,
   Keyboard,
   View,
@@ -16,7 +15,15 @@ import LoadingButton from "../LoadingButton";
 import firestore from "@react-native-firebase/firestore";
 import DropDownRole from "./DropDownRole";
 import { showToastError } from "@/constants/utils";
-import getSignStyles from "@/constants/styles/SignStyles"
+import getSignStyles from "@/constants/styles/SignStyles";
+
+enum Role {
+  Administrador = "Administrador",
+  Docente = "Docente",
+  Estudiante = "Estudiante",
+  UsuarioExterno = "Usuario Externo",
+}
+
 const form = z
   .object({
     firstName: z
@@ -37,7 +44,7 @@ const form = z
       message: "El segundo apellido no puede exceder los 50 caracteres",
     }),
 
-    userRole: z.string().min(1, { message: "Seleccione el rol" }),
+    userRole: z.nativeEnum(Role),
 
     email: z.string().email({ message: "El correo no es válido" }),
 
@@ -69,7 +76,7 @@ const form = z
     (data) =>
       ((data.userRole === "Docente" || data.userRole === "Estudiante") &&
         data.email.endsWith("@ucr.ac.cr")) ||
-      data.userRole === "Usuario Externo",
+      data.userRole === Role.UsuarioExterno,
     {
       message: "El correo debe pertenecer al dominio @ucr.ac.cr",
       path: ["email"],
@@ -77,7 +84,7 @@ const form = z
   )
   .refine(
     (data) =>
-      (data.userRole === "Usuario Externo" &&
+      (data.userRole === Role.UsuarioExterno &&
         !data.email.endsWith("@ucr.ac.cr")) ||
       data.userRole === "Estudiante" ||
       data.userRole === "Docente",
@@ -103,7 +110,7 @@ export default function SignUp() {
       firstName: "",
       lastName: "",
       secondLastName: "",
-      userRole: "",
+      userRole: Role.UsuarioExterno,
       email: "",
       password: "",
       confirmPassword: "",
@@ -154,8 +161,8 @@ export default function SignUp() {
   }, [errors, invalidEmail]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [role, setRole] = useState("");
-  const handleRole = (role: string) => {
+  const [role, setRole] = useState<Role>();
+  const handleRole = (role: Role) => {
     setValue("userRole", role);
     setRole(role);
     clearErrorMessages();
@@ -198,11 +205,7 @@ export default function SignUp() {
         setCheckEmail(true);
         console.log("Check your email");
 
-        auth()
-          .signOut()
-          .catch((error) => {
-            console.log(error);
-          });
+        await auth().signOut();
       }
     } catch (error: any) {
       console.log(error);
@@ -319,7 +322,9 @@ export default function SignUp() {
                 mode="outlined"
                 style={styles.inputField}
                 label={
-                  role === "Usuario Externo" ? "Correo" : "Correo institucional"
+                  role === Role.UsuarioExterno
+                    ? "Correo"
+                    : "Correo institucional"
                 }
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -399,4 +404,3 @@ export default function SignUp() {
     </ScrollView>
   );
 }
-

@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { FlatList, Pressable, ScrollView, View } from "react-native";
 import { Button, Card } from "react-native-paper";
 import { useFetchGroups } from "../hooks/useFetchData";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { UserContext } from "../hooks/context/UserContext";
 
 const images = [
@@ -14,12 +14,12 @@ const images = [
 ];
 export default function ManageGroups() {
   const { userData } = useContext(UserContext);
-  const groups = useFetchGroups(userData);
+  const groups = useFetchGroups(userData?.Role, userData?.Email);
 
   return (
-    <View style={{ flex: 1, alignContent: "center", justifyContent: "center" }}>
-      <ScrollView>
-        <View style={{ backgroundColor: "#FFF" }}>
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={{ flex: 1, backgroundColor: "#FFF", padding: 10 }}>
           {userData?.Role === "Administrador" ? (
             <Button
               mode="contained"
@@ -27,8 +27,8 @@ export default function ManageGroups() {
               style={{
                 width: "50%",
                 alignSelf: "flex-end",
+                marginVertical: 30,
                 marginRight: 20,
-                marginTop: 30,
               }}
               labelStyle={{ fontSize: 16 }}
               onPress={() =>
@@ -74,14 +74,13 @@ export default function ManageGroups() {
               )}
             />
           </Card.Content>
-          {userData?.Role === "Administrador" ? (
+          {userData?.Role === "Administrador" && groups.length > 0 ? (
             <Button
               mode="contained"
               buttonColor="red"
               style={{
                 width: "50%",
                 alignSelf: "center",
-                marginRight: 10,
                 marginTop: 50,
                 marginBottom: 30,
               }}

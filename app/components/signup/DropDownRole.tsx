@@ -3,14 +3,17 @@ import * as React from "react";
 import { View } from "react-native";
 import { Divider, List, Text } from "react-native-paper";
 
-const DropDownRole = ({
-  handleRole,
-}: {
-  handleRole: (role: string) => void;
-}) => {
+enum Role {
+  Administrador = "Administrador",
+  Docente = "Docente",
+  Estudiante = "Estudiante",
+  UsuarioExterno = "Usuario Externo",
+}
+
+const DropDownRole = ({ handleRole }: { handleRole: (role: Role) => void }) => {
   const [role, setRole] = React.useState("Seleccione el rol");
   const [expanded, setExpanded] = React.useState(false);
-  const handlePress = (option: string) => {
+  const handlePress = (option: Role) => {
     setRole(option);
     handleRole(option);
     setExpanded(!expanded);
@@ -37,14 +40,17 @@ const DropDownRole = ({
         >
           <List.Item
             title="Estudiante"
-            onPress={() => handlePress("Estudiante")}
+            onPress={() => handlePress(Role.Estudiante)}
           />
           <Divider />
-          <List.Item title="Docente" onPress={() => handlePress("Docente")} />
+          <List.Item
+            title="Docente"
+            onPress={() => handlePress(Role.Docente)}
+          />
           <Divider />
           <List.Item
             title="Usuario Externo"
-            onPress={() => handlePress("Usuario Externo")}
+            onPress={() => handlePress(Role.UsuarioExterno)}
           />
           <Divider />
         </List.Accordion>
