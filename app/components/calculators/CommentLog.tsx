@@ -52,40 +52,60 @@ export const CommentLog = (props: {
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    const commentsTemp = [] as Comment[];
-    if (props.role === "Estudiante") {
-      const subscriber = firestore()
-        .collection(props.text)
-        .where("UserId", "==", props.userId)
-        .where("Hide", "==", false)
-        .orderBy("DateTime", "desc")
-        .onSnapshot((res) => {
-          res?.forEach((documentSnapshot) => {
-            console.log("document: ", documentSnapshot);
-            const data = documentSnapshot.data() as Comment;
-            const id = documentSnapshot.id;
-            commentsTemp.push({ ...data, id });
-          });
-        });
-      setComments(commentsTemp);
-      console.log(commentsTemp);
-      return () => subscriber();
-    } else {
-      const subscriber = firestore()
-        .collection(props.text)
-        .orderBy("DateTime", "desc")
-        .onSnapshot((res) => {
-          res?.forEach((documentSnapshot) => {
-            const data = documentSnapshot.data() as Comment;
-            const id = documentSnapshot.id;
-            comments.push({ ...data, id });
-          });
-          setComments(comments);
-        });
-
-      return () => subscriber();
-    }
-  }, []);
+    let subscriber: (() => void) | undefined;
+  
+    const fetchComments = async () => {
+      if (props.role === "Estudiante") {
+        subscriber = firestore()
+          .collection(props.text)
+          .where("UserId", "==", props.userId)
+          .where("Hide", "==", false)
+          .orderBy("DateTime", "desc")
+          .onSnapshot(
+            (res) => {
+              const commentsTemp = [] as Comment[];
+              res?.forEach((documentSnapshot) => {
+                const data = documentSnapshot.data() as Comment;
+                const id = documentSnapshot.id;
+                commentsTemp.push({ ...data, id });
+              });
+              setComments(commentsTemp);
+            },
+            (error) => {
+              console.error("Error fetching comments: ", error);
+            }
+          );
+      } else {
+        subscriber = firestore()
+          .collection(props.text)
+          .orderBy("DateTime", "desc")
+          .onSnapshot(
+            (res) => {
+              const tempComments: Comment[] = [];
+              res?.forEach((documentSnapshot) => {
+                const data = documentSnapshot.data() as Comment;
+                const id = documentSnapshot.id;
+                tempComments.push({ ...data, id });
+              });
+              setComments(tempComments);
+            },
+            (error) => {
+              console.error("Error fetching comments: ", error);
+            }
+          );
+      }
+    };
+  
+    fetchComments();
+  
+    return () => {
+      if (subscriber) {
+        subscriber();
+      }
+    };
+  }, [props.role, props.userId, props.text]);
+  
+  
 
   const pickFile = async () => {
     try {
@@ -277,10 +297,10 @@ export const CommentLog = (props: {
             <Text style={stylesLocal.commentText}>Sin comentarios</Text>
           ) : (
             comments.map((comment, index) => (
-              <View id={comment.id}>
+              <View key={comment.id} id={comment.id}>
                 {comment.Name && comment.DateTime && comment.Comment ? (
-                  <View style={stylesLocal.commentBox} id={comment.id}>
-                    <View style={stylesLocal.commentContainer}>
+                  <View style={stylesLocal.commentBox} key={comment.id}>
+                    <View style={stylesLocal.commentContainer} key={comment.id}>
                       <Text style={stylesLocal.commentName}>
                         {comment.Name}
                       </Text>
@@ -294,7 +314,7 @@ export const CommentLog = (props: {
                         comment.Attachment.map(
                           (attachment, attachmentIndex) => (
                             <View
-                              key={attachmentIndex}
+                              key={`${comment.id}-attachment-${attachmentIndex}`}
                               style={{ maxWidth: "100%", marginBottom: 10 }}
                             >
                               {typeof attachment === "string" &&
@@ -348,7 +368,9 @@ export const CommentLog = (props: {
                                       </TouchableOpacity>
                                     ) : (
                                       <TouchableOpacity
-                                        onPress={() => playAudio(attachment)}
+                                        onPress={() =>
+                                          playAudio(attachment)
+                                        }
                                         style={{
                                           backgroundColor: "blue",
                                           padding: 10,
@@ -409,22 +431,26 @@ export const CommentLog = (props: {
                         )}
                     </View>
                     {comment.Response ? (
-                      <View style={stylesLocal.commentContainer}>
+                      <View
+                        style={stylesLocal.commentContainer}
+                        key={`response-${comment.id}`}
+                      >
                         <Text style={stylesLocal.response}>Respuesta</Text>
                         <Text style={stylesLocal.commentResponse}>
                           Respuesta: {comment.Response}
                         </Text>
                       </View>
                     ) : (
-                      <View style={stylesLocal.commentContainer}>
+                      <View
+                        style={stylesLocal.commentContainer}
+                        key={`no-response-${comment.id}`}
+                      >
                         <Text style={stylesLocal.commentResponse}>
                           <Button
                             style={stylesLocal.button}
                             onPress={() => setShowResponse(index)}
                           >
-                            <Text style={stylesLocal.buttonText}>
-                              Responder
-                            </Text>
+                            <Text style={stylesLocal.buttonText}>Responder</Text>
                           </Button>
                         </Text>
                         {showResponse === index && (
