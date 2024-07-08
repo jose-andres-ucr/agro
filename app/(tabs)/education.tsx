@@ -5,7 +5,7 @@ import { Keyboard } from 'react-native';
 import Video from 'react-native-video';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '@/constants/theme';
-import getEducationStyles from "@/constants/styles/EducationStyles"
+import getEducationStyles from "@/constants/styles/EducationStyles";
 
 type Post = {
   id: string;
@@ -16,7 +16,117 @@ type Post = {
   User: string;
 }
 
+type RenderPostsProps = {
+  posts: Post[];
+  styles: any;
+  currentPage: number;
+  totalPages: number;
+  handlePageChange: (action: 'prev' | 'next') => void;
+  setSelectedPost: (post: Post | null) => void;
+};
+
 const POSTS_PER_PAGE = 4;
+
+const RenderPosts: React.FC<RenderPostsProps> = ({ posts, styles, currentPage, totalPages, handlePageChange, setSelectedPost }) => {
+  const truncateDescription = (description: string) => {
+    if (description.length > 100) {
+      return description.substring(0, 100) + '...';
+    }
+    return description;
+  };
+
+  const start = (currentPage - 1) * POSTS_PER_PAGE;
+  const end = start + POSTS_PER_PAGE;
+
+  return (
+    <>
+      {posts.slice(start, end).map((post: Post, index: number) => (
+        <TouchableOpacity key={index} onPress={() => setSelectedPost(post)}>
+          <View style={styles.postContainer}>
+            <Text style={styles.postTitle}>{post.Title}</Text>
+            <Text style={styles.postDescription}>{truncateDescription(post.Description)}</Text>
+            <Text style={styles.postAutorDate}>Autor: {post.User}  |  Fecha: {new Date(post.Date.toDate()).toLocaleDateString()}  |  Ver más</Text>
+          </View>
+          <View style={styles.horizontalLine}></View>
+        </TouchableOpacity>
+      ))}
+      <View style={styles.pagination}>
+        <TouchableOpacity
+          onPress={() => handlePageChange('prev')}
+          disabled={currentPage === 1}
+        >
+          <Text style={[styles.pageButton, currentPage === 1 && styles.disabled]}>Anterior</Text>
+        </TouchableOpacity>
+        <Text style={styles.pageNumber}>{`${currentPage} / ${totalPages}`}</Text>
+        <TouchableOpacity
+          onPress={() => handlePageChange('next')}
+          disabled={currentPage === totalPages}
+        >
+          <Text style={[styles.pageButton, currentPage === totalPages && styles.disabled]}>Siguiente</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+};
+
+type RenderPostDetailsProps = {
+  selectedPost: Post;
+  styles: any; 
+  setSelectedPost: (post: Post | null) => void;
+};
+
+const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, styles, setSelectedPost }) => {
+  const isPaused = true; 
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <View style={styles.postDetailscontainer}>
+        <View style={styles.titleAndButtonContainer}>
+          <TouchableOpacity onPress={() => setSelectedPost(null)}>
+            <MaterialIcons name="arrow-back" size={24} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.selectedPostTitle}>{selectedPost.Title}</Text>
+        </View>
+        <Text style={styles.selectedPostDescription}>{selectedPost.Description}</Text>
+        <Text style={styles.selectedPostAutorDate}>Autor: {selectedPost.User}  |  Fecha: {new Date(selectedPost.Date.toDate()).toLocaleDateString()} </Text>
+        {selectedPost.Attachment && Array.isArray(selectedPost.Attachment) ? (
+          <>
+            {selectedPost.Attachment.map((attachment, attachmentIndex) => (
+              <View key={attachmentIndex}>
+                {typeof attachment === 'string' && attachment.startsWith('http') ? (
+                  attachment.includes('.jpg') ? (
+                    <Image source={{ uri: attachment }} style={{ width: 300, height: 300, marginBottom: 10 }} />
+                  ) : attachment.includes('.mp4') ? (
+                    <View>
+                      <Video 
+                        source={{ uri: attachment }} 
+                        style={{ width: 360, height: 400, marginBottom: 10}} 
+                        paused={isPaused}
+                        controls={true} 
+                      />
+                      <View style={styles.videoControls}>
+                      </View>
+                    </View>
+                  ) : attachment.includes('.pdf') ? (
+                    <TouchableOpacity onPress={() => Linking.openURL(attachment)}>
+                      <View style={styles.horizontalLine}></View>
+                      <Text style={styles.selectedPostDescription}> Adjuntos:</Text>
+                      <Text style={[styles.postAttachment, { color: 'blue', textDecorationLine: 'underline' }]}>{attachment}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Text style={styles.postAttachment}>Attachment: {attachment}</Text>
+                  )
+                ) : (
+                  <Text style={styles.postAttachment}>Attachment: {attachment}</Text>
+                )}
+              </View>
+            ))}
+          </>
+        ) : null}
+      </View>
+    </ScrollView>
+  );
+};
 
 const EducationalMaterial = () => {
   const styles = getEducationStyles();
@@ -26,7 +136,6 @@ const EducationalMaterial = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [isPaused] = useState(true);
 
   useEffect(() => {
     const subscriber = firestore().collection('EducationalMaterial')
@@ -46,106 +155,33 @@ const EducationalMaterial = () => {
     return () => subscriber();
   }, []);
 
-  // Mostrar todos los posts
-  const renderPosts = () => {
-    const start = (currentPage - 1) * POSTS_PER_PAGE;
-    const end = start + POSTS_PER_PAGE;
-
-    const truncateDescription = (description: string) => {
-      if (description.length > 100) {
-        return description.substring(0, 100) + '...';
-      }
-      return description;
-    };
-    return posts.slice(start, end).map((post, index) => (
-      <TouchableOpacity key={index} onPress={() => setSelectedPost(post)}>
-        <View style={styles.postContainer}>
-          <Text style={styles.postTitle}>{post.Title}</Text>
-          <Text style={styles.postDescription}>{truncateDescription(post.Description)}</Text>
-          <Text style={styles.postAutorDate}>Autor: {post.User}  |  Fecha: {new Date(post.Date.toDate()).toLocaleDateString()}  |  Ver más</Text>
-        </View>
-        <View style={styles.horizontalLine}></View>
-      </TouchableOpacity>
-    ));
-  };
-
-  // Mostrar los detalles de un post
-  const renderPostDetails = () => {
-    if (selectedPost) {
-      return (
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.postDetailscontainer}>
-            <View style={styles.titleAndButtonContainer}>
-              <TouchableOpacity onPress={() => setSelectedPost(null)}>
-                <MaterialIcons name="arrow-back" size={24} color="black" />
-              </TouchableOpacity>
-              <Text style={styles.selectedPostTitle}>{selectedPost.Title}</Text>
-            </View>
-            <Text style={styles.selectedPostDescription}>{selectedPost.Description}</Text>
-            <Text style={styles.selectedPostAutorDate}>Autor: {selectedPost.User}  |  Fecha: {new Date(selectedPost.Date.toDate()).toLocaleDateString()} </Text>
-            {selectedPost.Attachment && Array.isArray(selectedPost.Attachment) ? (
-              <>
-                {selectedPost.Attachment.map((attachment, attachmentIndex) => (
-                  <View key={attachmentIndex}>
-                    {typeof attachment === 'string' && attachment.startsWith('http') ? (
-                      attachment.includes('.jpg') ? (
-                        <Image source={{ uri: attachment }} style={{ width: 300, height: 300, marginBottom: 10 }} />
-                      ) : attachment.includes('.mp4') ? (
-                        <View>
-                          <Video 
-                            source={{ uri: attachment }} 
-                            style={{ width: 360, height: 400, marginBottom: 10}} 
-                            paused={isPaused}
-                            controls={true} 
-                          />
-                          <View style={styles.videoControls}>
-           
-                          </View>
-                        </View>
-                      ) : attachment.includes('.pdf') ? (
-                        <TouchableOpacity onPress={() => Linking.openURL(attachment)}>
-                          <View style={styles.horizontalLine}></View>
-                          <Text style={styles.selectedPostDescription}> Adjuntos:</Text>
-                          <Text style={[styles.postAttachment, { color: 'blue', textDecorationLine: 'underline' }]}>{attachment}</Text>
-                        </TouchableOpacity>
-                      ) : (
-                        <Text style={styles.postAttachment}>Attachment: {attachment}</Text>
-                      )
-                    ) : (
-                      <Text style={styles.postAttachment}>Attachment: {attachment}</Text>
-                    )}
-                  </View>
-                ))}
-              </>
-            ) : null}
-          </View>
-        </ScrollView>
-      );
+  const handlePageChange = (action: 'prev' | 'next') => {
+    if (action === 'prev') {
+      setCurrentPage((prev) => Math.max(prev - 1, 1));
+    } else {
+      setCurrentPage((prev) => Math.min(prev + 1, totalPages));
     }
-    return null;
   };
-  
-  // Manejar la barra de busqueda
+
   const handleSearch = () => {
     let filteredPosts;
     if (searchQuery && searchQuery.trim() !== '') {
-      //  Si la búsqueda no está vacía, mostrar todas las publicaciones filtradas
       filteredPosts = originalPosts.filter(post => {
         return post.Title.toLowerCase().includes(searchQuery.toLowerCase());
       });
     } else {
-      // Si la búsqueda está vacía, mostrar todas las publicaciones originales
       filteredPosts = originalPosts;
     }
     Keyboard.dismiss();
-    // Actualizar los posts mostrados y la cantidad total de páginas según los posts filtrados
     setPosts(filteredPosts);
     setTotalPages(Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
   };
 
   return (
     <>
-      {selectedPost ? renderPostDetails() : (
+      {selectedPost ? (
+        <RenderPostDetails selectedPost={selectedPost} styles={styles} setSelectedPost={setSelectedPost} />
+      ) : (
         <View style={styles.container}>
           <Text style={styles.title}>Últimas entradas</Text>
           <View style={styles.searchBar}>
@@ -158,27 +194,19 @@ const EducationalMaterial = () => {
             <Button color={theme.colors.primary} title="Buscar" onPress={handleSearch} />
           </View>
           <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            {renderPosts()}
+            <RenderPosts
+              posts={posts}
+              styles={styles}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              handlePageChange={handlePageChange}
+              setSelectedPost={setSelectedPost}
+            />
           </ScrollView>
-          <View style={styles.pagination}>
-            <TouchableOpacity
-              onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              <Text style={[styles.pageButton, currentPage === 1 && styles.disabled]}>Anterior</Text>
-            </TouchableOpacity>
-            <Text style={styles.pageNumber}>{`${currentPage} / ${totalPages}`}</Text>
-            <TouchableOpacity
-              onPress={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              <Text style={[styles.pageButton, currentPage === totalPages && styles.disabled]}>Siguiente</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       )}
     </>
   );
-}
+};
 
 export default EducationalMaterial;
