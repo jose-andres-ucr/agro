@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import auth from "@react-native-firebase/auth";
+import auth, { firebase } from "@react-native-firebase/auth";
 import { router } from "expo-router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +15,7 @@ import React from "react";
 import { theme } from "@/constants/theme";
 import firestore from "@react-native-firebase/firestore";
 import LoadingButton from "../LoadingButton";
-import { showToastError } from "@/constants/utils";
+import { showToastError, showToastInfo } from "@/constants/utils";
 import getLoginStyles from "@/constants/styles/LoginStyles"
 
 const form = z.object({
@@ -32,6 +32,7 @@ export default function Login() {
     control,
     handleSubmit,
     clearErrors,
+    getValues,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -69,6 +70,22 @@ export default function Login() {
   const handleSignUp = () => {
     router.push("/components/signup/SignUp");
     clearErrorMessages();
+  };
+
+  const handleForgotPassword = () => {    
+    let email = getValues("userName")
+    if (email) {
+      firebase.auth().sendPasswordResetEmail(
+        getValues("userName"))
+      .then(() => {        
+        showToastInfo("Revise su correo para restablecer su contraseña");
+      })
+      .catch(() => {        
+        showToastError("", "El correo ingresado no es válido");
+      })
+    } else {
+      showToastInfo("Ingresa tu correo para restablecer tu contraseña");
+    }
   };
 
   const onSubmit = async (data: FormData) => {
@@ -182,6 +199,12 @@ export default function Login() {
           >
             regístrese aquí.
           </Text>
+        </Text>
+        <Text
+            onPress={handleForgotPassword}
+            style={{ marginTop: 5, color: theme.colors.primary, fontWeight: "bold" }}
+          >
+            Olvidé mi contraseña.
         </Text>
       </View>
     </View>

@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { Stack, router, usePathname } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { theme } from "@/constants/theme";
-import Toast, { ErrorToast } from "react-native-toast-message";
+import Toast, { ErrorToast, InfoToast} from "react-native-toast-message";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import UserProvider from './hooks/context/UserProvider';
 
@@ -19,6 +19,22 @@ const toastConfig = {
       text2NumberOfLines={2}
       style={{
         borderLeftColor: theme.colors.error,
+      }}
+    />
+  ),
+  info: (props: any) => (
+    <InfoToast
+      {...props}
+      text1Style={{
+        fontSize: 17,
+      }}
+      text2Style={{
+        fontSize: 15,
+        color: theme.colors.inputColor,
+      }}
+      text2NumberOfLines={2}
+      style={{
+        borderLeftColor: theme.colors.primary,
       }}
     />
   ),
