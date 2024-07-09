@@ -1,11 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
-import { View, Text, Modal, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Modal, StyleSheet } from "react-native";
+import { Button } from 'react-native-paper';
 import { UserContext } from "../../../hooks/context/UserContext";
 import { useFetchGroups } from "../../../hooks/useFetchData";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
-import { Button } from 'react-native-paper';
 
 export default function ManageStudents() {
   const { userData } = useContext(UserContext);
@@ -64,7 +64,7 @@ export default function ManageStudents() {
   return (
     <View style={styles.container}>
       <Text
-        style={{ fontSize: 20, textAlign: "center", marginBottom: 20}}
+        style={{ fontSize: 20, textAlign: "center", marginBottom: 20 }}
       >
         ¿Eliminar el grupo {id}?
       </Text>
@@ -75,7 +75,6 @@ export default function ManageStudents() {
           width: "50%",
           alignSelf: "center",
           marginVertical: 30,
-          marginRight: 20,
         }}
         labelStyle={{ fontSize: 16 }}
         onPress={confirmDelete}
@@ -99,21 +98,27 @@ export default function ManageStudents() {
                 buttonColor="red"
                 style={{
                   width: "50%",
-                  alignSelf: "flex-end",
+                  alignSelf: "center",
                   marginVertical: 30,
-                  marginRight: 20,
                 }}
                 labelStyle={{ fontSize: 16 }}
                 onPress={deleteGroup}
               >
                 Sí
               </Button>
-              <TouchableOpacity 
-                style={[styles.button, styles.buttonCancel]}
+              <Button
+                mode="contained"
+                buttonColor="grey"
+                style={{
+                  width: "50%",
+                  alignSelf: "center",
+                  marginVertical: 30,
+                }}
+                labelStyle={{ fontSize: 16 }}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.buttonText}>Cancelar</Text>
-              </TouchableOpacity>
+                Cancelar
+              </Button>
             </View>
           </View>
         </View>
@@ -158,18 +163,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  button: {
-    padding: 10,
-    borderRadius: 5,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  buttonCancel: {
-    backgroundColor: '#cccccc',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
   },
 });
