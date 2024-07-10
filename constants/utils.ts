@@ -19,3 +19,13 @@ export const showToastError = (title:string, message: string | undefined) => {
       visibilityTime: 3000,
     });
   };
+
+export const showToastInfo = (message: string | undefined) => {
+  Toast.show({
+    type: "info",
+    text1: "",
+    text2: message || "Info",
+    position: "bottom",
+    visibilityTime: 3000,
+  });
+} 
