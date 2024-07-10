@@ -1,13 +1,13 @@
-import React, { ReactNode } from 'react';
-import { UserContext } from './UserContext';
-import { useFetchUserData } from '../FetchData';
+import React, { ReactNode } from "react";
+import { UserContext } from "./UserContext";
+import { useFetchUserData } from "../useFetchData";
 
 interface UserProviderProps {
   children: ReactNode;
 }
 
 const UserProvider = ({ children }: UserProviderProps) => {
-  const { userAuth, userId, userData } = useFetchUserData()
+  const { userAuth, userId, userData } = useFetchUserData();
 
   return (
     <UserContext.Provider value={{ userAuth, userId, userData }}>

@@ -1,5 +1,5 @@
 import { DataTable } from "react-native-paper";
-import { useFetchPendingRegistration } from "@/app/hooks/FetchData";
+import { useFetchPendingRegistration } from "@/app/hooks/useFetchData";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import ApproveModal from "./ApproveModal";
