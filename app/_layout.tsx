@@ -1,10 +1,10 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from "react";
 import { Stack, router, usePathname } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { theme } from "@/constants/theme";
 import Toast, { ErrorToast, InfoToast} from "react-native-toast-message";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import UserProvider from './hooks/context/UserProvider';
+import UserProvider from "./hooks/context/UserProvider";
 
 const toastConfig = {
   error: (props: any) => (
@@ -47,7 +47,7 @@ export default function TabLayout() {
     <UserProvider>
       <PaperProvider theme={theme}>
         <QueryClientProvider client={queryClient}>
-        <Stack
+          <Stack
             screenOptions={{
               headerStyle: {
                 backgroundColor: theme.colors.primary,
@@ -80,8 +80,28 @@ export default function TabLayout() {
               options={{ headerTitle: "Iniciar Sesión" }}
             />
             <Stack.Screen
-                name="components/management/ManageComments"
-                options={{ headerTitle: "Administración de comentarios" }}
+              name="components/management/ManageComments"
+              options={{ headerTitle: "Administración de comentarios" }}
+            />
+            <Stack.Screen
+              name="components/management/CreateGroup"
+              options={{ headerTitle: "Crear Nuevo Grupo" }}
+            />
+            <Stack.Screen
+              name="components/groupInformation/[id]"
+              options={{ headerTitle: "Entorno Educativo" }}
+            />
+            <Stack.Screen
+              name="components/management/manageEducationalMaterial/[id]"
+              options={{ headerTitle: "Material Educativo" }}
+            />
+            <Stack.Screen
+              name="components/management/manageGroupStudents/[id]"
+              options={{ headerTitle: "Administración de Estudiantes" }}
+            />
+            <Stack.Screen
+              name="components/management/deleteGroup/[id]"
+              options={{ headerTitle: "Eliminar el Grupo" }}
             />
             <Stack.Screen
               name="components/signup/SignUp"
@@ -89,7 +109,7 @@ export default function TabLayout() {
             />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
-        </QueryClientProvider>      
+        </QueryClientProvider>
         <Toast config={toastConfig} />
       </PaperProvider>
     </UserProvider>

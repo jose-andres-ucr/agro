@@ -8,7 +8,17 @@ export const showToastError = (title:string, message: string | undefined) => {
       position: "bottom",
       visibilityTime: 3000,
     });
-  } 
+  };
+  
+  export const showToastSuccess = (title: string, message: string | undefined) => {
+    Toast.show({
+      type: "success",
+      text1: title,
+      text2: message || "Success",
+      position: "bottom",
+      visibilityTime: 3000,
+    });
+  };
 
 export const showToastInfo = (message: string | undefined) => {
   Toast.show({

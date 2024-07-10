@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Text, View, ScrollView, TextInput, TouchableOpacity, Image, Linking } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState, useContext } from 'react';
+//import { Button } from "react-native-paper";
+import { theme } from "@/constants/theme";
+import {  Button, Text, View, ScrollView, TextInput, TouchableOpacity, Image, Linking } from "react-native";
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import { Keyboard } from 'react-native';
 import Video from 'react-native-video';
 import { MaterialIcons } from '@expo/vector-icons';
-import { theme } from '@/constants/theme';
 import getEducationStyles from "@/constants/styles/EducationStyles";
+import { UserContext } from "@/app/hooks/context/UserContext";
 
 type Post = {
   id: string;
@@ -18,7 +21,7 @@ type Post = {
 
 type RenderPostsProps = {
   posts: Post[];
-  styles: any;
+  styles: any; 
   currentPage: number;
   totalPages: number;
   handlePageChange: (action: 'prev' | 'next') => void;
@@ -77,7 +80,6 @@ type RenderPostDetailsProps = {
 
 const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, styles, setSelectedPost }) => {
   const isPaused = true; 
-
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.postDetailscontainer}>
@@ -123,12 +125,16 @@ const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, sty
             ))}
           </>
         ) : null}
+
       </View>
     </ScrollView>
   );
 };
 
-const EducationalMaterial = () => {
+export default function GroupInformation() {
+  const { id } = useLocalSearchParams();
+  const { userData} = useContext(UserContext);
+
   const styles = getEducationStyles();
   const [posts, setPosts] = useState([] as Post[]);
   const [originalPosts, setOriginalPosts] = useState([] as Post[]);
@@ -138,21 +144,25 @@ const EducationalMaterial = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   useEffect(() => {
-    const subscriber = firestore().collection('EducationalMaterial')
-      .orderBy('Date', 'desc')
-      .onSnapshot((res) => {
-        const posts = [] as Post[];
-        res.forEach((documentSnapshot) => {
-          const postData = documentSnapshot.data() as Post;
-          postData.id = documentSnapshot.id;
-          posts.push(postData);
-        });
-        setPosts(posts);
-        setOriginalPosts(posts); // Guardar los datos originales
-        setTotalPages(Math.ceil(posts.length / POSTS_PER_PAGE));
-      });
+    const subscriber = firestore()
+    .collection('Groups')
+    .doc(id.toString())
+    .collection('EduGroupMaterial')
+    .orderBy('Date', 'desc')
+    .onSnapshot(async (snapshot) => {
+      const posts: Post[] = [];
+      for (const documentSnapshot of snapshot.docs) {
+        const postData = documentSnapshot.data() as Post;
+        postData.id = documentSnapshot.id;
+        posts.push(postData);
+      }
+      setPosts(posts);
+      setOriginalPosts(posts); // Guardar los datos originales
+      setTotalPages(Math.ceil(posts.length / POSTS_PER_PAGE));
+    });
 
-    return () => subscriber();
+  return () => subscriber();
+
   }, []);
 
   const handlePageChange = (action: 'prev' | 'next') => {
@@ -177,12 +187,47 @@ const EducationalMaterial = () => {
     setTotalPages(Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
   };
 
+  useEffect(() => {
+    console.log("ID del grupo:", id );
+  }, [id]);
+
   return (
     <>
       {selectedPost ? (
         <RenderPostDetails selectedPost={selectedPost} styles={styles} setSelectedPost={setSelectedPost} />
       ) : (
         <View style={styles.container}>
+          {userData?.Role === "Docente" || userData?.Role === "Administrador" ? (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10, marginTop: 10 }}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: theme.colors.primary,
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderRadius: 5,
+                flex: 1,
+                marginRight: 10,
+              }}
+              onPress={() => router.push(`../management/manageEducationalMaterial/${id}`)}
+            >
+              <Text style={{ color: 'white', textAlign: 'center' }}>Administrar Material</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                backgroundColor: theme.colors.primary,
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderRadius: 5,
+                flex: 1,
+                marginLeft: 10,
+              }}
+              onPress={() => router.push(`../management/manageGroupStudents/${id}`)}
+            >
+              <Text style={{ color: 'white', textAlign: 'center' }}>Lista Estudiantes</Text>
+            </TouchableOpacity>
+          </View>
+          ) : null}
+
           <Text style={styles.title}>Últimas entradas</Text>
           <View style={styles.searchBar}>
             <TextInput
@@ -203,10 +248,23 @@ const EducationalMaterial = () => {
               setSelectedPost={setSelectedPost}
             />
           </ScrollView>
+          {userData?.Role === "Docente" || userData?.Role === "Administrador" ? (
+          <View style={{ marginBottom: 10, justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'red',
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              borderRadius: 5,
+            }}
+            onPress={() => router.push(`../management/deleteGroup/${id}`)}
+          >
+            <Text style={{ color: 'white' }}>Eliminar Grupo</Text>
+          </TouchableOpacity>
+        </View>
+        ) : null}
         </View>
       )}
     </>
   );
-};
-
-export default EducationalMaterial;
+}
