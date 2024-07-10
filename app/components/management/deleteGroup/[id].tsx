@@ -39,6 +39,10 @@ export default function ManageStudents() {
       const studentRefs = groupData.students || [];
 
       for (const studentRef of studentRefs) {
+        if (typeof studentRef === 'string' && studentRef.trim() === '') {
+          continue;
+        }
+
         const studentSnapshot = await studentRef.get();
         const studentData = studentSnapshot.data();
 
