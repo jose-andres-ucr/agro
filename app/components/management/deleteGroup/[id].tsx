@@ -29,6 +29,27 @@ export default function ManageStudents() {
     try {
       const groupRef = firestore().collection('Groups').doc(id);
 
+      const groupSnapshot = await groupRef.get();
+      const groupData = groupSnapshot.data();
+      if (!groupData) {
+        console.error('Datos del grupo no encontrados.');
+        setLoading(false);
+        return;
+      }
+      const studentRefs = groupData.students || [];
+
+      for (const studentRef of studentRefs) {
+        if (typeof studentRef === 'string' && studentRef.trim() === '') {
+          continue;
+        }
+
+        const studentSnapshot = await studentRef.get();
+        const studentData = studentSnapshot.data();
+
+        const newGroupIds = (studentData.groupIds || []).filter((groupId: string) => groupId !== id);
+        await studentRef.update({ groupIds: newGroupIds });
+      }
+
       const eduGroupMaterialSnapshot = await groupRef.collection('EduGroupMaterial').get();
 
       const deletePromises: Promise<void>[] = [];
@@ -37,7 +58,6 @@ export default function ManageStudents() {
         const data = doc.data();
         if (data.Attachment && data.Attachment.length > 0) {
           for (const attachmentUrl of data.Attachment) {
-            
             if(attachmentUrl !== ""){
               const storageRef = storage().refFromURL(attachmentUrl);
               deletePromises.push(storageRef.delete());
