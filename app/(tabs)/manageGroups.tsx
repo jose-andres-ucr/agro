@@ -13,8 +13,8 @@ const images = [
   require("../../assets/images/cover4.jpg"),
 ];
 export default function ManageGroups() {
-  const { userData } = useContext(UserContext);
-  const groups = useFetchGroups(userData?.Role, userData?.Email);
+  const { userData, userId } = useContext(UserContext);
+  const groups = useFetchGroups(userData, userId);
 
   return (
     <View style={{ flex: 1 }}>
@@ -50,50 +50,40 @@ export default function ManageGroups() {
               keyExtractor={(teacher) => teacher.id}
               scrollEnabled={false}
               renderItem={(item) => (
-                <Pressable
-                  onPress={() =>
-                    router.push(`/components/groupInformation/${item.item.id}`)
-                  }
-                >
-                  <Card
-                    style={{
-                      padding: 10,
-                      marginVertical: 15,
-                      backgroundColor: "#FFF",
-                    }}
+                <>
+                  <Pressable
+                    onPress={() =>
+                      router.push(
+                        `/components/groupInformation/${item.item.id}`
+                      )
+                    }
                   >
-                    <Card.Title
-                      title={
-                        "Grupo " +
-                        item.item.GroupNumber.toString().padStart(3, "0")
-                      }
-                    />
-                    <Card.Cover
-                      source={images[item.item.Cover]}
-                      style={{ height: 125 }}
-                    />
-                    <Card.Title title={item.item.id} />
-                  </Card>
-                </Pressable>
+                    <Card
+                      style={{
+                        padding: 10,
+                        backgroundColor: "#FFF",
+                        borderStyle: "dashed",
+                        borderWidth: 1,
+                      }}
+                    >
+                      <Card.Title
+                        title={
+                          "Grupo " +
+                          item.item.GroupNumber.toString().padStart(3, "0")
+                        }
+                      />
+                      <Card.Cover
+                        source={images[item.item.Cover]}
+                        style={{ height: 125 }}
+                      />
+                      <Card.Title title={item.item.id} />
+                    </Card>
+                  </Pressable>
+                  <View style={{ marginVertical: 15 }} />
+                </>
               )}
             />
           </Card.Content>
-          {userData?.Role === "Administrador" && groups.length > 0 ? (
-            <Button
-              mode="contained"
-              buttonColor="red"
-              style={{
-                width: "50%",
-                alignSelf: "center",
-                marginTop: 50,
-                marginBottom: 30,
-              }}
-              labelStyle={{ fontSize: 16 }}
-              onPress={() => {}}
-            >
-              Eliminar Grupo
-            </Button>
-          ) : null}
         </View>
       </ScrollView>
     </View>
