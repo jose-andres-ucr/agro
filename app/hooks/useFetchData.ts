@@ -13,6 +13,7 @@ type User = {
   Role: string;
   Approved: number;
   Verified: number;
+  groupIds: string[] | null;
 };
 
 type Group = {
@@ -71,6 +72,7 @@ export const useFetchPendingRegistration = () => {
           Role: userInfo.data().Role,
           Approved: userInfo.data().Approved,
           Verified: userInfo.data().Verified,
+          groupIds: null,
         };
         data.push(user);
       }
@@ -108,6 +110,7 @@ export const useFetchTeachers = () => {
         Role: userInfo.data().Role,
         Approved: userInfo.data().Approved,
         Verified: userInfo.data().Verified,
+        groupIds: null,
       };
       data.push(user);
     });
@@ -131,7 +134,10 @@ export const useFetchTeachers = () => {
   return teachers;
 };
 
-export const useFetchGroups = (userRole: string, userEmail: string) => {
+export const useFetchGroups = (
+  userData: FirebaseFirestoreTypes.DocumentData | null,
+  studentId?: string
+) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const onResult = (querySnapshot: FirebaseFirestoreTypes.QuerySnapshot) => {
     let data: Group[] = [];
@@ -155,16 +161,29 @@ export const useFetchGroups = (userRole: string, userEmail: string) => {
   };
 
   useEffect(() => {
-    console.log(userRole, userEmail);
-    if (userRole === "Administrador") {
+    console.log(userData);
+    if (userData?.Role === "Administrador") {
       firestore()
         .collection("Groups")
         .orderBy("GroupNumber", "asc")
         .onSnapshot(onResult, onError);
-    } else if (userRole === "Docente" && userEmail !== undefined) {
+    } else if (userData?.Role === "Docente" && userData?.Email !== undefined) {
       firestore()
         .collection("Groups")
-        .where("TeacherEmail", "==", userEmail)
+        .where("TeacherEmail", "==", userData.Email)
+        .orderBy("GroupNumber", "asc")
+        .onSnapshot(onResult, onError);
+    } else if (
+      userData?.Role === "Estudiante" &&
+      userData?.Email !== undefined
+    ) {
+      firestore()
+        .collection("Groups")
+        .where(
+          "students",
+          "array-contains",
+          firestore().doc(`Users/${studentId}`)
+        )
         .orderBy("GroupNumber", "asc")
         .onSnapshot(onResult, onError);
     }
