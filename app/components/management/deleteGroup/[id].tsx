@@ -37,8 +37,11 @@ export default function ManageStudents() {
         const data = doc.data();
         if (data.Attachment && data.Attachment.length > 0) {
           for (const attachmentUrl of data.Attachment) {
-            const storageRef = storage().refFromURL(attachmentUrl);
-            deletePromises.push(storageRef.delete());
+            
+            if(attachmentUrl !== ""){
+              const storageRef = storage().refFromURL(attachmentUrl);
+              deletePromises.push(storageRef.delete());
+            } 
           }
         }
         deletePromises.push(doc.ref.delete());
