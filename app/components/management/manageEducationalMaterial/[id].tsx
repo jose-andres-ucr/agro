@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Text, View, ScrollView, TextInput, TouchableOpacity, Image, Linking, Alert, ActivityIndicator } from "react-native";
 import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
-import { Keyboard } from 'react-native';
+import { Keyboard, Switch } from 'react-native';
 import Video from 'react-native-video';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '@/constants/theme';
@@ -11,7 +11,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import storage from '@react-native-firebase/storage';
 import { useLocalSearchParams } from 'expo-router';
 import auth from "@react-native-firebase/auth";
-
+import Forum from '../../forum/Forum';
 
 type Post = {
   id: string;
@@ -20,6 +20,7 @@ type Post = {
   Description: string;
   Title: string;
   User: string;
+  Forum?: boolean;
 }
 
 type RenderPostsProps = {
@@ -121,7 +122,7 @@ const RenderPosts: React.FC<RenderPostsProps> = ({
       {posts.slice(start, end).map((post: Post, index: number) => (
         <TouchableOpacity key={index} onPress={() => setSelectedPost(post)}>
           <View style={styles.postContainer}>
-            <Text style={styles.postTitle}>{post.Title}</Text>
+            <Text style={styles.postTitle}>{post.Forum ? "FORO: " : ""}{post.Title}</Text>
             <Text style={styles.postDescription}>{truncateDescription(post.Description)}</Text>
             <Text style={styles.postAutorDate}>Autor: {post.User}  |  Fecha: {new Date(post.Date.toDate()).toLocaleDateString()}  |  Ver más</Text>
           </View>
@@ -156,6 +157,7 @@ type RenderPostDetailsProps = {
 };
 
 const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, styles, setSelectedPost }) => {
+  const { id } = useLocalSearchParams();
   const isPaused = true;
 
   return (
@@ -165,7 +167,7 @@ const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, sty
           <TouchableOpacity onPress={() => setSelectedPost(null)}>
             <MaterialIcons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          <Text style={styles.selectedPostTitle}>{selectedPost.Title}</Text>
+          <Text style={styles.selectedPostTitle}>{selectedPost.Forum ? "FORO: " : ""}{selectedPost.Title}</Text>
         </View>
         <Text style={styles.selectedPostDescription}>{selectedPost.Description}</Text>
         <Text style={styles.selectedPostAutorDate}>Autor: {selectedPost.User}  |  Fecha: {new Date(selectedPost.Date.toDate()).toLocaleDateString()} </Text>
@@ -203,7 +205,12 @@ const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, sty
             ))}
           </>
         ) : null}
-
+        {selectedPost.Forum ? 
+        <View>
+          <Text style={styles.selectedForumTitle}>Respuestas del foro:</Text>
+          <Forum groupId={id.toString()} postId={selectedPost.id} />
+        </View>
+         : null}
 
       </View>
     </ScrollView>
@@ -297,6 +304,7 @@ const EducationalMaterial = () => {
         Description: data.Description,
         Title: data.Title,
         User: auth().currentUser?.displayName,
+        Forum: data.Forum,
       });
 
       if (fileUris.length > 0) {
@@ -418,6 +426,22 @@ const EducationalMaterial = () => {
                   name="User"
                   defaultValue={auth().currentUser?.displayName || ""}
                 />
+                {editingPost ? null : 
+                <View style={styles.switchContainer}>
+                  <Text>Foro:</Text>
+                  <Controller
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <Switch
+                        onValueChange={(val) => onChange(val)}
+                        value={value}
+                      />
+                    )}
+                    name="Forum"
+                    defaultValue = {false}
+                  />
+                </View>}
+                
                 <Button color={theme.colors.primary} title="Elegir Archivo" onPress={pickFile} />
                 {fileUris && <Text>Archivo seleccionado: {fileUris.join(', ')}</Text>}
                 {loading ? (

@@ -61,6 +61,14 @@ const getManageCommentsStyles = (theme: any) => StyleSheet.create({
     marginHorizontal: 10,
     marginBottom: 10,
   },
+  buttonPrimary: {
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignContent: "center",
+    borderRadius: 5,
+    marginBottom: 15,
+    marginTop: 5,
+  },
   buttonText: {
     color: "white",
     fontSize: 16,
@@ -72,6 +80,25 @@ const getManageCommentsStyles = (theme: any) => StyleSheet.create({
     borderRadius: 5,
     marginHorizontal: 10,
     marginBottom: 10,
+    marginTop: 5,
+  },
+  confirmButton: {
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignContent: "center",
+    borderRadius: 5,
+    marginHorizontal: 10,
+    marginBottom: 10,
+    marginTop: 5,
+  },
+  cancelButton: {
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignContent: "center",
+    borderRadius: 5,
+    marginHorizontal: 10,
+    marginBottom: 10,
+    marginTop: 5,
   },
   commentSeparator: {
     marginVertical: 10,
@@ -98,6 +125,56 @@ const getManageCommentsStyles = (theme: any) => StyleSheet.create({
     color: 'blue',
     marginBottom: 20,
     textDecorationLine: 'underline',
+  },
+  replyDivider: {
+    borderBottomColor: 'black',
+    borderBottomWidth: 0.3,
+    marginTop: 10,
+  },
+  repliesContainer: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: theme.colors.defaultBackgroundColor,
+  },
+  replyContainer: {
+    borderBottomColor: 'black',
+    borderBottomWidth: 0.3,
+    marginTop: 5,
+  },
+  replyAuthor: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+    marginTop: 10,
+  },
+  replyContent: {
+    marginBottom: 5,
+  },
+  replyAttachment: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  selectedReplyDate: {
+    marginBottom: 5,
+    color: 'gray',
+  },
+  end: {
+    marginTop: 20,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalBackground: {
+    backgroundColor: theme.colors.defaultBackgroundColor
+  },
+  inputComment: {
+    width: '100%',
+    height: 100,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    textAlignVertical: "top",
   },
 });
 
