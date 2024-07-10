@@ -58,7 +58,7 @@ const covers = [
 export default function CreateGroup() {
   const { userData } = useContext(UserContext);
   const teachers: User[] = useFetchTeachers();
-  const groups: Group[] = useFetchGroups(userData?.Role, userData?.Email);
+  const groups: Group[] = useFetchGroups(userData);
   const [teacherEmail, setTeacherEmail] = useState("");
   const [semester, setSemester] = useState("I");
   const [matchingTeachers, setMatchingTeachers] = useState<User[] | null>(null);
