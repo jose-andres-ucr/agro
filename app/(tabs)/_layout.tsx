@@ -16,6 +16,21 @@ import { UserContext } from "../hooks/context/UserContext";
 import { useContext, useEffect } from "react";
 import auth from "@react-native-firebase/auth";
 
+function CustomerDrawer(props: any) {
+  const styles = getDrawerStyles();
+  return (
+    <DrawerContentScrollView {...props}>
+      <View>
+        <Image
+          source={require("../../assets/images/firmaPromocional.png")}
+          style={styles.image}
+        />
+      </View>
+      <DrawerItemList {...props} />
+    </DrawerContentScrollView>
+  );
+}
+
 export default function TabLayout() {
   const {
     userRole,
@@ -35,8 +50,7 @@ export default function TabLayout() {
     informationIcon,
     manageCommentsIcon,
     manageRegisterIcon,
-  } = DrawerIcons();
-  const styles = getDrawerStyles();
+  } = DrawerIcons();  
   const currentRoute = usePathname();
   const { userAuth, userData } = useContext(UserContext);
 
@@ -72,19 +86,7 @@ export default function TabLayout() {
       return <LoginButton />;
     }
   };
-  function CustomerDrawer(props: any) {
-    return (
-      <DrawerContentScrollView {...props}>
-        <View>
-          <Image
-            source={require("../../assets/images/firmaPromocional.png")}
-            style={styles.image}
-          />
-        </View>
-        <DrawerItemList {...props} />
-      </DrawerContentScrollView>
-    );
-  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer

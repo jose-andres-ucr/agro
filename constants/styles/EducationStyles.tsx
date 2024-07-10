@@ -60,6 +60,14 @@ const getEducationStyles = (theme: any) => StyleSheet.create({
     flex: 1, 
     textAlign: 'center', 
   },
+  selectedForumTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 8,
+    color: 'black',
+    alignSelf: 'center',
+    textAlign: 'center', 
+  },
   selectedPostAutorDate: {
     marginBottom: 25,
     color: 'gray',

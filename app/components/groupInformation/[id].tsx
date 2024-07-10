@@ -9,6 +9,7 @@ import Video from 'react-native-video';
 import { MaterialIcons } from '@expo/vector-icons';
 import getEducationStyles from "@/constants/styles/EducationStyles";
 import { UserContext } from "@/app/hooks/context/UserContext";
+import Forum from "../forum/Forum"
 
 type Post = {
   id: string;
@@ -17,6 +18,7 @@ type Post = {
   Description: string;
   Title: string;
   User: string;
+  Forum?: boolean;
 }
 
 type RenderPostsProps = {
@@ -46,7 +48,7 @@ const RenderPosts: React.FC<RenderPostsProps> = ({ posts, styles, currentPage, t
       {posts.slice(start, end).map((post: Post, index: number) => (
         <TouchableOpacity key={index} onPress={() => setSelectedPost(post)}>
           <View style={styles.postContainer}>
-            <Text style={styles.postTitle}>{post.Title}</Text>
+            <Text style={styles.postTitle}>{post.Forum ? "FORO: " : ""}{post.Title}</Text>
             <Text style={styles.postDescription}>{truncateDescription(post.Description)}</Text>
             <Text style={styles.postAutorDate}>Autor: {post.User}  |  Fecha: {new Date(post.Date.toDate()).toLocaleDateString()}  |  Ver más</Text>
           </View>
@@ -79,6 +81,7 @@ type RenderPostDetailsProps = {
 };
 
 const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, styles, setSelectedPost }) => {
+  const { id } = useLocalSearchParams();
   const isPaused = true; 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -87,7 +90,7 @@ const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, sty
           <TouchableOpacity onPress={() => setSelectedPost(null)}>
             <MaterialIcons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          <Text style={styles.selectedPostTitle}>{selectedPost.Title}</Text>
+          <Text style={styles.selectedPostTitle}>{selectedPost.Forum ? "FORO: " : ""}{selectedPost.Title}</Text>
         </View>
         <Text style={styles.selectedPostDescription}>{selectedPost.Description}</Text>
         <Text style={styles.selectedPostAutorDate}>Autor: {selectedPost.User}  |  Fecha: {new Date(selectedPost.Date.toDate()).toLocaleDateString()} </Text>
@@ -125,6 +128,12 @@ const RenderPostDetails: React.FC<RenderPostDetailsProps> = ({ selectedPost, sty
             ))}
           </>
         ) : null}
+        {selectedPost.Forum ? 
+          <View>
+            <Text style={styles.selectedForumTitle}>Respuestas del foro:</Text>
+            <Forum groupId={id.toString()} postId={selectedPost.id} />
+          </View>
+         : null}
 
       </View>
     </ScrollView>
